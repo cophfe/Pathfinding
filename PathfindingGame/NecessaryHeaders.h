@@ -1,8 +1,15 @@
 #pragma once
+//third party
 #include "raylib.h"
-#define PHYSAC_IMPLEMENTATION
 #include "physac.h"
-
+//standard
 #include <vector>
 #include <string>
 #include <stdlib.h>
+//internal
+#include "Sprite.h"
+//maths
+#include "mlib.h"
+#include "Matrix3.h"
+#include "Vector2.h"
+#include "Vector3.h"

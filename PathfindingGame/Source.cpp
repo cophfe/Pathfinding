@@ -19,8 +19,8 @@
 *
 ********************************************************************************************/
 
+#define PHYSAC_IMPLEMENTATION
 #include "NecessaryHeaders.h"
-
 #include "Game.h"
 
 #define RAYGUI_IMPLEMENTATION
@@ -34,10 +34,11 @@ int main(int argc, char* argv[])
 	// Initialization
 	//--------------------------------------------------------------------------------------
 	Game game;
-
+	
 	//The game can be initiated with a GameProperties struct with game info (it just feels cleaner than a long list of values being passed in)
 	//it will use default values if this is not passed in
-	game.init();
+	GameProperties gP;
+	game.init(&gP);
 
 	game.gameLoop();
 

@@ -2,7 +2,6 @@
 
 #include "NecessaryHeaders.h"
 
-
 #include "Scene.h"
 #include "TextureManager.h"
 
@@ -18,7 +17,7 @@ struct GameProperties
 class Game
 {
 public:
-	void init(GameProperties* properties = nullptr);
+	void init(GameProperties* properties);
 	void gameLoop();
 	void shutdown();
 private:

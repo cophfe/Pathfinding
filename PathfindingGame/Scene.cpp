@@ -16,6 +16,7 @@ void Scene::draw()
 
 void Scene::update()
 {
+	
 }
 
 void Scene::unload()
