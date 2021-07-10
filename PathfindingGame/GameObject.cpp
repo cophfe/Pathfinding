@@ -1,85 +1,63 @@
 #include "GameObject.h"
 
-void GameObject::init(Sprite* sprite, bool isDrawn, RLVector2 position, float rotation, float scale)
+void GameObject::init(std::string spriteName, Transform* parent, bool isDrawn, Vector2 position, float rotation, float scale)
 {
+	this->isDrawn = isDrawn;
+
+	TextureManager* tM = Game::getInstance().getTextureManager();
+	sprite = tM->GenSprite(spriteName, this);
+
+	transform = Transform(position, scale, rotation, parent, this);
+
+	if (parent != nullptr)
+		transform.setParent(parent);
+
 }
 
-GameObject::GameObject(Sprite* sprite)
+GameObject::GameObject(std::string spriteName)
 {
-}
-
-GameObject::GameObject(Sprite* sprite, bool isDrawn, RLVector2 position, float rotation, float scale)
-{
-	
-}
-
-void GameObject::update()
-{
-}
-
-void GameObject::addChild(GameObject* child)
-{
-}
-
-void GameObject::setParent(GameObject* child)
-{
-}
-
-void GameObject::removeChild(GameObject* child)
-{
+	init(spriteName, nullptr, true, { 0 }, 0, 1);
 }
 
 void GameObject::deleteSelf()
 {
-}
-
-void GameObject::sortChildren()
-{
-}
-
-void GameObject::updateTransforms()
-{
-}
-
-void GameObject::addRotation(float rad)
-{
-}
-
-void GameObject::addPosition(RLVector2* pos)
-{
-}
-
-void GameObject::addScale(float scale)
-{
-}
-
-void GameObject::setRotation(float rad)
-{
-}
-
-void GameObject::setPosition(RLVector2* pos)
-{
-}
-
-void GameObject::setScale(float scale)
-{
-}
-
-RLVector2 GameObject::getGlobalPosition()
-{
-	return RLVector2();
-}
-
-float GameObject::getGlobalRotation()
-{
-	return 0.0f;
-}
-
-float GameObject::getGlobalScale()
-{
-	return 0.0f;
+	for (auto& component : components)
+	{
+		component->unload();
+	}
 }
 
 void GameObject::draw()
 {
+	for (auto& child : transform.getChildArray())
+	{
+		child->getGameObject()->draw();
+	}
+
+	sprite.Draw();
+}
+
+void GameObject::updateComponents()
+{
+	for (auto& child : transform.getChildArray())
+	{
+		child->getGameObject()->updateComponents();
+	}
+	for (auto& component : components)
+	{
+		component->update();
+	}
+}
+
+void GameObject::startComponents()
+{
+	for (auto& child : transform.getChildArray())
+	{
+		child->getGameObject()->updateComponents();
+	}
+
+	for (auto& component : components)
+	{
+		component->update();
+	}
 }

@@ -25,23 +25,26 @@ namespace mlib
 
 		Matrix3 inverse();
 
-		static Matrix3 getRotateZ(float angle);
-
-		M_Vector2 getScale();
+		Vector2 getScale();
 
 		float getScaleX();
 
-		M_Vector2 getTranslation();
+		Vector2 getTranslation();
 
 		float getZRotation();
 
-		void getAllTransformations(M_Vector2* position, M_Vector2* scale, float* rotation);
+		void getAllTransformations(Vector2* position, Vector2* scale, float* rotation);
 
-		void getAllTransformations(M_Vector2* position, float* scale, float* rotation);
+		void getAllTransformations(Vector2* position, float* scale, float* rotation);
 
-		M_Vector2 getUpVector();
+		Vector2 getUpVector();
 
-		M_Vector2 getRightVector();
+		Vector2 getRightVector();
+		
+		//static matrix generators
+		static Matrix3 getPositionMatrix(Vector2& position);
+		static Matrix3 getRotationMatrix2D(float angle);
+		static Matrix3 getScaleMatrix(float scale);
 
 		Matrix3 operator* (Matrix3 const& m);
 		Matrix3 operator+ (float f);
@@ -53,5 +56,5 @@ namespace mlib
 
 	Vector3 operator* (const Matrix3& m, const Vector3& vector);
 
-	M_Vector2 operator*(const Matrix3& m, const M_Vector2& vector);
+	Vector2 operator*(const Matrix3& m, const Vector2& vector);
 }

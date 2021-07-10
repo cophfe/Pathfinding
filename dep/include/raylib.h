@@ -358,11 +358,11 @@ typedef struct Material {
 } Material;
 
 // Transformation properties
-typedef struct Transform {
+typedef struct RLTransform {
     RLVector3 translation;    // Translation
     Quaternion rotation;    // Rotation
     RLVector3 scale;          // Scale
-} Transform;
+} RLTransform;
 
 // Bone information
 typedef struct BoneInfo {
@@ -383,7 +383,7 @@ typedef struct Model {
     // Animation data
     int boneCount;          // Number of bones
     BoneInfo *bones;        // Bones information (skeleton)
-    Transform *bindPose;    // Bones base transformation (pose)
+	RLTransform*bindPose;    // Bones base transformation (pose)
 } Model;
 
 // Model animation
@@ -391,7 +391,7 @@ typedef struct ModelAnimation {
     int boneCount;          // Number of bones
     int frameCount;         // Number of animation frames
     BoneInfo *bones;        // Bones information (skeleton)
-    Transform **framePoses; // Poses array by frame
+	RLTransform**framePoses; // Poses array by frame
 } ModelAnimation;
 
 // Ray type (useful for raycast)

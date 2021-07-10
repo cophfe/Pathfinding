@@ -43,18 +43,9 @@ namespace mlib
 		return i;
 	}
 
-	Matrix3 Matrix3::getRotateZ(float angle)
+	Vector2 Matrix3::getScale()
 	{
-		float sin = sinf(angle);
-		float cos = cosf(angle);
-		return Matrix3(cos, -sin, 0,
-			sin, cos, 0,
-			0, 0, 1);
-	}
-
-	M_Vector2 Matrix3::getScale()
-	{
-		return M_Vector2(sqrtf(mm[0][0] * mm[0][0] + mm[1][0] * mm[1][0]), sqrtf(mm[0][1] * mm[0][1] + mm[1][1] * mm[1][1]));
+		return Vector2(sqrtf(mm[0][0] * mm[0][0] + mm[1][0] * mm[1][0]), sqrtf(mm[0][1] * mm[0][1] + mm[1][1] * mm[1][1]));
 	}
 
 	float Matrix3::getScaleX()
@@ -62,9 +53,9 @@ namespace mlib
 		return sqrtf(mm[0][0] * mm[0][0] + mm[1][0] * mm[1][0]);
 	}
 
-	M_Vector2 Matrix3::getTranslation()
+	Vector2 Matrix3::getTranslation()
 	{
-		return M_Vector2(mm[0][2], mm[1][2]);
+		return Vector2(mm[0][2], mm[1][2]);
 	}
 
 	float Matrix3::getZRotation()
@@ -73,29 +64,51 @@ namespace mlib
 		return atan2(mm[1][0] / scaleX, mm[0][0] / scaleX);
 	}
 
-	void Matrix3::getAllTransformations(M_Vector2* position, M_Vector2* scale, float* rotation)
+	void Matrix3::getAllTransformations(Vector2* position, Vector2* scale, float* rotation)
 	{
-		*position = M_Vector2(mm[0][2], mm[1][2]);
-		*scale = M_Vector2(sqrtf(mm[0][0] * mm[0][0] + mm[1][0] * mm[1][0]), sqrtf(mm[0][1] * mm[0][1] + mm[1][1] * mm[1][1]));
+		*position = Vector2(mm[0][2], mm[1][2]);
+		*scale = Vector2(sqrtf(mm[0][0] * mm[0][0] + mm[1][0] * mm[1][0]), sqrtf(mm[0][1] * mm[0][1] + mm[1][1] * mm[1][1]));
 		*rotation = atan2(mm[1][0] / scale->x, mm[0][0] / scale->x);
 	}
 
-	void Matrix3::getAllTransformations(M_Vector2* position, float* scale, float* rotation)
+	void Matrix3::getAllTransformations(Vector2* position, float* scale, float* rotation)
 	{
-		*position = M_Vector2(mm[0][2], mm[1][2]);
+		*position = Vector2(mm[0][2], mm[1][2]);
 		*scale = sqrtf(mm[0][0] * mm[0][0] + mm[1][0] * mm[1][0]);
 		*rotation = atan2(mm[1][0] / *scale, mm[0][0] / *scale);
 	}
 
-	M_Vector2 Matrix3::getUpVector()
+	Vector2 Matrix3::getUpVector()
 	{
-		return M_Vector2(mm[0][1], mm[1][1]);
+		return Vector2(mm[0][1], mm[1][1]);
 	}
 
-	M_Vector2 Matrix3::getRightVector()
+	Vector2 Matrix3::getRightVector()
 	{
-		return M_Vector2(mm[0][0], mm[1][0]);
+		return Vector2(mm[0][0], mm[1][0]);
 	}
+
+    Matrix3 Matrix3::getPositionMatrix(Vector2& position)
+    {
+        return Matrix3(1,0,position.x,
+					   0,1,position.y);
+    }
+
+    Matrix3 Matrix3::getRotationMatrix2D(float angle)
+    {
+		float sin = sinf(angle);
+		float cos = cosf(angle);
+		return Matrix3(cos, -sin, 0,
+			sin, cos, 0,
+			0, 0, 1);
+    }
+
+    Matrix3 Matrix3::getScaleMatrix(float scale)
+    {
+		return Matrix3(scale, 0, 0,
+					   0, scale, 0,
+					   0, 0, scale);
+    }
 
 	Matrix3 Matrix3::operator* (Matrix3 const& m)
 	{
@@ -138,9 +151,9 @@ namespace mlib
 			m.mm[2][0] * vector.x + m.mm[2][1] * vector.y + m.mm[2][2] * vector.z);
 	}
 
-	mlib::M_Vector2 operator*(const mlib::Matrix3& m, const mlib::M_Vector2& vector)
+	mlib::Vector2 operator*(const mlib::Matrix3& m, const mlib::Vector2& vector)
 	{
-		return mlib::M_Vector2(m.mm[0][0] * vector.x + m.mm[0][1] * vector.y,
+		return mlib::Vector2(m.mm[0][0] * vector.x + m.mm[0][1] * vector.y,
 			m.mm[1][0] * vector.x + m.mm[1][1] * vector.y);
 	}
 }

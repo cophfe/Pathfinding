@@ -1,7 +1,7 @@
 #pragma once
 #include "NecessaryHeaders.h"
 
-#include "GameObject.h"
+class GameObject;
 #include "Pathfinder.h"
 
 struct SceneProperties
@@ -26,7 +26,7 @@ public:
 	void update();
 	void unload(); 
 
-	void addGameObject(GameObject& object);
+	void addGameObject(GameObject* object);
 
 private:
 	SceneProperties* properties;

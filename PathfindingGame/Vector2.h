@@ -3,40 +3,39 @@
 
 namespace mlib
 {
-	struct M_Vector2
+	struct Vector2
 	{
 		float x, y;
 
-		M_Vector2(float x, float y);
-		float dot(M_Vector2* v);
-		static float dot(M_Vector2* a, M_Vector2* b);
-		void rotate(float angle);
+		Vector2(float x = 0, float y = 0);
 
-		M_Vector2 rotated(float angle);
+		float dot(Vector2& v);
+		static float dot(Vector2& a, Vector2& b);
+		
+		void rotate(float angle);
+		Vector2 rotated(float angle);
 
 		float magnitude();
-
 		float magnitudeSquared();
 
 		void normalize();
+		Vector2 normalised();
 
-		M_Vector2 normalised();
+		Vector2 perpendicular();
 
-		M_Vector2 perpendicular();
+		static float getAngle(Vector2& a, Vector2& b);
+		float getAngle(Vector2& v);
 
-		static float getAngle(M_Vector2& a, M_Vector2& b);
+		Vector2 lerp(Vector2& a, Vector2& b, float t);
 
-		float getAngle(M_Vector2& v);
+		Vector2 operator+ (Vector2 const& v);
+		Vector2 operator- (Vector2 const& v);
+		Vector2 operator* (Vector2 const& v);
+		Vector2 operator* (float f);
+		Vector2 operator/ (float f);
+		Vector2 operator/ (Vector2 const& v);
 
-		M_Vector2 lerp(M_Vector2& a, M_Vector2& b, float t);
-
-		M_Vector2 operator+ (M_Vector2 const& v);
-		M_Vector2 operator- (M_Vector2 const& v);
-		M_Vector2 operator* (M_Vector2 const& v);
-		M_Vector2 operator* (float f);
-		M_Vector2 operator/ (float f);
-		M_Vector2 operator/ (M_Vector2 const& v);
-
+		operator RLVector2();
 	};
 
 }

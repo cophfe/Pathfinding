@@ -3,94 +3,126 @@
 namespace mlib
 {
 
-	M_Vector2::M_Vector2(float x, float y)
+	Vector2::Vector2(float x, float y)
 	{
 		this->x = x;
 		this->y = y;
 	}
 
-	float M_Vector2::dot(M_Vector2* v)
+	float Vector2::dot(Vector2& v)
 	{
-		return x * v->x + y * v->y;
+		return x * v.x + y * v.y;
 	}
 
-	float M_Vector2::dot(M_Vector2* a, M_Vector2* b)
+	float Vector2::dot(Vector2& a, Vector2& b)
 	{
-		return a->x * b->x + a->y * b->y;
+		return a.x * b.x + a.y * b.y;
 	}
 
-	void M_Vector2::rotate(float angle)
+	void Vector2::rotate(float angle)
 	{
-
+		float s = sinf(angle);
+		float c = cosf(angle);
+		float prevX = x;
+		x = x * c - y * s;
+		y = prevX * s + y * c;
+		
 	}
 
-	M_Vector2 M_Vector2::rotated(float angle)
+	Vector2 Vector2::rotated(float angle)
 	{
-
+		float s = sinf(angle);
+		float c = cosf(angle);
+		return Vector2(x * c - y * s, x * s + y * c);
 	}
 
-	float M_Vector2::magnitude()
+	float Vector2::magnitude()
 	{
-
+		return sqrtf(x * x + y * y);
 	}
 
-	float M_Vector2::magnitudeSquared()
+	float Vector2::magnitudeSquared()
 	{
-
-	}
-
-	void M_Vector2::normalize()
-	{
-
-	}
-
-	M_Vector2 M_Vector2::normalised()
-	{
-
-	}
-
-	M_Vector2 M_Vector2::perpendicular()
-	{
+		return x * x + y * y;
 
 	}
 
-	float M_Vector2::getAngle(M_Vector2& a, M_Vector2& b)
+	void Vector2::normalize()
 	{
-
+		float mag = magnitude();
+		x = x / mag;
+		y = y / mag;
 	}
 
-	float M_Vector2::getAngle(M_Vector2& v)
+	Vector2 Vector2::normalised()
 	{
+		float mag = magnitude();
 
-	}
-
-	M_Vector2 M_Vector2::lerp(M_Vector2& a, M_Vector2& b, float t)
-	{
-		return M_Vector2(mlib::lerp(a.x, b.x, t), mlib::lerp(a.y, b.y, t));
+		return Vector2(x / mag, y / mag);
 	}
 
-	M_Vector2 M_Vector2::operator+ (M_Vector2 const& v)
+	Vector2 Vector2::perpendicular()
 	{
-		return M_Vector2(x + v.x, y + v.y);
+		return Vector2(-y, x);
 	}
-	M_Vector2 M_Vector2::operator- (M_Vector2 const& v)
+
+	float Vector2::getAngle(Vector2& a, Vector2& b)
 	{
-		return M_Vector2(x - v.x, y - v.y);
+		Vector2 norm = a.normalised();
+
+		Vector2 rightAngle = norm.perpendicular();
+		float aDot = norm.dot(b);
+		float pDot = rightAngle.dot(b);
+		float angle = acosf(aDot);
+		if (pDot > 0)
+			angle *= -1;
+		return angle;
 	}
-	M_Vector2 M_Vector2::operator* (M_Vector2 const& v)
+
+	float Vector2::getAngle(Vector2& v)
 	{
-		return M_Vector2(x * v.x, y * v.y);
+		Vector2 norm = normalised();
+
+		Vector2 rightAngle = norm.perpendicular();
+		float aDot = norm.dot(v);
+		float pDot = rightAngle.dot(v);
+		float angle = acosf(aDot);
+		if (pDot > 0)
+			angle *= -1;
+		return angle;
 	}
-	M_Vector2 M_Vector2::operator* (float f)
+
+	Vector2 Vector2::lerp(Vector2& a, Vector2& b, float t)
 	{
-		return M_Vector2(x * f, y * f);
+		return Vector2(mlib::lerp(a.x, b.x, t), mlib::lerp(a.y, b.y, t));
 	}
-	M_Vector2 M_Vector2::operator/ (float f)
+
+	Vector2 Vector2::operator+ (Vector2 const& v)
 	{
-		return M_Vector2(x / f, y / f);
+		return Vector2(x + v.x, y + v.y);
 	}
-	M_Vector2 M_Vector2::operator/ (M_Vector2 const& v)
+	Vector2 Vector2::operator- (Vector2 const& v)
 	{
-		return M_Vector2(x / v.x, y / v.y);
+		return Vector2(x - v.x, y - v.y);
 	}
+	Vector2 Vector2::operator* (Vector2 const& v)
+	{
+		return Vector2(x * v.x, y * v.y);
+	}
+	Vector2 Vector2::operator* (float f)
+	{
+		return Vector2(x * f, y * f);
+	}
+	Vector2 Vector2::operator/ (float f)
+	{
+		return Vector2(x / f, y / f);
+	}
+	Vector2 Vector2::operator/ (Vector2 const& v)
+	{
+		return Vector2(x / v.x, y / v.y);
+	}
+    Vector2::operator RLVector2()
+    {
+		return RLVector2{ x,y };
+    }
 }

@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 
 	// Initialization
 	//--------------------------------------------------------------------------------------
-	Game game;
+	Game& game = Game::getInstance();
 	
 	//The game can be initiated with a GameProperties struct with game info (it just feels cleaner than a long list of values being passed in)
 	//it will use default values if this is not passed in
