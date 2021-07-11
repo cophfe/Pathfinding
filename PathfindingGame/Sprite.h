@@ -13,26 +13,26 @@ struct TextureComplex
 class Sprite
 {
 public:
-	enum Layer
-	{
-		BACKGROUND,
-		MIDGROUND,
-		FOREGROUND
-	};
-
 	Sprite();
 	Sprite(TextureComplex* textureComplex, GameObject* attached);
 
 	virtual void Draw();
-	inline void flip() { flipped = !flipped; }
-	inline void setFlipped(bool flippedValue) { flipped = flippedValue; }
+	void flip();
+	void setFlipped(bool flippedValue);
+	bool getFlipped() { return srcRect.width < 0; }
 	inline void setTint(Color tint) { this->tint = tint; }
 	inline Color& getTint() { return tint; }
+	
+	void UpdateSpriteRectangle();
 protected:
 	GameObject* gameObject;
 	TextureComplex* texture;
 	Color tint;
-	bool flipped;
+
+
+	Rectangle srcRect;
+	Rectangle destRect;
+	Vector2 pivot;
 };
 
 class AnimatedSprite : public Sprite

@@ -3,18 +3,21 @@
 #include "Transform.h"
 #include "Scene.h"
 #include "Component.h"
-#include "Game.h"
+#include "Sprite.h"
+#include <forward_list>
+#include <iostream>
+
+class Game;
 
 class GameObject
 {
 public:
-	//Constructors
+	//		Constructors
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	GameObject(std::string spriteName);
-	GameObject(std::string spriteName, Transform* parent, bool isDrawn, Vector2 position, float rotation, float scale);
+	GameObject(const char* spriteName);
+	GameObject(const char* spriteName, Transform* parent, bool isDrawn, Vector2 position, float rotation, float scale);
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-	//Copy and Move constructors and assigners (deleted for now)
+	//		Copy and Move constructors and assigners (deleted for now)
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//copy
 	GameObject(const GameObject&) = delete;
@@ -23,9 +26,7 @@ public:
 	GameObject(GameObject&&) = delete;
 	GameObject& operator=(GameObject&&) = delete;
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		
-	virtual void deleteSelf();
-	//Rendering
+	//		Rendering
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	void draw();
 	inline Sprite& getSprite() { return sprite; };
@@ -36,22 +37,32 @@ public:
 	void updateComponents();
 	void startComponents();
 	template<typename T>
-	T* addComponent();
+	Component* addComponent();
 	template<typename T>
-	T* getComponentOfType();
+	Component* getComponentOfType();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//		Transform Stuff
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	Transform& getTransform() { return transform; }
+	Transform* getTransform() { return transform; }
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//		Other
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	virtual void deleteSelf();
+	inline int getId() { return id; }
 
 protected:
+	//id system used to identify gameObjects
+	//using an id counter ensures each gameObject has a unique id
+	static int idCounter;
+	int id;
+
 	//constructors call this
-	//has default values defined atop header
-	virtual void init(std::string spriteName, Transform* parent, bool isDrawn, Vector2 position, float rotation, float scale);
+	virtual void init(const char* spriteName, Transform* parent, bool isDrawn, Vector2 position, float rotation, float scale);
 	
-	Transform transform;
+	Transform* transform;
 	Sprite sprite; 
-	std::vector<Component*> components;
+	//to avoid object slicing this will need to be a pointer list
+	std::forward_list<Component*> components;
 
 	//drawing
 	bool isDrawn;
@@ -61,11 +72,23 @@ protected:
 
 };
 
-/*	main versions of gameobject:
-	Gameobject
-		UIObject
-		PhysicsObject
-			CollisionObject
+template<typename T>
+inline Component* GameObject::addComponent() //this will be broken if the type given does not inherit from component
+{
+	T* component = new T();
+	components.push_front(component);
+	return components.front();
+}
+template<typename T>
+Component* GameObject::getComponentOfType()
+{
+	for (auto& component : components)
+	{
+		if (typeid(component) == typeid(T))
+		{
+			return component;
+		}
+	}
+}
 
-*/
 

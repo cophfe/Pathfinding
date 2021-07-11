@@ -3,6 +3,9 @@
 #include "NecessaryHeaders.h"
 #include "TextureManager.h"
 
+#include "PlayerComponent.h"
+#include <chrono>
+
 class Scene;
 class GameObject;
 class TransformObject;
@@ -15,7 +18,7 @@ struct GameProperties
 	int windowWidth = 800;
 	int windowHeight = 600;
 	int targetFPS = 0;
-	bool enableAntiAliasing = true;
+	bool enableAntiAliasing = false;
 };
 
 class Game
@@ -30,7 +33,7 @@ public:
 
 	void changeScene(int sceneIndex);
 
-	static Game& getInstance() { static Game instance; return instance; }
+	static Game& getInstance();
 
 	Game() {};
 	Game(Game const&) = delete;

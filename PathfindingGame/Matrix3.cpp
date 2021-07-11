@@ -90,8 +90,7 @@ namespace mlib
 
     Matrix3 Matrix3::getPositionMatrix(Vector2& position)
     {
-        return Matrix3(1,0,position.x,
-					   0,1,position.y);
+		return Matrix3(1, 0, 0, 0, 1, 0, position.x, position.y, 1);
     }
 
     Matrix3 Matrix3::getRotationMatrix2D(float angle)

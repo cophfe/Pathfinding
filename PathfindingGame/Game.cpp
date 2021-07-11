@@ -28,16 +28,23 @@ void Game::init(GameProperties* properties )
 	//scenes.reserve(sizeof(Scene) * amountOfScenes); 
 	scenes.push_back(new Scene());
 	scenes[0]->load();
-	scenes[0]->addGameObject(new GameObject("player"));
+	auto background = scenes[0]->addGameObject(new GameObject("player"));
+	background->getSprite().setTint({ 0xFF,0,0,0xCF });
+	background->getTransform()->setScale(5);
+	auto player = scenes[0]->addGameObject(new GameObject("player"));
+	auto bee = new GameObject("bee", player->getTransform(), true, Vector2{ 100, 300 }, 0.0f, 1.0f);
+	PlayerComponent* pC = (PlayerComponent*)player->addComponent<PlayerComponent>();
+	pC->init(200, 3, player);
+	scenes[0]->getCamera()->Target(player->getTransform());
 
 	InitPhysics();
 }
 
 void Game::gameLoop()
 {
-
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
+		std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 		//update physics
 		UpdatePhysics();
 
@@ -46,6 +53,8 @@ void Game::gameLoop()
         
         // Draw Scene
         scenes[currentScene]->draw();
+		std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+		deltaTime = std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count();
     }
 }
 
@@ -63,7 +72,7 @@ void Game::shutdown()
 
 float Game::getDeltaTime()
 {
-	return instance->deltaTime;
+	return getInstance().deltaTime;
 }
 
 TextureManager* Game::getTextureManager()
@@ -79,4 +88,10 @@ void Game::changeScene(int sceneIndex)
 	
 	//load in new scene info
 	//success?
+}
+
+Game& Game::getInstance()
+{
+	static Game instance = Game(); 
+	return instance;
 }

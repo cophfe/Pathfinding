@@ -10,13 +10,36 @@ Sprite::Sprite(TextureComplex* textureComplex, GameObject* attached)
 	gameObject = attached;
 	texture = textureComplex;
 	tint = { 0xFF,0xFF,0xFF,0xFF };
-	flipped = false;
+
+	srcRect = { 0, 0, (float)texture->textures->width, (float)texture->textures->height};
+	UpdateSpriteRectangle();
 }
 
 void Sprite::Draw()
 {
-	//will get all transformation out of the global transform
-	DrawTextureEx(*texture->textures, gameObject->transform.getGlobalPosition(), gameObject->transform.getGlobalRotation(), gameObject->transform.getGlobalScale(), tint);
+	//~~~~~~~~~~~~~~~~~~~	JUST COPY RECT STUFF FROM PREVIOUS BECAUSE TEXTUREEX SUCKS
+	//DrawTextureEx(*texture->textures, gameObject->transform.getGlobalPosition(), gameObject->transform.getGlobalRotation() * rad2Deg, gameObject->transform.getGlobalScale(), tint);
+	DrawTexturePro(*texture->textures, srcRect, destRect, pivot, gameObject->transform->getGlobalRotation() * rad2Deg, tint);
+}
+
+void Sprite::flip()
+{
+	srcRect.width *= -1;
+}
+
+void Sprite::setFlipped(bool flippedValue)
+{
+	srcRect.width = flippedValue ? -texture->textures->width : texture->textures->width;
+}
+
+//the destination rectangle needs to be updated every time position or scale changes
+void Sprite::UpdateSpriteRectangle()
+{
+	Vector2& pos = gameObject->transform->getGlobalPosition();
+	float scale = gameObject->transform->getGlobalScale();
+	destRect = Rectangle{ pos.x, pos.y, texture->textures->width * scale, texture->textures->height * scale };
+	pivot.x = destRect.width / 2;
+	pivot.y = destRect.height / 2;
 }
 
 AnimatedSprite::AnimatedSprite(TextureComplex* textureComplex, GameObject* attached)
@@ -24,7 +47,6 @@ AnimatedSprite::AnimatedSprite(TextureComplex* textureComplex, GameObject* attac
 	gameObject = attached;
 	texture = textureComplex;
 	tint = { 0xFF,0xFF,0xFF,0xFF };
-	flipped = false;
 	paused = false;
 	currentFrame = 0;
 	startFrame = 0;
@@ -40,6 +62,6 @@ void AnimatedSprite::Pause()
 {
 }
 
-void AnimatedSprite::Draw(TransformObject* attached)
+void AnimatedSprite::Draw(Transform* attached)
 {
 }

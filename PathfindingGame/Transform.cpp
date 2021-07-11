@@ -1,4 +1,5 @@
 #include "Transform.h"
+#include "GameObject.h"
 
 Transform::Transform()
 {
@@ -9,42 +10,55 @@ Transform::Transform(Vector2 position, float scale, float rotation, Transform* p
 	this->position = position;
 	this->scale = scale;
 	this->rotation = rotation;
-	this->parent = parent;
 	this->gameObject = attachedGameObject;
+	this->parent = nullptr;
 
-	updateTransforms();
+	if (parent != nullptr)
+		parent->addChild(this);
+
+	updateLocalTransform();
 }
 
 void Transform::addRotation(float rad)
 {
-	updateTransforms();
 	rotation += rad;
 	rotation = fmodf(rotation, 2 * pi);
+	updateLocalTransform();
+	
 }
 
-void Transform::addPosition(Vector2* pos)
+void Transform::addPosition(Vector2 pos)
 {
-	updateTransforms();
+	position = position + pos;
+	updateLocalTransform();
+	gameObject->getSprite().UpdateSpriteRectangle();
 }
 
 void Transform::addScale(float scale)
 {
-	updateTransforms();
+	this->scale += scale;
+	updateLocalTransform();
+	gameObject->getSprite().UpdateSpriteRectangle();
 }
 
 void Transform::setRotation(float rad)
 {
-	updateTransforms();
+	rotation = rad;
+	updateLocalTransform();
 }
 
-void Transform::setPosition(Vector2* pos)
+void Transform::setPosition(Vector2 pos)
 {
-	updateTransforms();
+	position = pos;
+	updateLocalTransform();
+	gameObject->getSprite().UpdateSpriteRectangle();
 }
 
 void Transform::setScale(float scale)
 {
-	updateTransforms();
+	this->scale = scale;
+	updateLocalTransform();
+	gameObject->getSprite().UpdateSpriteRectangle();
 }
 
 Vector2& Transform::getGlobalPosition()
@@ -72,37 +86,56 @@ Matrix3& Transform::getLocalTransform()
 	return localTransform;
 }
 
-void Transform::updateTransforms()
+void Transform::updateLocalTransform()
 {
-	localTransform = Matrix3::getPositionMatrix(position) * Matrix3::getRotationMatrix2D(rotation) * Matrix3::getScaleMatrix(scale);
-	if (parent = nullptr)
+	localTransform = Matrix3::getPositionMatrix(position) * Matrix3::getRotationMatrix2D(-rotation) * Matrix3::getScaleMatrix(scale);
+	updateGlobalTransform();
+}
+
+void Transform::updateGlobalTransform()
+{
+	//transforms are only updated when necessary, like if position changes
+
+	if (parent == nullptr)
 	{
 		globalTransform = localTransform;
+		globalPosition = position;
+		globalRotation = rotation;
+		globalScale = scale;
 	}
 	else
 	{
-		globalTransform = localTransform * parent->getGlobalTransform();
+		globalTransform = parent->getGlobalTransform() * localTransform;
+		globalTransform.getAllTransformations(&globalPosition, &globalScale, &globalRotation);
 	}
 
 	for (auto& child : children)
 	{
-		child->updateTransforms();
+		child->updateGlobalTransform();
+		child->gameObject->getSprite().UpdateSpriteRectangle();
 	}
 }
 
 void Transform::addChild(Transform* child)
 {
+	children.push_front(child);
+	child->setParent(this);
 }
 
 void Transform::setParent(Transform* parent)
 {
+	if (this->parent != nullptr)
+		this->parent->removeChild(this);
+	this->parent = parent;
 }
 
 void Transform::removeChild(Transform* child)
 {
+	child->parent = nullptr;
+	children.remove(child);
 }
 
 GameObject* Transform::getGameObject()
 {
-	return nullptr;
+	return gameObject;
 }

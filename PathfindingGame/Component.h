@@ -6,12 +6,13 @@ class GameObject;
 class Component
 {
 public:
+	static Component* create();
 	virtual void init(GameObject* connected);
-	void start();
-	void update();
-	void onDisable();
-	void onEnable();
-	void unload();
+	virtual void start();
+	virtual void update();
+	virtual void onDisable();
+	virtual void onEnable();
+	virtual void unload();
 
 	void disableComponent();
 	void enableComponent();
@@ -22,6 +23,5 @@ protected:
 	GameObject* gameObject;
 	Transform* transform;
 	bool enabled;
-
 };
 

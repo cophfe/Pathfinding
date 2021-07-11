@@ -3,6 +3,8 @@
 
 class GameObject;
 #include "Pathfinder.h"
+#include "SmoothCamera.h"
+class Transform;
 
 struct SceneProperties
 {
@@ -13,7 +15,7 @@ struct SceneProperties
 enum SORTING
 {
 	BACKGROUND,
-	CENTRE,
+	MIDGROUND,
 	FOREGROUND,
 	COUNT
 };
@@ -26,7 +28,9 @@ public:
 	void update();
 	void unload(); 
 
-	void addGameObject(GameObject* object);
+	inline SmoothCamera* getCamera() { return camera; }
+	void setCameraTarget(Transform* transform);
+	GameObject* addGameObject(GameObject* object, SORTING layer = SORTING::MIDGROUND);
 
 private:
 	SceneProperties* properties;
@@ -35,7 +39,7 @@ private:
 	//to keep things simple there is a fixed amount of sorting layers: 3
 	std::vector<GameObject*> sortingLayers[SORTING::COUNT];
 	//camera for rendering obviously
-	Camera2D* camera; //should probably have a custom class wrapper for cleaner movement
+	SmoothCamera* camera;
 
 	Pathfinder* pathfinder;
 	Image image;

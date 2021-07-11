@@ -5,25 +5,26 @@ void Component::init(GameObject* connected)
 {
 	gameObject = connected;
 	transform = gameObject->getTransform();
+	enabled = true;
 }
 
-void Component::Start()
+void Component::start()
 {
 }
 
-void Component::Update()
+void Component::update()
 {
 }
 
-void Component::OnDisable()
+void Component::onDisable()
 {
 }
 
-void Component::OnEnable()
+void Component::onEnable()
 {
 }
 
-void Component::Unload()
+void Component::unload()
 {
 }
 

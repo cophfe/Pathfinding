@@ -166,6 +166,7 @@
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
     <ClCompile Include="PlayerComponent.cpp" />
+    <ClCompile Include="SmoothCamera.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Vector2.cpp">
       <DeploymentContent>false</DeploymentContent>
@@ -190,6 +191,7 @@
     <ClInclude Include="Pathfinder.h" />
     <ClInclude Include="PlayerComponent.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SmoothCamera.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Transform.h" />
