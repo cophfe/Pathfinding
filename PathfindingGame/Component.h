@@ -6,7 +6,6 @@ class GameObject;
 class Component
 {
 public:
-	static Component* create();
 	virtual void init(GameObject* connected);
 	virtual void start();
 	virtual void update();

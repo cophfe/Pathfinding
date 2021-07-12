@@ -15,7 +15,8 @@ public:
 	//		Constructors
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	GameObject(const char* spriteName);
-	GameObject(const char* spriteName, Transform* parent, bool isDrawn, Vector2 position, float rotation, float scale);
+	GameObject(const char* spriteName, GameObject* parent, bool isDrawn = true, Vector2 position = { 0,0 }, float rotation = 0, float scale = 1);
+	~GameObject();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//		Copy and Move constructors and assigners (deleted for now)
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -57,7 +58,7 @@ protected:
 	int id;
 
 	//constructors call this
-	virtual void init(const char* spriteName, Transform* parent, bool isDrawn, Vector2 position, float rotation, float scale);
+	virtual void init(const char* spriteName, GameObject* parent, bool isDrawn, Vector2 position, float rotation, float scale);
 	
 	Transform* transform;
 	Sprite sprite; 

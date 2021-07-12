@@ -1,10 +1,5 @@
 #include "Transform.h"
 #include "GameObject.h"
-
-Transform::Transform()
-{
-}
-
 Transform::Transform(Vector2 position, float scale, float rotation, Transform* parent, GameObject* attachedGameObject)
 {
 	this->position = position;
@@ -13,6 +8,7 @@ Transform::Transform(Vector2 position, float scale, float rotation, Transform* p
 	this->gameObject = attachedGameObject;
 	this->parent = nullptr;
 
+	localTransform = { 7, 3, 2, 1, 0, 9, 12, 15,69 };
 	if (parent != nullptr)
 		parent->addChild(this);
 
@@ -24,7 +20,6 @@ void Transform::addRotation(float rad)
 	rotation += rad;
 	rotation = fmodf(rotation, 2 * pi);
 	updateLocalTransform();
-	
 }
 
 void Transform::addPosition(Vector2 pos)
@@ -88,7 +83,7 @@ Matrix3& Transform::getLocalTransform()
 
 void Transform::updateLocalTransform()
 {
-	localTransform = Matrix3::getPositionMatrix(position) * Matrix3::getRotationMatrix2D(-rotation) * Matrix3::getScaleMatrix(scale);
+	localTransform = Matrix3::getPositionMatrix(position) * Matrix3::getRotationMatrix2D(rotation) * Matrix3::getScaleMatrix(scale);
 	updateGlobalTransform();
 }
 

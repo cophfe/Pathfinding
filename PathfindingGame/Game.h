@@ -24,10 +24,11 @@ struct GameProperties
 class Game
 {
 public:
+
+
 	void init(GameProperties* properties);
 	void gameLoop();
 	void shutdown();
-
 	static float getDeltaTime();
 	TextureManager* getTextureManager();
 
@@ -35,10 +36,13 @@ public:
 
 	static Game& getInstance();
 
-	Game() {};
 	Game(Game const&) = delete;
 	void operator=(Game const&) = delete;
 private:
+#pragma warning(disable : 4244) //initialization warning can begone
+
+	Game() { memset(this, 0, sizeof(Game)); };
+
 	static Game* instance;
 
 	float deltaTime;

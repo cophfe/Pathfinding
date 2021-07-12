@@ -25,10 +25,9 @@ public:
 	
 	void UpdateSpriteRectangle();
 protected:
-	GameObject* gameObject;
+	Transform* transform;
 	TextureComplex* texture;
 	Color tint;
-
 
 	Rectangle srcRect;
 	Rectangle destRect;

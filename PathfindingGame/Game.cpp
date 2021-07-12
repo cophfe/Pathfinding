@@ -32,12 +32,10 @@ void Game::init(GameProperties* properties )
 	background->getSprite().setTint({ 0xFF,0,0,0xCF });
 	background->getTransform()->setScale(5);
 	auto player = scenes[0]->addGameObject(new GameObject("player"));
-	auto bee = new GameObject("bee", player->getTransform(), true, Vector2{ 100, 300 }, 0.0f, 1.0f);
+	auto bee = new GameObject("bee", player, true, Vector2{ 300, 0 }, 0.0f, 1.0f);
 	PlayerComponent* pC = (PlayerComponent*)player->addComponent<PlayerComponent>();
 	pC->init(200, 3, player);
 	scenes[0]->getCamera()->Target(player->getTransform());
-
-	InitPhysics();
 }
 
 void Game::gameLoop()
@@ -45,29 +43,28 @@ void Game::gameLoop()
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
 		std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-		//update physics
-		UpdatePhysics();
 
         // update Scene
         scenes[currentScene]->update();
         
         // Draw Scene
         scenes[currentScene]->draw();
+
 		std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-		deltaTime = std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count();
+		deltaTime = (float)std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count();
     }
 }
 
 void Game::shutdown()
 {
-	ClosePhysics();
-
     CloseWindow();
 
 	for (size_t i = 0; i < scenes.size(); i++)
 	{
 		delete scenes[i];
 	}
+
+	delete textureManager;
 }
 
 float Game::getDeltaTime()

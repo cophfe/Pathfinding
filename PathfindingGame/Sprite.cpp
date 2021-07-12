@@ -3,11 +3,17 @@
 
 Sprite::Sprite()
 {
+	destRect = { 0 };
+	srcRect = { 0 };
+	texture = nullptr;
+	transform = nullptr;
+	tint = { 0 };
+
 }
 
 Sprite::Sprite(TextureComplex* textureComplex, GameObject* attached)
 {
-	gameObject = attached;
+	transform = attached->getTransform();
 	texture = textureComplex;
 	tint = { 0xFF,0xFF,0xFF,0xFF };
 
@@ -18,8 +24,9 @@ Sprite::Sprite(TextureComplex* textureComplex, GameObject* attached)
 void Sprite::Draw()
 {
 	//~~~~~~~~~~~~~~~~~~~	JUST COPY RECT STUFF FROM PREVIOUS BECAUSE TEXTUREEX SUCKS
-	//DrawTextureEx(*texture->textures, gameObject->transform.getGlobalPosition(), gameObject->transform.getGlobalRotation() * rad2Deg, gameObject->transform.getGlobalScale(), tint);
-	DrawTexturePro(*texture->textures, srcRect, destRect, pivot, gameObject->transform->getGlobalRotation() * rad2Deg, tint);
+	//DrawTextureEx(*texture->textures, transform->getGlobalPosition(), transform->getGlobalRotation() * rad2Deg, transform->getGlobalScale(), tint);
+	DrawTexturePro(*texture->textures, srcRect, destRect, pivot, transform->getGlobalRotation() * rad2Deg, tint);
+	DrawRectangle(transform->getGlobalPosition().x, transform->getGlobalPosition().y, 15, 15, { 0,0x22,0,0xFF });
 }
 
 void Sprite::flip()
@@ -29,22 +36,26 @@ void Sprite::flip()
 
 void Sprite::setFlipped(bool flippedValue)
 {
-	srcRect.width = flippedValue ? -texture->textures->width : texture->textures->width;
+	srcRect.width = flippedValue ? (float)-texture->textures->width : (float)texture->textures->width;
 }
 
 //the destination rectangle needs to be updated every time position or scale changes
 void Sprite::UpdateSpriteRectangle()
 {
-	Vector2& pos = gameObject->transform->getGlobalPosition();
-	float scale = gameObject->transform->getGlobalScale();
+	Vector2& pos = transform->getGlobalPosition();
+	float scale = transform->getGlobalScale();
 	destRect = Rectangle{ pos.x, pos.y, texture->textures->width * scale, texture->textures->height * scale };
 	pivot.x = destRect.width / 2;
-	pivot.y = destRect.height / 2;
+	pivot.y = destRect.height/2;
 }
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//		ANIMATED SPRITE
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 AnimatedSprite::AnimatedSprite(TextureComplex* textureComplex, GameObject* attached)
 {
-	gameObject = attached;
+	transform = attached->getTransform();
 	texture = textureComplex;
 	tint = { 0xFF,0xFF,0xFF,0xFF };
 	paused = false;

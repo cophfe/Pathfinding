@@ -50,6 +50,8 @@ namespace mlib
 	void Vector2::normalize()
 	{
 		float mag = magnitude();
+		if (mag == 0.0f)
+			return;
 		x = x / mag;
 		y = y / mag;
 	}
@@ -57,7 +59,8 @@ namespace mlib
 	Vector2 Vector2::normalised()
 	{
 		float mag = magnitude();
-
+		if (mag == 0.0f)
+			return { 0 };
 		return Vector2(x / mag, y / mag);
 	}
 

@@ -262,7 +262,8 @@ extern "C" {                                    // Prevents name mangling of fun
 #include <time.h>                   // Required for: time(), clock_gettime()
 #if defined(_WIN32)
 	// Functions required to query time on Windows
-import WindowsModule;
+//import WindowsModule; IMPORT BROKEN YO
+//JUST USE STANDARD FUNCTIONS
 #endif
 #if defined(__linux__) || defined(__FreeBSD__)
 #if _POSIX_C_SOURCE < 199309L

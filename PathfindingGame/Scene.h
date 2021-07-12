@@ -12,7 +12,7 @@ struct SceneProperties
 	bool enablePhysics;
 };
 
-enum SORTING
+enum class SORTING
 {
 	BACKGROUND,
 	MIDGROUND,
@@ -28,6 +28,17 @@ public:
 	void update();
 	void unload(); 
 
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	Scene() = default;
+	//copy
+	Scene(const Scene&) = delete;
+	Scene& operator=(const Scene&) = delete;
+	//move
+	Scene(Scene&&) = delete;
+	Scene& operator=(Scene&&) = delete;
+	~Scene();
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 	inline SmoothCamera* getCamera() { return camera; }
 	void setCameraTarget(Transform* transform);
 	GameObject* addGameObject(GameObject* object, SORTING layer = SORTING::MIDGROUND);
@@ -37,11 +48,10 @@ private:
 	//UI is kept seperately for rendering
 	std::vector<GameObject*> UI;
 	//to keep things simple there is a fixed amount of sorting layers: 3
-	std::vector<GameObject*> sortingLayers[SORTING::COUNT];
+	std::vector<GameObject*> sortingLayers[(int)SORTING::COUNT];
 	//camera for rendering obviously
 	SmoothCamera* camera;
 
 	Pathfinder* pathfinder;
-	Image image;
 };
 

@@ -7,7 +7,6 @@ class GameObject;
 class Transform
 {
 public:
-	Transform();
 	Transform(Vector2 position, float scale, float rotation, Transform* parent, GameObject* attachedGameObject);
 
 	float getRotation() { return rotation; }

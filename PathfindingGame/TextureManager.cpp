@@ -10,6 +10,11 @@ TextureManager::TextureManager()
 {
 }
 
+TextureManager::~TextureManager()
+{
+	UnloadTextures();
+}
+
 void TextureManager::LoadTexturesFromFolder(std::string folder)
 {
 	//jesus christ this is an abomination
@@ -86,6 +91,9 @@ void TextureManager::UnloadTextures()
 		{
 			UnloadTexture(textureComplex.second.textures[i]);
 		}
-		delete[] textureComplex.second.textures;
+		if (textureComplex.second.textureNumber == 1)
+			delete textureComplex.second.textures;
+		else
+			delete[] textureComplex.second.textures;
 	}
 }

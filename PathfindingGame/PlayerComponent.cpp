@@ -43,6 +43,14 @@ void PlayerComponent::update()
 	{
 		transform->addRotation(rotationalSpeed * Game::getDeltaTime());
 	}
+	if (IsKeyPressed(KEY_UP))
+	{
+		transform->addScale(0.125f);
+	}
+	if (IsKeyPressed(KEY_DOWN))
+	{
+		transform->addScale(-0.125f);
+	}
 	if (IsKeyPressed(KEY_F))
 	{
 		gameObject->getSprite().flip();

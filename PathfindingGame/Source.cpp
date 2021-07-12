@@ -19,9 +19,9 @@
 *
 ********************************************************************************************/
 
-#define PHYSAC_IMPLEMENTATION
 #include "NecessaryHeaders.h"
 #include "Game.h"
+#include <filesystem>
 
 #define RAYGUI_IMPLEMENTATION
 #define RAYGUI_SUPPORT_ICONS
@@ -29,15 +29,16 @@
 
 int main(int argc, char* argv[])
 {
-	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	// Initialization
 	//--------------------------------------------------------------------------------------
 	Game& game = Game::getInstance();
-	
 	//The game can be initiated with a GameProperties struct with game info (it just feels cleaner than a long list of values being passed in)
 	//it will use default values if this is not passed in
 	GameProperties gP;
+	//sprite directory found using filesystem
+	auto sprDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path().parent_path().parent_path().string();
+	gP.spriteLocation = sprDirectory + "\\Images";
 	game.init(&gP);
 
 	game.gameLoop();

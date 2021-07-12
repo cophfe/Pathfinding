@@ -6,7 +6,7 @@ void Scene::load()
 {
 	//GameObject* gO = new GameObject("Player.png", nullptr, true, Vector2(0, 0), 30, 1);
 	//sortingLayers[SORTING::MIDGROUND].push_back(gO);
-	camera = new SmoothCamera({ 0,0 }, 0, 1, { 0 }, 10);
+	camera = new SmoothCamera({ 0,0 }, 0, 0.5f, { 0 }, 10);
 }
 
 void Scene::draw()
@@ -38,7 +38,7 @@ void Scene::draw()
 
 void Scene::update()
 {
-	for (int i = 0; i < SORTING::COUNT; i++)
+	for (int i = 0; i < (int)SORTING::COUNT; i++)
 	{
 		for (int j = 0; j < sortingLayers[i].size(); j++)
 		{
@@ -49,13 +49,20 @@ void Scene::update()
 
 void Scene::unload()
 {
-	for (int i = 0; i < SORTING::COUNT; i++)
+	for (int i = 0; i < (int)SORTING::COUNT; i++)
 	{
 		for (int j = 0; j < sortingLayers[i].size(); j++)
 		{
 			delete sortingLayers[i][j];
 		}
 	}
+
+	delete camera;
+}
+
+Scene::~Scene()
+{
+	unload();
 }
 
 void Scene::setCameraTarget(Transform* transform)
@@ -65,6 +72,6 @@ void Scene::setCameraTarget(Transform* transform)
 
 GameObject* Scene::addGameObject(GameObject* object, SORTING layer)
 {
-	sortingLayers[SORTING::MIDGROUND].push_back(object);
+	sortingLayers[(int)SORTING::MIDGROUND].push_back(object);
 	return object;
 }

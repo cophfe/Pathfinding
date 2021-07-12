@@ -20,7 +20,7 @@ public:
 	TextureManager(TextureManager&&) = delete;
 	TextureManager& operator=(TextureManager&&) = delete;
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+	~TextureManager();
 	
 	void LoadTexturesFromFolder(std::string folder);
 
