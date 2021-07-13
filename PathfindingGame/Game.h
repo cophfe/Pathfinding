@@ -14,7 +14,7 @@ class TransformObject;
 struct GameProperties
 {
 	std::string windowName = "Game";
-	std::string spriteLocation = "C:\\Users\\cphfe\\Desktop\\AIE\\AIForGames\\Pathfinding\\Images";
+	std::string spriteLocation;
 	int windowWidth = 800;
 	int windowHeight = 600;
 	int targetFPS = 0;

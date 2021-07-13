@@ -1,7 +1,10 @@
 #pragma once
 #include "NecessaryHeaders.h"
 
-class PhysicsDebugDraw : b2Draw
+#define LENGTH_SCALE 10
+#define THICKNESS 3
+
+class PhysicsDebugDraw : public b2Draw
 {
 public:
 	PhysicsDebugDraw();
@@ -18,28 +21,29 @@ public:
 	};*/
 
 	/// Draw a closed polygon provided in CCW order.
-	virtual void DrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color);
+	virtual void b2DebugDrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color);
 
 	/// Draw a solid closed polygon provided in CCW order.
-	virtual void DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color);
+	virtual void b2DebugDrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color);
 
 	/// Draw a circle.
-	virtual void DrawCircle(const b2Vec2& center, float radius, const b2Color& color);
+	virtual void b2DebugDrawCircle(const b2Vec2& center, float radius, const b2Color& color);
 
 	/// Draw a solid circle.
-	virtual void DrawSolidCircle(const b2Vec2& center, float radius, const b2Vec2& axis, const b2Color& color);
+	virtual void b2DebugDrawSolidCircle(const b2Vec2& center, float radius, const b2Vec2& axis, const b2Color& color);
 
 	/// Draw a line segment.
-	virtual void DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color);
+	virtual void b2DebugDrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color);
 
 	/// Draw a transform. Choose your own length scale.
 	/// @param xf a transform.
-	virtual void DrawTransform(const b2Transform& xf);
+	virtual void b2DebugDrawTransform(const b2Transform& xf);
 
 	/// Draw a point.
-	virtual void DrawPoint(const b2Vec2& p, float size, const b2Color& color);
+	virtual void b2DebugDrawPoint(const b2Vec2& p, float size, const b2Color& color);
 
 private:
-	float lengthScale;
+
+	Color convertColorToRaylib(const b2Color& color);
 };
 

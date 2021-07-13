@@ -32,7 +32,7 @@ void Game::init(GameProperties* properties )
 	auto player = new GameObject("player", scenes[0]);
 
 	PlayerComponent* pC = (PlayerComponent*)player->addComponent<PlayerComponent>();
-	pC->init(200, 3, player);
+	pC->init(500, 3, player);
 	scenes[0]->getCamera()->Target(player->getTransform());
 
 	new GameObject("bee", player, true, Vector2{ 500, 0 }, 0.0f, 1.0f);

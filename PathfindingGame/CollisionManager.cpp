@@ -1,4 +1,7 @@
 #include "CollisionManager.h"
+#include "Game.h"
+
+
 
 CollisionManager::CollisionManager() : world(b2World(b2Vec2(0,-10.0f)))
 {
@@ -20,26 +23,37 @@ CollisionManager::CollisionManager() : world(b2World(b2Vec2(0,-10.0f)))
 	fixtureDef.density = 1.0f;
 	fixtureDef.friction = 0.3f;
 	body->CreateFixture(&fixtureDef);
-
-#ifdef DEBUG
-	world.SetDebugDraw();
-#endif // DEBUG
-
+	
+#ifdef DRAW_DEBUG
+	debugDrawer = new PhysicsDebugDraw();
+	world.SetDebugDraw(debugDrawer);
+#endif // DRAW_DEBUG
 
 }
 
-void CollisionManager::update()
+CollisionManager::~CollisionManager()
 {
-	world.Step(timeStep, velocityIterations, positionIterations);
-	b2Vec2 position = body->GetPosition();
-	float angle = body->GetAngle();
-	std::cout << position.x << ' ' << position.y << ' ' << angle << '\n';
+#ifdef DRAW_DEBUG
+	delete debugDrawer;
+#endif // DRAW_DEBUG
+}
+
+void CollisionManager::update()
+{	
+	collisionTimer += Game::getDeltaTime();
+
+	while (collisionTimer >= timeStep)
+	{
+		world.Step(timeStep, velocityIterations, positionIterations);
+		collisionTimer = 0;
+
+		printf("X: %4.2f Y: %4.2f Rot: %4.2f\n", body->GetPosition().x, body->GetPosition().y, body->GetAngle());
+	}
 }
 
 void CollisionManager::debugDraw()
 {
-//	
-//	world.DebugDraw();
+	world.DebugDraw();
 }
 
 

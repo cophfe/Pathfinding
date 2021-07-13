@@ -6,7 +6,7 @@ void Scene::load()
 {
 	//GameObject* gO = new GameObject("Player.png", nullptr, true, Vector2(0, 0), 30, 1);
 	//sortingLayers[SORTING::MIDGROUND].push_back(gO);
-	camera = new SmoothCamera({ 0,0 }, 0, 0.5f, { 0 }, 10);
+	camera = new SmoothCamera({ 0,0 }, 0, 1 , { 0 }, 10);
 
 	pathfinder = new Pathfinder();
 
@@ -29,9 +29,9 @@ void Scene::draw()
 		}
 	}
 
-#ifdef DEBUG
+#ifdef DRAW_DEBUG
 	collisionManager->debugDraw();
-#endif // DEBUG
+#endif // DRAW_DEBUG
 
 	camera->EndCamera();
     
@@ -53,6 +53,8 @@ void Scene::update()
 			sortingLayers[i][j]->updateComponents();
 		}
 	}
+
+	collisionManager->update();
 }
 
 void Scene::unload()
