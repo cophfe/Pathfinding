@@ -1,5 +1,6 @@
 #include "GameObject.h"
 #include "Game.h"
+#include "Scene.h"
 
 int GameObject::idCounter = 0;
 
@@ -18,9 +19,10 @@ void GameObject::init(const char* spriteName, GameObject* parent, bool isDrawn, 
 	++idCounter;
 }
 
-GameObject::GameObject(const char* spriteName)
+GameObject::GameObject(const char* spriteName, Scene* parent, bool isDrawn, Vector2 position, float rotation, float scale, SORTING layer)
 {
-	init(spriteName, nullptr, true, { 0 }, 0, 1);
+	init(spriteName, nullptr, true, position, rotation, scale);
+	parent->addGameObject(this, layer);
 }
 
 GameObject::GameObject(const char* spriteName, GameObject* parent, bool isDrawn, Vector2 position, float rotation, float scale)

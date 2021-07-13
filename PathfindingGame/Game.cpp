@@ -25,17 +25,21 @@ void Game::init(GameProperties* properties )
 		the plan is to create scenes from json files or something, sorta like a midpoint between a level editor and typing out scenes in code 
 		for right now it will just create one scene with a player object in it
 	*/
-	//scenes.reserve(sizeof(Scene) * amountOfScenes); 
 	scenes.push_back(new Scene());
 	scenes[0]->load();
-	auto background = scenes[0]->addGameObject(new GameObject("player"));
+	auto background = new GameObject("player", scenes[0], true, { 0 }, { 0 }, 5.0f);
 	background->getSprite().setTint({ 0xFF,0,0,0xCF });
-	background->getTransform()->setScale(5);
-	auto player = scenes[0]->addGameObject(new GameObject("player"));
-	auto bee = new GameObject("bee", player, true, Vector2{ 300, 0 }, 0.0f, 1.0f);
+	auto player = new GameObject("player", scenes[0]);
+
 	PlayerComponent* pC = (PlayerComponent*)player->addComponent<PlayerComponent>();
 	pC->init(200, 3, player);
 	scenes[0]->getCamera()->Target(player->getTransform());
+
+	new GameObject("bee", player, true, Vector2{ 500, 0 }, 0.0f, 1.0f);
+	new GameObject("death", scenes[0], true, Vector2{ 1000, 0 }, 0.0f, 1.0f);
+	new GameObject("harold", scenes[0], true, Vector2{ 1500, 0 }, 0.0f, 1.0f);
+	new GameObject("happy", scenes[0], true, Vector2{ 2000, 0 }, 0.0f, 1.0f);
+	new GameObject("anime", scenes[0], true, Vector2{ 2500, 0 }, 0.0f, 1.0f);
 }
 
 void Game::gameLoop()

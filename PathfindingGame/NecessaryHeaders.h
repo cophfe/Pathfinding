@@ -1,6 +1,6 @@
 #pragma once
 //third party
-#include "raylib.h"
+#include "raylib/raylib.h"
 #include "box2d/box2d.h"
 //standard
 #include <vector>

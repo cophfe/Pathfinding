@@ -106,7 +106,7 @@ namespace mlib
 	{
 		return Matrix3(scale, 0, 0,
 			0, scale, 0,
-			0, 0, scale);
+			0, 0, 1);
 	}
 
 	Matrix3 Matrix3::operator* (Matrix3 const& mat)

@@ -4,6 +4,7 @@
 class GameObject;
 #include "Pathfinder.h"
 #include "SmoothCamera.h"
+#include "CollisionManager.h"
 class Transform;
 
 struct SceneProperties
@@ -53,5 +54,7 @@ private:
 	SmoothCamera* camera;
 
 	Pathfinder* pathfinder;
+
+	CollisionManager* collisionManager;
 };
 

@@ -23,10 +23,7 @@ Sprite::Sprite(TextureComplex* textureComplex, GameObject* attached)
 
 void Sprite::Draw()
 {
-	//~~~~~~~~~~~~~~~~~~~	JUST COPY RECT STUFF FROM PREVIOUS BECAUSE TEXTUREEX SUCKS
-	//DrawTextureEx(*texture->textures, transform->getGlobalPosition(), transform->getGlobalRotation() * rad2Deg, transform->getGlobalScale(), tint);
 	DrawTexturePro(*texture->textures, srcRect, destRect, pivot, transform->getGlobalRotation() * rad2Deg, tint);
-	DrawRectangle(transform->getGlobalPosition().x, transform->getGlobalPosition().y, 15, 15, { 0,0x22,0,0xFF });
 }
 
 void Sprite::flip()
@@ -46,7 +43,7 @@ void Sprite::UpdateSpriteRectangle()
 	float scale = transform->getGlobalScale();
 	destRect = Rectangle{ pos.x, pos.y, texture->textures->width * scale, texture->textures->height * scale };
 	pivot.x = destRect.width / 2;
-	pivot.y = destRect.height/2;
+	pivot.y = destRect.height / 2;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -16,7 +16,6 @@ SmoothCamera::SmoothCamera(Vector2 initialPosition, float initialRotation, float
 
 void SmoothCamera::UpdateCamera()
 {
-	return;
 	if (on == false || target == nullptr)
 		return;
 

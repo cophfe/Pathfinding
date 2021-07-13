@@ -8,13 +8,15 @@
 #include <iostream>
 
 class Game;
+class Scene;
 
 class GameObject
 {
 public:
 	//		Constructors
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	GameObject(const char* spriteName);
+	//you cannot initialize a gameobject with nullptr parent, which is a good thing because doing so would just cause bugs (it doesn't get rendered in that case)
+	GameObject(const char* spriteName, Scene* parent, bool isDrawn = true, Vector2 position = { 0,0 }, float rotation = 0, float scale = 1, SORTING layer = SORTING::MIDGROUND);
 	GameObject(const char* spriteName, GameObject* parent, bool isDrawn = true, Vector2 position = { 0,0 }, float rotation = 0, float scale = 1);
 	~GameObject();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

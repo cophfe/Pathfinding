@@ -18,13 +18,12 @@ struct GameProperties
 	int windowWidth = 800;
 	int windowHeight = 600;
 	int targetFPS = 0;
-	bool enableAntiAliasing = false;
+	bool enableAntiAliasing = true;
 };
 
 class Game
 {
 public:
-
 
 	void init(GameProperties* properties);
 	void gameLoop();
