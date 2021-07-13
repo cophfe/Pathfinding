@@ -1,8 +1,6 @@
 #include "CollisionManager.h"
 #include "Game.h"
 
-
-
 CollisionManager::CollisionManager() : world(b2World(b2Vec2(0,-10.0f)))
 {
 	b2BodyDef groundBodyDef;

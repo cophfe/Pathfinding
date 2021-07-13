@@ -24,6 +24,8 @@ public:
 
 	void debugDraw();
 
+	inline b2World* getWorld() { return &world; }
+
 private:
 	b2World world;
 	b2Body* body;
