@@ -11,6 +11,8 @@ public:
 	void EndCamera();
 	void Target(Transform* transform);
 
+	Vector2 GetCameraMousePosition();
+
 	void setOffset(Vector2 offset);
 	Vector2 getOffset() { return offset; }
 	float smoothMultiplier;

@@ -18,7 +18,7 @@ public:
 	void addScale(float scale);
 
 	void setRotation(float rad);
-	void setPosition(Vector2 pos);
+	void setTransform(Vector2 pos);
 	void setScale(float scale);
 
 	Vector2& getGlobalPosition();

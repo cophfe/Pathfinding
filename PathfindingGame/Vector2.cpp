@@ -124,8 +124,12 @@ namespace mlib
 	{
 		return Vector2(x / v.x, y / v.y);
 	}
-    Vector2::operator RLVector2()
-    {
+	Vector2::operator RLVector2()
+	{
 		return RLVector2{ x,y };
-    }
+	}
+	Vector2::operator b2Vec2()
+	{
+		return b2Vec2{ x,y };
+	}
 }

@@ -44,6 +44,12 @@ void SmoothCamera::Target(Transform* transform)
 	target = transform;
 }
 
+Vector2 SmoothCamera::GetCameraMousePosition()
+{
+	RLVector2 mousePos = GetMousePosition();
+	return { (mousePos.x - camera.offset.x) / camera.zoom + camera.target.x, (mousePos.y - camera.offset.y) / camera.zoom + camera.target.y };
+}
+
 void SmoothCamera::setOffset(Vector2 offset)
 {
 	this->offset = Vector2(GetScreenWidth() / 2 + offset.x, GetScreenHeight() / 2 + offset.y);

@@ -36,6 +36,8 @@ namespace mlib
 		Vector2 operator/ (Vector2 const& v);
 
 		operator RLVector2();
+		
+		operator b2Vec2();
 	};
 
 }

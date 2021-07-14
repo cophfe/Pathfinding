@@ -1,7 +1,7 @@
 #include "CollisionManager.h"
 #include "Game.h"
 
-CollisionManager::CollisionManager() : world(b2World(b2Vec2(0,-10.0f)))
+CollisionManager::CollisionManager() : world(b2World(b2Vec2(0,0)))
 {
 	b2BodyDef groundBodyDef;
 	groundBodyDef.position.Set(0.0f, -10.0f);

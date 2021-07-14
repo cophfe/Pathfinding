@@ -6,7 +6,7 @@ class GameObject;
 class Component
 {
 public:
-	virtual ~Component() = 0;
+	virtual ~Component() = default;
 	virtual void init(GameObject* connected);
 	virtual void start();
 	virtual void update();

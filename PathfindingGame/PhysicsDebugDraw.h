@@ -1,7 +1,7 @@
 #pragma once
 #include "NecessaryHeaders.h"
 
-#define LENGTH_SCALE 10
+#define LENGTH_SCALE b2_lengthUnitsPerMeter * 100
 #define THICKNESS 3
 
 class PhysicsDebugDraw : public b2Draw

@@ -42,7 +42,7 @@ void Transform::setRotation(float rad)
 	updateLocalTransform();
 }
 
-void Transform::setPosition(Vector2 pos)
+void Transform::setTransform(Vector2 pos)
 {
 	position = pos;
 	updateLocalTransform();
