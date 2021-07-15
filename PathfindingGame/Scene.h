@@ -28,7 +28,9 @@ public:
 	void draw();
 	void update();
 	void unload(); 
+	void start();
 
+	CollisionManager* getCollisionManager();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Scene() = default;
 	//copy
@@ -52,6 +54,8 @@ private:
 	std::vector<GameObject*> sortingLayers[(int)SORTING::COUNT];
 	//camera for rendering obviously
 	SmoothCamera* camera;
+	
+	float collisionTimer = 0;
 
 	Pathfinder* pathfinder;
 

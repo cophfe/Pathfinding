@@ -3,7 +3,7 @@
 
 static bool checkExtension(const std::filesystem::path& path)
 {	
-	return (std::filesystem::is_regular_file(path) && (path.extension().string() == std::string(".png")));
+	return (std::filesystem::is_regular_file(path) && (path.extension().string() == std::string(".png") || path.extension().string() == std::string(".gif")));
 }
 
 TextureManager::TextureManager()
@@ -28,7 +28,12 @@ void TextureManager::LoadTexturesFromFolder(std::string folder)
 			//subdirectories are put into their own textureComplex (so they can be converted into animated sprites)
 			if (std::filesystem::is_directory(entry.status()))
 			{
-				int count = std::count_if(std::filesystem::directory_iterator(path), std::filesystem::directory_iterator{}, checkExtension);
+				int count = 0; //std::count_if(std::filesystem::directory_iterator(path), std::filesystem::directory_iterator{}, );
+				//count all in directory
+				for (auto& p : std::filesystem::directory_iterator(path))
+					if (checkExtension(p))
+						++count;
+
 				if (count > 0)
 				{
 					//animated sprite name is based on the 
@@ -36,7 +41,7 @@ void TextureManager::LoadTexturesFromFolder(std::string folder)
 					animatedTexture.textures = new Texture2D[count];
 					animatedTexture.textureNumber = count;
 					int currentCount = 0;
-					for (auto& subEntry : std::filesystem::directory_iterator(folder))
+					for (auto& subEntry : std::filesystem::directory_iterator(path))
 					{
 						auto& sPath = subEntry.path();
 						if (checkExtension(sPath))
@@ -44,9 +49,9 @@ void TextureManager::LoadTexturesFromFolder(std::string folder)
 							//each texture is loaded in here
 							if (currentCount >= count)
 								break;
-							*(animatedTexture.textures) = LoadTexture(sPath.string().c_str());
+							animatedTexture.textures[currentCount] = LoadTexture(sPath.string().c_str());
 #pragma warning(suppress:6385) // this warning sucks and is always wrong
-							if (animatedTexture.textures[count].id == 0)
+							if (animatedTexture.textures[currentCount].id == 0)
 								continue; //error causer here, probably
 							++currentCount;
 						}
@@ -74,13 +79,13 @@ void TextureManager::LoadTexturesFromFolder(std::string folder)
 	}
 }
 
-Sprite TextureManager::GenSprite(std::string name, GameObject* gameObject)
+Sprite* TextureManager::GenSprite(std::string name, GameObject* gameObject)
 {
 	auto& textureComplex = textureMap[name];
 	if (textureComplex.textureNumber == 1)
-		return Sprite(&textureComplex, gameObject);
+		return new Sprite(&textureComplex, gameObject);
 	else
-		return AnimatedSprite(&textureComplex, gameObject);
+		return new AnimatedSprite(&textureComplex, gameObject);
 }
 
 void TextureManager::UnloadTextures()

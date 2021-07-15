@@ -1,5 +1,6 @@
 #include "Sprite.h"
 #include "GameObject.h"
+#include "Game.h"
 
 Sprite::Sprite()
 {
@@ -59,17 +60,33 @@ AnimatedSprite::AnimatedSprite(TextureComplex* textureComplex, GameObject* attac
 	currentFrame = 0;
 	startFrame = 0;
 	endFrame = texture->textureNumber - 1;
-	msPerFrame = 30;
+	secondsPerFrame = 0.03333f;
+
+	srcRect = { 0, 0, (float)texture->textures->width, (float)texture->textures->height };
+	UpdateSpriteRectangle();
 }
 
 void AnimatedSprite::Play()
 {
+	paused = false;
+	frameTimer = 0;
 }
 
 void AnimatedSprite::Pause()
 {
+	paused = true;
 }
 
-void AnimatedSprite::Draw(Transform* attached)
+void AnimatedSprite::Draw()
 {
+	frameTimer += Game::getDeltaTime();
+
+	while (!paused && frameTimer > secondsPerFrame)
+	{
+		currentFrame++;
+		if (currentFrame > endFrame)
+			currentFrame = startFrame;
+		frameTimer -= secondsPerFrame;
+	}
+	DrawTexturePro(texture->textures[currentFrame], srcRect, destRect, pivot, transform->getGlobalRotation() * rad2Deg, tint);
 }

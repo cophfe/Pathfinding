@@ -6,14 +6,17 @@ class GameObject;
 class Component
 {
 public:
+	Component();
 	virtual ~Component() = default;
-	virtual void init(GameObject* connected);
+	virtual void init();
 	virtual void start();
 	virtual void update();
+	virtual void fixedUpdate();
 	virtual void onDisable();
 	virtual void onEnable();
 	virtual void unload();
 
+	void setGameObject(GameObject* connected);
 
 	void disableComponent();
 	void enableComponent();

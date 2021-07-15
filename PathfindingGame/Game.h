@@ -3,6 +3,7 @@
 #include "NecessaryHeaders.h"
 #include "TextureManager.h"
 
+#include "RigidBodyComponent.h"
 #include "PlayerComponent.h"
 #include <chrono>
 

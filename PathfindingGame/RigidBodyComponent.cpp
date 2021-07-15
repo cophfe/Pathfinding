@@ -3,10 +3,9 @@
 #include "CollisionManager.h"
 #include "GameObject.h"
 
-void RigidBodyComponent::init(GameObject* connected, CollisionManager* collisionManager, b2BodyDef& bodyDef, b2FixtureDef& fixtureDef)
+void RigidBodyComponent::init(CollisionManager* collisionManager, b2BodyDef& bodyDef, b2FixtureDef& fixtureDef, bool genShapeFromGameobject)
 {
 	//connect pointers
-	transform = connected->getTransform();
 	world = collisionManager->getWorld();
 	
 	//Creating body
@@ -19,15 +18,23 @@ void RigidBodyComponent::init(GameObject* connected, CollisionManager* collision
 	body = world->CreateBody(&bodyDef);
 	//body still needs a fixture (holds shape and a lot of important things)
 	//first define fixture settings
+	b2PolygonShape shape;
+	if (genShapeFromGameobject || fixtureDef.shape == nullptr)
+	{
+		Rectangle* destRect = gameObject->getSprite()->getDestinationRectangle();
+		shape.SetAsBox(destRect->width / 200, destRect->height / 200);
+		fixtureDef.shape = &shape;
+	}
+	body->CreateFixture(&fixtureDef);
 }
 
 //as long as this is always called before sprites it will render fine
 //anything using position should access it through rigidBodyComponent
-void RigidBodyComponent::update()
+void RigidBodyComponent::fixedUpdate()
 {
 	b2Vec2 pos = body->GetPosition();
-	transform->setRotation(body->GetAngle());
-	transform->setTransform({ pos.x * RENDER_SCALE, pos.y * RENDER_SCALE });
+	transform->setRotation(-body->GetAngle());
+	transform->setTransform({ pos.x * PHYSICS_UNIT_SCALE, pos.y * -PHYSICS_UNIT_SCALE });
 }
 
 void RigidBodyComponent::onDisable()
@@ -47,6 +54,11 @@ void RigidBodyComponent::unload()
 		world->DestroyBody(body);
 		body = nullptr;
 	}
+}
+
+void RigidBodyComponent::applyTorque(float torque)
+{
+	body->ApplyTorque(torque, true);
 }
 
 void RigidBodyComponent::applyForce(Vector2 force)
@@ -91,9 +103,10 @@ void RigidBodyComponent::setTransform(float x, float y, float angle)
 
 void RigidBodyComponent::addImpulse(Vector2 impulse, Vector2 position)
 {
+	body->ApplyLinearImpulse(impulse, position, true);
 }
 
-b2BodyDef RigidBodyComponent::genBodyDef(b2BodyType type, Vector2 velocity, float angularVelocity, float angularDamping, float linearDamping, bool fixedRotation)
+b2BodyDef RigidBodyComponent::genBodyDef(b2BodyType type, bool fixedRotation, Vector2 velocity, float angularVelocity, float angularDamping, float linearDamping)
 {
 	b2BodyDef def;
 	def.linearVelocity = velocity;
@@ -105,7 +118,7 @@ b2BodyDef RigidBodyComponent::genBodyDef(b2BodyType type, Vector2 velocity, floa
 	return def;
 }
 
-b2FixtureDef RigidBodyComponent::genFixtureDef(b2Shape* shape, uint16 collisionCategory, uint16 collisionMask, bool isSensor, float friction, float restitution, float density, float restitutionThreshold)
+b2FixtureDef RigidBodyComponent::genFixtureDef(uint16 collisionCategory, uint16 collisionMask, b2Shape* shape, bool isSensor, float friction, float restitution, float density, float restitutionThreshold)
 {
 	b2FixtureDef def;
 	def.shape = shape;

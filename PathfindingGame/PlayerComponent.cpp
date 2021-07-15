@@ -2,59 +2,47 @@
 #include "GameObject.h"
 #include "Game.h"
 
-void PlayerComponent::init(float speed, float rotationalSpeed, GameObject* connected)
+void PlayerComponent::init(float acceleration)
 {
-	this->speed = speed;
-	this->rotationalSpeed = rotationalSpeed;
-	Component::init(connected);
+	this->acceleration = acceleration;
+}
+
+void PlayerComponent::start()
+{
+	rigidBody = gameObject->getComponentOfType<RigidBodyComponent>();
 }
 
 void PlayerComponent::update()
 {
-	Vector2 movement = { 0 };
 	float dT = Game::getDeltaTime();
-	bool isMoving = false;
+
+	movement = { 0 };
 
 	if (IsKeyDown(KEY_D))
 	{
-		isMoving = true;
-		movement.x = speed;
+		movement.x = 1;
+		gameObject->getSprite()->setFlipped(false);
 	}
 	if (IsKeyDown(KEY_A))
 	{
-		isMoving = true;
-		movement.x -= speed;
+		movement.x -= 1;
+		gameObject->getSprite()->setFlipped(true);
 	}
 	if (IsKeyDown(KEY_W))
 	{
-		isMoving = true;
-		movement.y = -speed;
+		movement.y = 1;
 	}
 	if (IsKeyDown(KEY_S))
 	{
-		isMoving = true;
-		movement.y += speed;
+		movement.y -= 1;
 	}
-	if (IsKeyDown(KEY_Q))
-	{
-		transform->addRotation(-rotationalSpeed * Game::getDeltaTime());
-	}
-	if (IsKeyDown(KEY_E))
-	{
-		transform->addRotation(rotationalSpeed * Game::getDeltaTime());
-	}
-	if (IsKeyPressed(KEY_UP))
-	{
-		transform->addScale(0.125f);
-	}
-	if (IsKeyPressed(KEY_DOWN))
-	{
-		transform->addScale(-0.125f);
-	}
-	if (IsKeyPressed(KEY_F))
-	{
-		gameObject->getSprite().flip();
-	}
-	if (isMoving)
-		transform->addPosition(movement * Game::getDeltaTime());
+	
+}
+
+void PlayerComponent::fixedUpdate()
+{
+	movement.normalize();
+	movement = movement * acceleration;
+
+	rigidBody->applyForce(movement);
 }

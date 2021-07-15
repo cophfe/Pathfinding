@@ -29,8 +29,6 @@ public:
 private:
 	b2World world;
 	b2Body* body;
-	float timeStep = 1.0f / 60.0f;
-	float collisionTimer = 0;
 	int32 velocityIterations = 6;
 	int32 positionIterations = 2;
 #ifdef DRAW_DEBUG

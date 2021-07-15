@@ -28,18 +28,24 @@ void Game::init(GameProperties* properties )
 	scenes.push_back(new Scene());
 	scenes[0]->load();
 	auto background = new GameObject("player", scenes[0], true, { 0 }, { 0 }, 5.0f);
-	background->getSprite().setTint({ 0xFF,0,0,0xCF });
+	background->getSprite()->setTint({ 0xFF,0,0,0xCF });
 	auto player = new GameObject("player", scenes[0]);
 
-	PlayerComponent* pC = (PlayerComponent*)player->addComponent<PlayerComponent>();
-	pC->init(250, 3, player);
+	PlayerComponent* pC = player->addComponent<PlayerComponent>();
+	pC->init(100);
 	scenes[0]->getCamera()->Target(player->getTransform());
+	
+	b2BodyDef bDef = RigidBodyComponent::genBodyDef(b2_dynamicBody, true);
+	b2FixtureDef fDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::PLAYER);
+	player->addComponent<RigidBodyComponent>()->init(scenes[0]->getCollisionManager(), bDef, fDef, true);
 
-	new GameObject("bee", player, true, Vector2{ 500, 0 }, 0.0f, 1.0f);
+	new GameObject("fish", player, true, Vector2{ 500, 0 }, 0.0f, 1.0f);
 	new GameObject("death", scenes[0], true, Vector2{ 1000, 0 }, 0.0f, 1.0f);
 	new GameObject("harold", scenes[0], true, Vector2{ 1500, 0 }, 0.0f, 1.0f);
 	new GameObject("happy", scenes[0], true, Vector2{ 2000, 0 }, 0.0f, 1.0f);
 	new GameObject("anime", scenes[0], true, Vector2{ 2500, 0 }, 0.0f, 1.0f);
+
+	scenes[0]->start();
 }
 
 void Game::gameLoop()
@@ -87,7 +93,8 @@ void Game::changeScene(int sceneIndex)
 	
 	//unload previous scene
 	
-	//load in new scene info
+	//load in new scene info 
+	//scenes[currentScene]->start();
 	//success?
 }
 

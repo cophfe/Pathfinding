@@ -53,11 +53,13 @@ void GameObject::deleteSelf()
 	}
 
 	delete transform;
+
+	delete sprite;
 }
 
 void GameObject::draw()
 {
-	sprite.Draw();
+	sprite->Draw();
 
 	for (auto& child : transform->getChildArray())
 	{
@@ -75,6 +77,18 @@ void GameObject::updateComponents()
 	for (auto& component : components)
 	{
 		component->update();
+	}
+}
+
+void GameObject::fixedUpdateComponents()
+{
+	for (auto& child : transform->getChildArray())
+	{
+		child->getGameObject()->fixedUpdateComponents();
+	}
+	for (auto& component : components)
+	{
+		component->fixedUpdate();
 	}
 }
 

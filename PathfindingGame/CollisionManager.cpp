@@ -3,12 +3,15 @@
 
 CollisionManager::CollisionManager() : world(b2World(b2Vec2(0,0)))
 {
+	//		Test debug with this:
+	/*
 	b2BodyDef groundBodyDef;
 	groundBodyDef.position.Set(0.0f, -10.0f);
 	b2Body* groundBody = world.CreateBody(&groundBodyDef);
 	b2PolygonShape groundBox;
 	groundBox.SetAsBox(50.0f, 10.0f);
 	groundBody->CreateFixture(&groundBox, 0.0f);
+	*/
 
 	b2BodyDef bodyDef;
 	bodyDef.type = b2_dynamicBody;
@@ -38,15 +41,7 @@ CollisionManager::~CollisionManager()
 
 void CollisionManager::update()
 {	
-	collisionTimer += Game::getDeltaTime();
-
-	while (collisionTimer >= timeStep)
-	{
-		world.Step(timeStep, velocityIterations, positionIterations);
-		collisionTimer = 0;
-
-		printf("X: %4.2f Y: %4.2f Rot: %4.2f\n", body->GetPosition().x, body->GetPosition().y, body->GetAngle());
-	}
+	world.Step(PHYSICS_TIME_STEP, velocityIterations, positionIterations);
 }
 
 void CollisionManager::debugDraw()

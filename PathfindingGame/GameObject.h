@@ -6,6 +6,7 @@
 #include "Sprite.h"
 #include <forward_list>
 #include <iostream>
+#include <typeinfo>
 
 class Game;
 class Scene;
@@ -32,17 +33,18 @@ public:
 	//		Rendering
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	void draw();
-	inline Sprite& getSprite() { return sprite; };
-	inline void setSprite(Sprite& sprite) { this->sprite = sprite; }
+	inline Sprite* getSprite() { return sprite; };
+	inline void setSprite(Sprite* sprite) { this->sprite = sprite; }
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   Component stuff
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	void updateComponents();
+	void fixedUpdateComponents();
 	void startComponents();
 	template<typename T>
-	Component* addComponent();
+	T* addComponent();
 	template<typename T>
-	Component* getComponentOfType();
+	T* getComponentOfType();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//		Transform Stuff
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,33 +65,34 @@ protected:
 	virtual void init(const char* spriteName, GameObject* parent, bool isDrawn, Vector2 position, float rotation, float scale);
 	
 	Transform* transform;
-	Sprite sprite; 
-	//to avoid object slicing this will need to be a pointer list
+	//to avoid object slicing these will need to be a pointers \/
+	Sprite* sprite; 
 	std::forward_list<Component*> components;
 
 	//drawing
 	bool isDrawn;
 
-	//sprite can access all protected shiz because it is easier that way
-	friend Sprite;
+	////sprite can access all protected shiz because it is easier that way
+	//friend Sprite;
 
 };
 
 template<typename T>
-inline Component* GameObject::addComponent() //this will be broken if the type given does not inherit from component
+inline T* GameObject::addComponent() //this will be broken if the type given does not inherit from component
 {
 	T* component = new T();
+	((Component*)component)->setGameObject(this);
 	components.push_front(component);
-	return components.front();
+	return (T*)components.front();
 }
 template<typename T>
-Component* GameObject::getComponentOfType()
+inline T* GameObject::getComponentOfType()
 {
 	for (auto& component : components)
 	{
-		if (typeid(component) == typeid(T))
+		if (typeid(*component) == typeid(T))
 		{
-			return component;
+			return (T*)component;
 		}
 	}
 }

@@ -2,8 +2,6 @@
 #include "Component.h"
 #include "NecessaryHeaders.h"
 
-#define RENDER_SCALE 10
-
 class GameObject;
 class CollisionManager;
 
@@ -13,13 +11,14 @@ class CollisionManager;
 class RigidBodyComponent : public Component
 {
 public:
-	void init(GameObject* connected, CollisionManager* collisionManager, b2BodyDef& bodyDef, b2FixtureDef& fixtureDef);
+	void init(CollisionManager* collisionManager, b2BodyDef& bodyDef, b2FixtureDef& fixtureDef, bool genShapeFromGameobject = true);
 
-	void update();
+	void fixedUpdate();
 	void onDisable();
 	void onEnable();
 	void unload();
 
+	void applyTorque(float torque);
 	void applyForce(Vector2 force);
 	void applyForce(float x, float y);
 	void addVelocity(Vector2 velocity);
@@ -29,23 +28,23 @@ public:
 	void setTransform(Vector2 position, float angle);
 	void setTransform(float x, float y, float angle);
 	void addImpulse(Vector2 impulse, Vector2 position);
-
-	static b2BodyDef genBodyDef(b2BodyType type, Vector2 velocity, float angularVelocity, float angularDamping = 0, float linearDamping = 0, bool fixedRotation = true);
-	static b2FixtureDef genFixtureDef(b2Shape* shape, uint16 collisionCategory, uint16 collisionMask, bool isSensor, float friction, float restitution, float density, float restitutionThreshold);
+	inline Vector2 getVelocity() { return { body->GetLinearVelocity().x, body->GetLinearVelocity().y }; }
 	
+
+	static b2BodyDef genBodyDef(b2BodyType type, bool fixedRotation = false, Vector2 velocity = { 0 }, float angularVelocity = { 0 }, float angularDamping = 0, float linearDamping = 1);
+	static b2FixtureDef genFixtureDef(uint16 collisionCategory, uint16 collisionMask = ALL, b2Shape* shape = nullptr, bool isSensor = false, float friction = 0.0f, float restitution = 0.0f, float density = 1.0f, float restitutionThreshold = 0);
 	enum CollisionCategories : uint16 //16 total
 	{
 		PLAYER = 0b1,
 		ENEMY = 0b10,
 		BOUNDS = 0b100,
-		WALL = 0b1000
+		WALL = 0b1000,
+		ALL = 0b1111
 	};
 private:
 	b2Body* body;
 
 	b2World* world;
-
-	Transform* transform;
 
 	//collision callbacks should only influence game logic through the update function
 	std::forward_list<b2ContactListener> collisionCallback;

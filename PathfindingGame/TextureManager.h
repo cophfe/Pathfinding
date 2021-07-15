@@ -24,7 +24,7 @@ public:
 	
 	void LoadTexturesFromFolder(std::string folder);
 
-	Sprite GenSprite(std::string name, GameObject* gameObject);
+	Sprite* GenSprite(std::string name, GameObject* gameObject);
 
 	void UnloadTextures();
 

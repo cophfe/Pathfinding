@@ -26,14 +26,14 @@ void Transform::addPosition(Vector2 pos)
 {
 	position = position + pos;
 	updateLocalTransform();
-	gameObject->getSprite().UpdateSpriteRectangle();
+	gameObject->getSprite()->UpdateSpriteRectangle();
 }
 
 void Transform::addScale(float scale)
 {
 	this->scale += scale;
 	updateLocalTransform();
-	gameObject->getSprite().UpdateSpriteRectangle();
+	gameObject->getSprite()->UpdateSpriteRectangle();
 }
 
 void Transform::setRotation(float rad)
@@ -46,14 +46,14 @@ void Transform::setTransform(Vector2 pos)
 {
 	position = pos;
 	updateLocalTransform();
-	gameObject->getSprite().UpdateSpriteRectangle();
+	gameObject->getSprite()->UpdateSpriteRectangle();
 }
 
 void Transform::setScale(float scale)
 {
 	this->scale = scale;
 	updateLocalTransform();
-	gameObject->getSprite().UpdateSpriteRectangle();
+	gameObject->getSprite()->UpdateSpriteRectangle();
 }
 
 Vector2& Transform::getGlobalPosition()
@@ -107,7 +107,7 @@ void Transform::updateGlobalTransform()
 	for (auto& child : children)
 	{
 		child->updateGlobalTransform();
-		child->gameObject->getSprite().UpdateSpriteRectangle();
+		child->gameObject->getSprite()->UpdateSpriteRectangle();
 	}
 }
 

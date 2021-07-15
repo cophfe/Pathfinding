@@ -2,10 +2,12 @@
 #include "Game.h"
 #include "Transform.h"
 
+#define CAMERA_SCALE 0.5f
+
 SmoothCamera::SmoothCamera(Vector2 initialPosition, float initialRotation, float initialZoom, Vector2 offset, float smoothMultiplier)
 {
 	this->offset = Vector2(GetScreenWidth() / 2 + offset.x, GetScreenHeight() / 2 + offset.y);
-	camera = Camera2D{ initialPosition + Vector2(GetScreenWidth() / 2 + offset.x, GetScreenHeight() / 2 + offset.y), initialPosition, initialRotation, initialZoom };
+	camera = Camera2D{ initialPosition + Vector2(GetScreenWidth() / 2 + offset.x, GetScreenHeight() / 2 + offset.y), initialPosition, initialRotation, initialZoom * CAMERA_SCALE };
 	on = true;
 	target = nullptr;
 	this->smoothMultiplier = smoothMultiplier;
@@ -22,8 +24,9 @@ void SmoothCamera::UpdateCamera()
 	auto& pos = target->getGlobalPosition();
 	if (!(camera.target.x == pos.x && camera.target.y == pos.y))
 	{
-		camera.target.x += (pos.x - camera.target.x) * Game::getDeltaTime() * smoothMultiplier;
-		camera.target.y += (pos.y - camera.target.y) * Game::getDeltaTime() * smoothMultiplier;
+		camera.target.x += (pos.x - camera.target.x) * PHYSICS_TIME_STEP * smoothMultiplier;
+		camera.target.y += (pos.y - camera.target.y) * PHYSICS_TIME_STEP * smoothMultiplier;
+		//camera.target = pos;
 	}
 
 	//camera.rotation = target->getGlobalRotation() * -rad2Deg;

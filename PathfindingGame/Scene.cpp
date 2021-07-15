@@ -1,14 +1,13 @@
 #include "Scene.h"
 #include "GameObject.h"
 #include "Transform.h"
-
-#define CAMERA_SCALE 1.0f
+#include "Game.h"
 
 void Scene::load()
 {
 	//GameObject* gO = new GameObject("Player.png", nullptr, true, Vector2(0, 0), 30, 1);
 	//sortingLayers[SORTING::MIDGROUND].push_back(gO);
-	camera = new SmoothCamera({ 0,0 }, 0, 1 * CAMERA_SCALE , { 0 }, 10);
+	camera = new SmoothCamera({ 0,0 }, 0, 1 , { 0 }, 10);
 
 	pathfinder = new Pathfinder();
 
@@ -20,7 +19,6 @@ void Scene::draw()
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
-	camera->UpdateCamera();
 	camera->StartCamera();
 
 	for (auto& drawLayer : sortingLayers)
@@ -48,6 +46,10 @@ void Scene::draw()
 
 void Scene::update()
 {
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// 	   REGULAR UPDATE
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	for (int i = 0; i < (int)SORTING::COUNT; i++)
 	{
 		for (int j = 0; j < sortingLayers[i].size(); j++)
@@ -56,7 +58,24 @@ void Scene::update()
 		}
 	}
 
-	collisionManager->update();
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// 	   FIXED UPDATE
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	collisionTimer += Game::getDeltaTime();
+	while (collisionTimer >= PHYSICS_TIME_STEP)
+	{
+		camera->UpdateCamera();
+		collisionManager->update();
+		collisionTimer -= PHYSICS_TIME_STEP;
+
+		for (int i = 0; i < (int)SORTING::COUNT; i++)
+		{
+			for (int j = 0; j < sortingLayers[i].size(); j++)
+			{
+				sortingLayers[i][j]->fixedUpdateComponents();
+			}
+		}
+	}
 }
 
 void Scene::unload()
@@ -75,6 +94,24 @@ void Scene::unload()
 
 	delete camera;
 
+}
+
+void Scene::start()
+{
+	for (int i = 0; i < (int)SORTING::COUNT; i++)
+	{
+		for (int j = 0; j < sortingLayers[i].size(); j++)
+		{
+			sortingLayers[i][j]->startComponents();
+		}
+	}
+
+	
+}
+
+CollisionManager* Scene::getCollisionManager()
+{
+	return collisionManager;
 }
 
 Scene::~Scene()
