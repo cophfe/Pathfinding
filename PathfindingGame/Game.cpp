@@ -17,7 +17,11 @@ void Game::init(GameProperties* properties )
 	if (properties->targetFPS != 0)
 		SetTargetFPS(properties->targetFPS);
 
-	//load textures in from the target folder
+	BeginDrawing();
+	ClearBackground(BLACK);
+	DrawText("Loading...", properties->windowWidth/2 - 170, properties->windowHeight / 2 - 40, 80, RAYWHITE);
+	EndDrawing();
+	//load texture in from the target folder
 	textureManager = new TextureManager();
 	textureManager->LoadTexturesFromFolder(properties->spriteLocation);
 	/*
@@ -39,7 +43,8 @@ void Game::init(GameProperties* properties )
 	b2FixtureDef fDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::PLAYER);
 	player->addComponent<RigidBodyComponent>()->init(scenes[0]->getCollisionManager(), bDef, fDef, true);
 
-	new GameObject("fish", player, true, Vector2{ 500, 0 }, 0.0f, 1.0f);
+	new GameObject("birdChill", player, true, Vector2{ 500, 0 }, 0.0f, 0.5f);
+
 	new GameObject("death", scenes[0], true, Vector2{ 1000, 0 }, 0.0f, 1.0f);
 	new GameObject("harold", scenes[0], true, Vector2{ 1500, 0 }, 0.0f, 1.0f);
 	new GameObject("happy", scenes[0], true, Vector2{ 2000, 0 }, 0.0f, 1.0f);

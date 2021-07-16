@@ -5,17 +5,30 @@
 class Transform;
 class GameObject;
 
-struct TextureComplex
+struct AnimatedTexture : public Texture2D
 {
-	Texture2D* texture;
+	struct COORD
+	{
+		int x, y;
+	};
+
+	/*unsigned int id;
+	int width;
+	int height;
+	int mipmaps;
+	int format;*/
 	int textureNumber;
+	int spriteWidth, spriteHeight;
+	COORD* coordinates;
+
+	bool isAnimated() { return true; }
 };
 
 class Sprite
 {
 public:
 	Sprite();
-	Sprite(TextureComplex* textureComplex, GameObject* attached);
+	Sprite(Texture2D* textureComplex, GameObject* attached);
 
 	virtual void Draw();
 	void flip();
@@ -25,10 +38,10 @@ public:
 	inline Color& getTint() { return tint; }
 	inline Rectangle* getSourceRectangle() { return &srcRect; }
 	inline Rectangle* getDestinationRectangle() { return &destRect; }
-	void UpdateSpriteRectangle();
+	virtual void UpdateSpriteRectangle();
 protected:
 	Transform* transform;
-	TextureComplex* texture;
+	Texture2D* texture;
 	Color tint;
 
 	Rectangle srcRect;
@@ -39,13 +52,14 @@ protected:
 class AnimatedSprite : public Sprite
 {
 public:
-	AnimatedSprite(TextureComplex* textureComplex, GameObject* attached);
+	AnimatedSprite(AnimatedTexture* textureComplex, GameObject* attached);
 
 	void Play();
 	void Pause();
 	void Draw();
 
 	inline void setTimePerFrame(float seconds) { secondsPerFrame = seconds; }
+	void UpdateSpriteRectangle();
 private:
 	bool paused;
 	int currentFrame;

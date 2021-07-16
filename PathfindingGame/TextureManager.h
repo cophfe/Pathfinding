@@ -5,7 +5,10 @@
 #include <algorithm>
 #include <map>
 
-#include "rapidjson/rapidjson.h"
+#include <nlohmann/json.hpp>
+#include <fstream>
+#include <typeinfo>
+using namespace nlohmann;
 
 class GameObject;
 
@@ -31,7 +34,20 @@ public:
 	void UnloadTextures();
 
 private:
-	std::map<std::string, TextureComplex> textureMap;
+	//this struct is a 'temporary' fix to a problem that was caused by my heresy
+	// I inherited from Texture2D (the texture class from raylib.h) for an animated texture class
+	// however since typeid doesn't work on polymorphic classes with no virtual functions,
+	// and adding a virtual function to raylib's texture class is off the table (partly because it seeems a bad idea, mostly because I tried and it broke everything)
+	// I am stuck with no way to tell the difference between an AnimatedTexture and a Texture2D
+	// except, of course, a wrapper.
+	//lesson learned: DO NOT INHERIT FROM A THIRD PARTY STRUCT
+	struct CursedTextureWrapper
+	{
+		Texture2D* texture;
+		bool isAnimated;
+	};
+
+	std::map<std::string, CursedTextureWrapper> textureMap;
 	
 };
 
