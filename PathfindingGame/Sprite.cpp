@@ -18,13 +18,13 @@ Sprite::Sprite(TextureComplex* textureComplex, GameObject* attached)
 	texture = textureComplex;
 	tint = { 0xFF,0xFF,0xFF,0xFF };
 
-	srcRect = { 0, 0, (float)texture->textures->width, (float)texture->textures->height};
+	srcRect = { 0, 0, (float)texture->texture->width, (float)texture->texture->height};
 	UpdateSpriteRectangle();
 }
 
 void Sprite::Draw()
 {
-	DrawTexturePro(*texture->textures, srcRect, destRect, pivot, transform->getGlobalRotation() * rad2Deg, tint);
+	DrawTexturePro(*texture->texture, srcRect, destRect, pivot, transform->getGlobalRotation() * rad2Deg, tint);
 }
 
 void Sprite::flip()
@@ -34,7 +34,7 @@ void Sprite::flip()
 
 void Sprite::setFlipped(bool flippedValue)
 {
-	srcRect.width = flippedValue ? (float)-texture->textures->width : (float)texture->textures->width;
+	srcRect.width = flippedValue ? (float)-texture->texture->width : (float)texture->texture->width;
 }
 
 //the destination rectangle needs to be updated every time position or scale changes
@@ -42,7 +42,7 @@ void Sprite::UpdateSpriteRectangle()
 {
 	Vector2& pos = transform->getGlobalPosition();
 	float scale = transform->getGlobalScale();
-	destRect = Rectangle{ pos.x, pos.y, texture->textures->width * scale, texture->textures->height * scale };
+	destRect = Rectangle{ pos.x, pos.y, texture->texture->width * scale, texture->texture->height * scale };
 	pivot.x = destRect.width / 2;
 	pivot.y = destRect.height / 2;
 }
@@ -62,7 +62,7 @@ AnimatedSprite::AnimatedSprite(TextureComplex* textureComplex, GameObject* attac
 	endFrame = texture->textureNumber - 1;
 	secondsPerFrame = 0.03333f;
 
-	srcRect = { 0, 0, (float)texture->textures->width, (float)texture->textures->height };
+	srcRect = { 0, 0, (float)texture->texture->width, (float)texture->texture->height };
 	UpdateSpriteRectangle();
 }
 
@@ -88,5 +88,5 @@ void AnimatedSprite::Draw()
 			currentFrame = startFrame;
 		frameTimer -= secondsPerFrame;
 	}
-	DrawTexturePro(texture->textures[currentFrame], srcRect, destRect, pivot, transform->getGlobalRotation() * rad2Deg, tint);
+	DrawTexturePro(texture->texture[currentFrame], srcRect, destRect, pivot, transform->getGlobalRotation() * rad2Deg, tint);
 }

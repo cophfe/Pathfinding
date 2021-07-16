@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <stdlib.h>
+#include <forward_list>
 //maths
 #include "mlib.h"
 #include "Matrix3.h"

@@ -7,7 +7,7 @@ class GameObject;
 
 struct TextureComplex
 {
-	Texture2D* textures;
+	Texture2D* texture;
 	int textureNumber;
 };
 

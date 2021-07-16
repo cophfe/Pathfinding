@@ -166,9 +166,11 @@
     <ClCompile Include="AgentComponent.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="Heap.cpp" />
     <ClCompile Include="Matrix3.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="PathfindingNode.cpp" />
     <ClCompile Include="PhysicsDebugDraw.cpp" />
     <ClCompile Include="PlayerComponent.cpp" />
     <ClCompile Include="RigidBodyComponent.cpp" />
@@ -192,10 +194,12 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="Heap.h" />
     <ClInclude Include="Matrix3.h" />
     <ClInclude Include="mlib.h" />
     <ClInclude Include="NecessaryHeaders.h" />
     <ClInclude Include="Pathfinder.h" />
+    <ClInclude Include="PathfindingNode.h" />
     <ClInclude Include="PhysicsDebugDraw.h" />
     <ClInclude Include="PlayerComponent.h" />
     <ClInclude Include="RigidBodyComponent.h" />

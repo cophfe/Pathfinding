@@ -18,8 +18,8 @@ TextureManager::~TextureManager()
 void TextureManager::LoadTexturesFromFolder(std::string folder)
 {
 	//jesus christ this is an abomination
-	//check the folder for textures to add to the array
-	//textures will be saved into TextureComplex'es, which have a name given to them
+	//check the folder for texture to add to the array
+	//texture will be saved into TextureComplex'es, which have a name given to them
 	for (auto& entry : std::filesystem::directory_iterator(folder))
 	{
 		if (entry.exists())
@@ -38,7 +38,7 @@ void TextureManager::LoadTexturesFromFolder(std::string folder)
 				{
 					//animated sprite name is based on the 
 					TextureComplex animatedTexture = TextureComplex();
-					animatedTexture.textures = new Texture2D[count];
+					animatedTexture.texture = new Texture2D[count];
 					animatedTexture.textureNumber = count;
 					int currentCount = 0;
 					for (auto& subEntry : std::filesystem::directory_iterator(path))
@@ -49,9 +49,9 @@ void TextureManager::LoadTexturesFromFolder(std::string folder)
 							//each texture is loaded in here
 							if (currentCount >= count)
 								break;
-							animatedTexture.textures[currentCount] = LoadTexture(sPath.string().c_str());
+							animatedTexture.texture[currentCount] = LoadTexture(sPath.string().c_str());
 #pragma warning(suppress:6385) // this warning sucks and is always wrong
-							if (animatedTexture.textures[currentCount].id == 0)
+							if (animatedTexture.texture[currentCount].id == 0)
 								continue; //error causer here, probably
 							++currentCount;
 						}
@@ -63,12 +63,12 @@ void TextureManager::LoadTexturesFromFolder(std::string folder)
 			if (checkExtension(path))
 			{
 				TextureComplex tC = TextureComplex();
-				tC.textures = new Texture2D();
-				*(tC.textures) = LoadTexture(path.string().c_str());
+				tC.texture = new Texture2D();
+				*(tC.texture) = LoadTexture(path.string().c_str());
 				//if it failed to load do not add it to the map
-				if (tC.textures->id == 0) 
+				if (tC.texture->id == 0) 
 				{
-					delete tC.textures;
+					delete tC.texture;
 					continue;
 				}
 				tC.textureNumber = 1;
@@ -94,11 +94,11 @@ void TextureManager::UnloadTextures()
 	{
 		for (int i = 0; i < textureComplex.second.textureNumber; i++)
 		{
-			UnloadTexture(textureComplex.second.textures[i]);
+			UnloadTexture(textureComplex.second.texture[i]);
 		}
 		if (textureComplex.second.textureNumber == 1)
-			delete textureComplex.second.textures;
+			delete textureComplex.second.texture;
 		else
-			delete[] textureComplex.second.textures;
+			delete[] textureComplex.second.texture;
 	}
 }

@@ -19,16 +19,16 @@ public:
 	void unload();
 
 	void applyTorque(float torque);
-	void applyForce(Vector2 force);
+	void applyForce(const Vector2& force);
 	void applyForce(float x, float y);
 	void addVelocity(Vector2 velocity);
 	void addVelocity(float x, float y);
-	void setVelocity(Vector2 velocity);
+	void setVelocity(const Vector2& velocity);
 	void setVelocity(float x, float y);
 	void setTransform(Vector2 position, float angle);
 	void setTransform(float x, float y, float angle);
 	void addImpulse(Vector2 impulse, Vector2 position);
-	inline Vector2 getVelocity() { return { body->GetLinearVelocity().x, body->GetLinearVelocity().y }; }
+	inline const Vector2& getVelocity() { return reinterpret_cast<const Vector2&>(body->GetLinearVelocity()); }
 	
 
 	static b2BodyDef genBodyDef(b2BodyType type, bool fixedRotation = false, Vector2 velocity = { 0 }, float angularVelocity = { 0 }, float angularDamping = 0, float linearDamping = 1);

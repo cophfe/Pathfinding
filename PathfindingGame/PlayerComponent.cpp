@@ -16,33 +16,34 @@ void PlayerComponent::update()
 {
 	float dT = Game::getDeltaTime();
 
-	movement = { 0 };
+	direction = { 0 };
 
 	if (IsKeyDown(KEY_D))
 	{
-		movement.x = 1;
+		direction.x = 1;
 		gameObject->getSprite()->setFlipped(false);
 	}
 	if (IsKeyDown(KEY_A))
 	{
-		movement.x -= 1;
+		direction.x -= 1;
 		gameObject->getSprite()->setFlipped(true);
 	}
 	if (IsKeyDown(KEY_W))
 	{
-		movement.y = 1;
+		direction.y = 1;
 	}
 	if (IsKeyDown(KEY_S))
 	{
-		movement.y -= 1;
+		direction.y -= 1;
 	}
 	
 }
 
 void PlayerComponent::fixedUpdate()
 {
-	movement.normalize();
-	movement = movement * acceleration;
+	//normalize() does nothing if it has a magnitude of zero
+	direction.normalize();
+	Vector2 movement = direction - rigidBody->getVelocity();
 
-	rigidBody->applyForce(movement);
+	rigidBody->applyForce(direction * acceleration);
 }

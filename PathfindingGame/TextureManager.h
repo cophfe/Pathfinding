@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <map>
 
+#include "rapidjson/rapidjson.h"
+
 class GameObject;
 
 class TextureManager

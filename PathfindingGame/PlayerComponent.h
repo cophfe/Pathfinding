@@ -18,6 +18,6 @@ private:
 
 	RigidBodyComponent* rigidBody;
 	
-	Vector2 movement;
+	Vector2 direction;
 };
 

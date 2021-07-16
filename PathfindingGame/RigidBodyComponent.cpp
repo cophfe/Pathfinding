@@ -61,9 +61,9 @@ void RigidBodyComponent::applyTorque(float torque)
 	body->ApplyTorque(torque, true);
 }
 
-void RigidBodyComponent::applyForce(Vector2 force)
+void RigidBodyComponent::applyForce(const Vector2& force)
 {
-	body->ApplyForceToCenter(force, true);
+	body->ApplyForceToCenter(reinterpret_cast<const b2Vec2&>(force), true);
 }
 
 void RigidBodyComponent::applyForce(float x, float y)
@@ -81,9 +81,9 @@ void RigidBodyComponent::addVelocity(float x, float y)
 	addVelocity({ x,y });
 }
 
-void RigidBodyComponent::setVelocity(Vector2 velocity)
+void RigidBodyComponent::setVelocity(const Vector2& velocity)
 {
-	body->SetLinearVelocity(velocity);
+	body->SetLinearVelocity(reinterpret_cast<const b2Vec2&>(velocity));
 }
 
 void RigidBodyComponent::setVelocity(float x, float y)

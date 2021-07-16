@@ -9,7 +9,7 @@ void Scene::load()
 	//sortingLayers[SORTING::MIDGROUND].push_back(gO);
 	camera = new SmoothCamera({ 0,0 }, 0, 1 , { 0 }, 10);
 
-	pathfinder = new Pathfinder();
+	pathfinder = new Pathfinder(10, 10, 100);
 
 	collisionManager = new CollisionManager();
 }
