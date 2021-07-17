@@ -91,7 +91,7 @@ void TextureManager::LoadTexturesFromFolder(std::string folder)
 			auto& frames = document["frames"];
 				
 			animatedTexture->textureNumber = frames.size();
-			animatedTexture->coordinates = new AnimatedTexture::COORD[animatedTexture->textureNumber];
+			animatedTexture->coordinates = new Vector2i[animatedTexture->textureNumber];
 			animatedTexture->spriteWidth = frames[0]["frame"]["w"];
 			animatedTexture->spriteHeight = frames[0]["frame"]["h"];
 			int i = 0;

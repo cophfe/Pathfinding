@@ -1,5 +1,5 @@
 #pragma once
-#define PHYSICS_TIME_STEP (1.0f/60)
+#define PHYSICS_TIME_STEP (1.0f/120)
 #define PHYSICS_UNIT_SCALE 100
 //third party
 #include "raylib/raylib.h"

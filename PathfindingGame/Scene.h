@@ -45,6 +45,7 @@ public:
 	inline SmoothCamera* getCamera() { return camera; }
 	void setCameraTarget(Transform* transform);
 	GameObject* addGameObject(GameObject* object, SORTING layer = SORTING::MIDGROUND);
+	inline Pathfinder* getPathfinder() { return pathfinder; }
 
 private:
 	SceneProperties* properties;

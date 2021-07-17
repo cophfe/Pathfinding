@@ -13,21 +13,24 @@ void GameObject::init(const char* spriteName, GameObject* parent, bool isDrawn, 
 		transform = new Transform(position, scale, rotation, nullptr, this);
 	else	
 		transform = new Transform(position, scale, rotation, parent->getTransform(), this);
-	sprite = tM->GenSprite(std::string(spriteName), this);
+	if (isDrawn)
+		sprite = tM->GenSprite(std::string(spriteName), this);
+	else
+		sprite = nullptr;
 
 	id = idCounter;
 	++idCounter;
 }
 
-GameObject::GameObject(const char* spriteName, Scene* parent, bool isDrawn, Vector2 position, float rotation, float scale, SORTING layer)
+GameObject::GameObject(Scene* parent, const char* spriteName, bool isDrawn, Vector2 position, float rotation, float scale, SORTING layer)
 {
-	init(spriteName, nullptr, true, position, rotation, scale);
+	init(spriteName, nullptr, isDrawn, position, rotation, scale);
 	parent->addGameObject(this, layer);
 }
 
-GameObject::GameObject(const char* spriteName, GameObject* parent, bool isDrawn, Vector2 position, float rotation, float scale)
+GameObject::GameObject(GameObject* parent, const char* spriteName, bool isDrawn, Vector2 position, float rotation, float scale)
 {
-	init(spriteName, parent, true, position, rotation, scale);
+	init(spriteName, parent, isDrawn, position, rotation, scale);
 }
 
 GameObject::~GameObject()
@@ -59,7 +62,8 @@ void GameObject::deleteSelf()
 
 void GameObject::draw()
 {
-	sprite->Draw();
+	if (isDrawn)
+		sprite->Draw();
 
 	for (auto& child : transform->getChildArray())
 	{

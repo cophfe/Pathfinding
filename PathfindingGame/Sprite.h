@@ -7,10 +7,6 @@ class GameObject;
 
 struct AnimatedTexture : public Texture2D
 {
-	struct COORD
-	{
-		int x, y;
-	};
 
 	/*unsigned int id;
 	int width;
@@ -19,7 +15,7 @@ struct AnimatedTexture : public Texture2D
 	int format;*/
 	int textureNumber;
 	int spriteWidth, spriteHeight;
-	COORD* coordinates;
+	Vector2i* coordinates;
 
 	bool isAnimated() { return true; }
 };

@@ -22,6 +22,8 @@ public:
 	void enableComponent();
 
 	inline bool isEnabled() { return enabled; }
+	inline const Transform* getTransform() { return transform; }
+	inline const GameObject* getGameObject() { return gameObject; }
 
 protected:
 	GameObject* gameObject;

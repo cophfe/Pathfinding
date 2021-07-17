@@ -2,9 +2,10 @@
 #include "GameObject.h"
 #include "Game.h"
 
-void PlayerComponent::init(float acceleration)
+void PlayerComponent::init(float maxSpeed, float maxAcceleration)
 {
-	this->acceleration = acceleration;
+	this->maxAcceleration = maxAcceleration;
+	this->maxSpeed = maxSpeed;
 }
 
 void PlayerComponent::start()
@@ -16,34 +17,46 @@ void PlayerComponent::update()
 {
 	float dT = Game::getDeltaTime();
 
+	bool moved = false;
 	direction = { 0 };
 
 	if (IsKeyDown(KEY_D))
 	{
 		direction.x = 1;
 		gameObject->getSprite()->setFlipped(false);
+		moved = true;
 	}
 	if (IsKeyDown(KEY_A))
 	{
 		direction.x -= 1;
 		gameObject->getSprite()->setFlipped(true);
+		moved = true;
 	}
 	if (IsKeyDown(KEY_W))
 	{
 		direction.y = 1;
+		moved = true;
 	}
 	if (IsKeyDown(KEY_S))
 	{
 		direction.y -= 1;
+		moved = true;
 	}
-	
+	if (moved)
+	{
+		//normalize() does nothing if it has a magnitude of zero
+		direction.normalize();
+	}
 }
 
 void PlayerComponent::fixedUpdate()
 {
-	//normalize() does nothing if it has a magnitude of zero
-	direction.normalize();
-	Vector2 movement = direction - rigidBody->getVelocity();
+	Vector2 velocity = (direction * maxSpeed - rigidBody->getVelocity());
+	if (velocity.magnitudeSquared() > maxAcceleration * maxAcceleration * PHYSICS_TIME_STEP * PHYSICS_TIME_STEP)
+		velocity = velocity.normalised() * maxAcceleration * PHYSICS_TIME_STEP;
 
-	rigidBody->applyForce(direction * acceleration);
+	if (direction.x == 0 && direction.y == 0)
+		velocity = velocity / 2;
+
+	rigidBody->addVelocity(velocity);
 }

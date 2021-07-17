@@ -9,12 +9,12 @@ namespace mlib
 		this->y = y;
 	}
 
-	float Vector2::dot(Vector2& v)
+	float Vector2::dot(const Vector2& v)
 	{
 		return x * v.x + y * v.y;
 	}
 
-	float Vector2::dot(Vector2& a, Vector2& b)
+	float Vector2::dot(const Vector2& a, const Vector2& b)
 	{
 		return a.x * b.x + a.y * b.y;
 	}
@@ -36,12 +36,12 @@ namespace mlib
 		return Vector2(x * c - y * s, x * s + y * c);
 	}
 
-	float Vector2::magnitude()
+	float Vector2::magnitude() const
 	{
 		return sqrtf(x * x + y * y);
 	}
 
-	float Vector2::magnitudeSquared()
+	float Vector2::magnitudeSquared() const
 	{
 		return x * x + y * y;
 
@@ -56,7 +56,7 @@ namespace mlib
 		y = y / mag;
 	}
 
-	Vector2 Vector2::normalised()
+	Vector2 Vector2::normalised() const
 	{
 		float mag = magnitude();
 		if (mag == 0.0f)
@@ -64,7 +64,7 @@ namespace mlib
 		return Vector2(x / mag, y / mag);
 	}
 
-	Vector2 Vector2::perpendicular()
+	Vector2 Vector2::perpendicular() const
 	{
 		return Vector2(-y, x);
 	}

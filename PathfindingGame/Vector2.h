@@ -3,25 +3,30 @@
 
 namespace mlib
 {
+	struct Vector2i
+	{
+		int x, y;
+	};
+
 	struct Vector2
 	{
 		float x, y;
 
 		Vector2(float x = 0, float y = 0);
 
-		float dot(Vector2& v);
-		static float dot(Vector2& a, Vector2& b);
+		float dot(const Vector2& v);
+		static float dot(const Vector2& a, const Vector2& b);
 		
 		void rotate(float angle);
 		Vector2 rotated(float angle);
 
-		float magnitude();
-		float magnitudeSquared();
+		float magnitude() const;
+		float magnitudeSquared() const;
 
 		void normalize();
-		Vector2 normalised();
+		Vector2 normalised() const;
 
-		Vector2 perpendicular();
+		Vector2 perpendicular() const;
 
 		static float getAngle(Vector2& a, Vector2& b);
 		float getAngle(Vector2& v);

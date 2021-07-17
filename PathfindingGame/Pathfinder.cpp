@@ -1,20 +1,19 @@
 #include "Pathfinder.h"
 
-Pathfinder::Pathfinder(int amountX, int amountY, float nodeOffset)
+Pathfinder::Pathfinder(int amountX, int amountY, float nodeOffset, Vector2 startPosition)
 {
+	this->startPosition = startPosition;
 	this->nodeOffset = nodeOffset;
 	length = amountX * amountY;
 	sizeX = amountX;
 	sizeY = amountY;
-	closedList = new bool*[amountX];
+	closedList = new bool[length];
 	
 	nodes = new PathfindingNode ** [amountX];
 
 	for (int i = 0; i < amountX; i++)
 	{
-		closedList[i] = new bool [amountY];
 		nodes[i] = new PathfindingNode*[amountY];
-
 	}
 	for (int x = 0; x < amountX; x++)
 	{
@@ -57,7 +56,6 @@ Pathfinder::~Pathfinder()
 			delete nodes[x][y];
 		}
 		delete[] nodes[x];
-		delete[] closedList[x];
 	}
 	delete[] nodes;
 	delete[] closedList;
@@ -66,12 +64,46 @@ Pathfinder::~Pathfinder()
 
 PathfindingNode* Pathfinder::getNodeFromPoint(float x, float y)
 {
-	return nullptr;
+	x = (x / nodeOffset) + 0.5f + startPosition.x;
+	y = (y / nodeOffset) + 0.5f + startPosition.y;
+	if (x > sizeX || y > sizeY || x < 0 || y < 0)
+		return nullptr;
+	return nodes[(int)x][(int)y];
+}
+
+PathfindingNode* Pathfinder::getNodeFromPoint(const Vector2* position)
+{
+	int x = (position->x / nodeOffset) + 0.5f + startPosition.x;
+	int y = (position->y / nodeOffset) + 0.5f + startPosition.y;
+	if (x > sizeX || y > sizeY || x < 0 || y < 0)
+		return nullptr;
+	return nodes[x][y];
 }
 
 PathfindingNode* Pathfinder::getNodeFromIndex(int x, int y)
 {
 	return nodes[x][y];
+}
+
+void Pathfinder::draw()
+{
+	Color regular = GRAY;
+	Color wall = DARKBLUE;
+	regular.a = 100;
+	wall.a = 100;
+	Color& c = regular;
+
+	for (int x = 0; x < sizeX; x++)
+	{
+		for (int y = 0; y < sizeY; y++)
+		{
+			c = regular;
+			if (nodes[x][y]->cost == PathfindingNode::Type::BLOCKED)
+				c = wall;
+			//DrawPoly({ 0,0 }, 6, 100, 0, BLUE);
+			DrawRectangle(nodes[x][y]->indexX * nodeOffset - nodeOffset/2, nodes[x][y]->indexY * nodeOffset - nodeOffset / 2, nodeOffset*0.9f, nodeOffset* 0.9f, c);
+		}
+	}
 }
 
 int Pathfinder::getHeuristic(PathfindingNode* node, PathfindingNode* end)
@@ -100,16 +132,16 @@ int Pathfinder::AStarPath(PathfindingNode* start, PathfindingNode* end, std::vec
 	while (openList.size() > 0)
 	{
 		PathfindingNode* current = openList.pop();
-		closedList[current->indexX][current->indexY] = true;
+		closedList[current->indexX + current->indexY * sizeX] = true;
 
 		if (current == end)
 		{
-			finalPath->push_back({ end->indexX * nodeOffset, end->indexY * nodeOffset });
+			finalPath->push_back(Vector2{ (float)end->indexX , (float)end->indexY } * nodeOffset - startPosition);
 			static int pathLength = 0;
-			pathLength = current->fScore;
+			pathLength = current->gScore;
 			while (current->previous != nullptr)
 			{
-				finalPath->push_back({ current->indexX * nodeOffset , current->indexY * nodeOffset });
+				finalPath->push_back({ Vector2{ (float)current->indexX , (float)current->indexY } *nodeOffset - startPosition });
 				current = current->previous;
 			}
 			return pathLength;
@@ -119,7 +151,7 @@ int Pathfinder::AStarPath(PathfindingNode* start, PathfindingNode* end, std::vec
 		{
 			PathfindingNode* neighbor = current->neighbors[n];
 
-			if (neighbor == nullptr || neighbor->cost == PathfindingNode::Type::BLOCKED || closedList[neighbor->indexX][neighbor->indexY])
+			if (neighbor == nullptr || neighbor->cost == PathfindingNode::Type::BLOCKED || closedList[neighbor->indexX + neighbor->indexY * sizeX])
 				continue;
 
 			int newScore = current->gScore + (int)current->cost;

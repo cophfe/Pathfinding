@@ -99,6 +99,9 @@
     <ClCompile Include="PathfindingNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AgentDataComponent.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NecessaryHeaders.h">
@@ -163,6 +166,9 @@
     </ClInclude>
     <ClInclude Include="PathfindingNode.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AgentDataComponent.h">
+      <Filter>Header Files\Components</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

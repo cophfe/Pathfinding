@@ -14,6 +14,8 @@ CollisionManager::CollisionManager() : world(b2World(b2Vec2(0,0)))
 	*/
 
 	b2BodyDef bodyDef;
+	bodyDef.linearDamping = 0.4f;
+	bodyDef.angularDamping= 0.4f;
 	bodyDef.type = b2_dynamicBody;
 	bodyDef.position.Set(0.0f, 4.0f);
 	body = world.CreateBody(&bodyDef);
@@ -21,7 +23,8 @@ CollisionManager::CollisionManager() : world(b2World(b2Vec2(0,0)))
 	dynamicBox.SetAsBox(1.0f, 1.0f);
 	b2FixtureDef fixtureDef;
 	fixtureDef.shape = &dynamicBox;
-	fixtureDef.density = 1.0f;
+	fixtureDef.density = 20.0f;
+	
 	fixtureDef.friction = 0.3f;
 	body->CreateFixture(&fixtureDef);
 	
