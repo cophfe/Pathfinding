@@ -101,7 +101,7 @@ void Pathfinder::draw()
 			if (nodes[x][y]->cost == PathfindingNode::Type::BLOCKED)
 				c = wall;
 			//DrawPoly({ 0,0 }, 6, 100, 0, BLUE);
-			DrawRectangle(nodes[x][y]->indexX * nodeOffset - nodeOffset/2, nodes[x][y]->indexY * nodeOffset - nodeOffset / 2, nodeOffset*0.9f, nodeOffset* 0.9f, c);
+			DrawRectangle(nodes[x][y]->indexX * nodeOffset - nodeOffset/2 + startPosition.x, nodes[x][y]->indexY * nodeOffset - nodeOffset / 2 + startPosition.y, nodeOffset*0.95f, nodeOffset* 0.9f, c);
 		}
 	}
 }
@@ -136,12 +136,12 @@ int Pathfinder::AStarPath(PathfindingNode* start, PathfindingNode* end, std::vec
 
 		if (current == end)
 		{
-			finalPath->push_back(Vector2{ (float)end->indexX , (float)end->indexY } * nodeOffset - startPosition);
+			finalPath->push_back(Vector2{ (float)end->indexX , (float)end->indexY } * nodeOffset + startPosition);
 			static int pathLength = 0;
 			pathLength = current->gScore;
 			while (current->previous != nullptr)
 			{
-				finalPath->push_back({ Vector2{ (float)current->indexX , (float)current->indexY } *nodeOffset - startPosition });
+				finalPath->push_back({ Vector2{ (float)current->indexX , (float)current->indexY } *nodeOffset + startPosition });
 				current = current->previous;
 			}
 			return pathLength;

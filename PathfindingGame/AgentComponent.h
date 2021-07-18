@@ -12,17 +12,28 @@ public:
 	void init(AgentDataComponent* blackboard );
 	void start();
 	void fixedUpdate();
+
 private:
-	static const float nodeMinDistance;
+
+	//this is here for the future, just in case target should be able to be changed
+	inline PathfindingNode* getTargetNode() { return blackboard->getTargetPathfinderNode(); }
+	inline bool checkTargetMoved() { return blackboard->checkTargetMovedThisFrame(); }
+	
+	Pathfinder* pathfinder;
+
 	AgentDataComponent* blackboard;
 	RigidBodyComponent* rigidbody;
 
 	std::vector<Vector2> path;
 	Vector2 destination;
 	
-	float acceleration;
+	float acceleration = 2.0f;
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// 	   internal only
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	bool targetMovedNode;
 	Vector2 movementDirection;
-	bool targetMovedSinceLastChecked;
 	int pathIndex = 0;
 };
 

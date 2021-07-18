@@ -16,7 +16,8 @@ void GameObject::init(const char* spriteName, GameObject* parent, bool isDrawn, 
 	if (isDrawn)
 		sprite = tM->GenSprite(std::string(spriteName), this);
 	else
-		sprite = nullptr;
+		sprite = new NullSprite();
+	
 
 	id = idCounter;
 	++idCounter;
@@ -56,14 +57,15 @@ void GameObject::deleteSelf()
 	}
 
 	delete transform;
+	transform = nullptr;
 
 	delete sprite;
+	sprite = nullptr;
 }
 
 void GameObject::draw()
 {
-	if (isDrawn)
-		sprite->Draw();
+	sprite->Draw();
 
 	for (auto& child : transform->getChildArray())
 	{

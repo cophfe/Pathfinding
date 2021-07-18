@@ -11,7 +11,7 @@ class CollisionManager;
 class RigidBodyComponent : public Component
 {
 public:
-	void init(CollisionManager* collisionManager, b2BodyDef& bodyDef, b2FixtureDef& fixtureDef, bool genShapeFromGameobject = true);
+	void init(CollisionManager* collisionManager, b2BodyDef& bodyDef, b2FixtureDef& fixtureDef, bool genShapeFromGameobject = false);
 
 	void fixedUpdate();
 	void onDisable();

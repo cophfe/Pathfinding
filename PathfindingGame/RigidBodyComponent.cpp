@@ -10,7 +10,7 @@ void RigidBodyComponent::init(CollisionManager* collisionManager, b2BodyDef& bod
 	
 	//Creating body
 	//first define body settings
-	bodyDef.position.Set(transform->getPosition().x, transform->getPosition().y);
+	bodyDef.position.Set(transform->getPosition().x / PHYSICS_UNIT_SCALE, transform->getPosition().y / PHYSICS_UNIT_SCALE);
 	bodyDef.angle = transform->getRotation();
 	//this one ensures the pointer is always correct
 	bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(&body);
@@ -21,9 +21,17 @@ void RigidBodyComponent::init(CollisionManager* collisionManager, b2BodyDef& bod
 	b2PolygonShape shape;
 	if (genShapeFromGameobject || fixtureDef.shape == nullptr)
 	{
-		Rectangle* destRect = gameObject->getSprite()->getDestinationRectangle();
-		shape.SetAsBox(destRect->width / 200, destRect->height / 200);
-		fixtureDef.shape = &shape;
+		if (gameObject->getSprite()->isNull())
+		{
+			shape.SetAsBox(1, 1);
+			fixtureDef.shape = &shape;
+		}
+		else
+		{
+			Rectangle* destRect = gameObject->getSprite()->getDestinationRectangle();
+			shape.SetAsBox(destRect->width / 200, destRect->height / 200);
+			fixtureDef.shape = &shape;
+		}
 	}
 	body->CreateFixture(&fixtureDef);
 }

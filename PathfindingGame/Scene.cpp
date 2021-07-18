@@ -131,6 +131,6 @@ void Scene::setCameraTarget(Transform* transform)
 
 GameObject* Scene::addGameObject(GameObject* object, SORTING layer)
 {
-	sortingLayers[(int)SORTING::MIDGROUND].push_back(object);
+	sortingLayers[(int)layer].push_back(object);
 	return object;
 }

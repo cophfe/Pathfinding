@@ -3,6 +3,7 @@
 void AgentComponent::init(AgentDataComponent* blackboard)
 {
 	this->blackboard = blackboard;
+	pathfinder = blackboard->getPathfinder();
 }
 
 void AgentComponent::start()
@@ -12,28 +13,45 @@ void AgentComponent::start()
 
 void AgentComponent::fixedUpdate()
 {
-	Pathfinder* pathfinder = blackboard->getPathfinder();
-	if (!targetMovedSinceLastChecked)
-		targetMovedSinceLastChecked = blackboard->checkTargetMovedThisFrame();
-	if ((transform->getPosition() - path[pathIndex]).magnitudeSquared() < minDistanceToNode * minDistanceToNode)
+	//path following code
+	
+	//check if the target has moved from one node to another
+	if (!targetMovedNode)
+		targetMovedNode = checkTargetMoved();
+
+	//check if it is within reach of the destination
+	if ((transform->getPosition() - destination).magnitudeSquared() < minDistanceToNode * minDistanceToNode)
 	{
-		if (targetMovedSinceLastChecked)
+		//check if destination (that was just reached) is the target node
+		if (!path.empty() && path[path.size() - 1] == destination)
 		{
-			pathIndex = 0;
-			pathfinder->AStarPath(pathfinder->getNodeFromPoint(&transform->getPosition()), blackboard->getTargetPathfinderNode() , &path);
+			std::cout << "CHANGE STATE!\n";
 		}
 		else
 		{
-			pathIndex++;
-			if (pathIndex >= path.size() - 1)
-				path.clear();
+			if (targetMovedNode)
+			{
+				//if the target has moved nodes, redo astar.
+				pathIndex = 0;
+				if (pathfinder->AStarPath(pathfinder->getNodeFromPoint(&transform->getPosition()), getTargetNode(), &path) > 0)
+				{
+					//if astar returns a result, set the destination to the first node
+					destination = path[pathIndex];
+				}
+				targetMovedNode = false;
+			}
+			else
+			{
+				//if the target hasn't moved nodes, just use the next node up the path
+				pathIndex++;
+				destination = path[pathIndex];
+			}
 		}
-		targetMovedSinceLastChecked = false;
 	}
-	if (!path.empty())
-	{
-		movementDirection = (path[pathIndex] - transform->getPosition()).normalised();
-		rigidbody->setVelocity(movementDirection * acceleration * PHYSICS_TIME_STEP);
-	}
+
+	//move toward destination
+	movementDirection = (destination - transform->getPosition()).normalised();
+	rigidbody->setVelocity(movementDirection * acceleration * PHYSICS_TIME_STEP);
+	
 	
 }

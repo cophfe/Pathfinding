@@ -3,6 +3,7 @@
 void AgentDataComponent::init(GameObject* target, Pathfinder* pathfinder)
 {
 	this->target = target;
+	this->pathfinder = pathfinder;
 	targetHasBeenFound = false;
 	targetMovedThisFrame = true;
 	previousTargetNode = pathfinder->getNodeFromPoint(getTargetPosition());
@@ -11,7 +12,7 @@ void AgentDataComponent::init(GameObject* target, Pathfinder* pathfinder)
 void AgentDataComponent::fixedUpdate()
 {
 	PathfindingNode* node = pathfinder->getNodeFromPoint(getTargetPosition());
-	targetMovedThisFrame = !(node->indexX == previousTargetNode->indexX && node->indexY == previousTargetNode->indexY);
+	targetMovedThisFrame = !(previousTargetNode == node);
 	previousTargetNode = node;
 }
 

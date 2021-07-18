@@ -64,7 +64,10 @@ void Game::init(GameProperties* properties )
 	//then actors
 	b2BodyDef actorbDef = RigidBodyComponent::genBodyDef(b2_dynamicBody, true);
 	b2FixtureDef actorfDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::ENEMY);
-	GameObject* actor = new GameObject(scenes[currentScene], "birdChill", false, { 300,400 }, 0, 1, SORTING::BACKGROUND);
+	b2PolygonShape dynamicBox;
+	dynamicBox.SetAsBox(1.0f, 1.0f);
+	actorfDef.shape = &dynamicBox;
+	GameObject* actor = new GameObject(scenes[currentScene], "birdChill", true, { 300,400 }, 0, 1);
 	actor->addComponent<RigidBodyComponent>()->init(scenes[currentScene]->getCollisionManager(), actorbDef, actorfDef);
 	actor->addComponent<AgentComponent>()->init(blackboard);
 	
