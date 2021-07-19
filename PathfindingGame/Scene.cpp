@@ -9,9 +9,13 @@ void Scene::load()
 	//sortingLayers[SORTING::MIDGROUND].push_back(gO);
 	camera = new SmoothCamera({ 0,0 }, 0, 1 , { 0 }, 10);
 
-	pathfinder = new Pathfinder(10, 10, 100, {-500, -500});
+	pathfinder = new Pathfinder(30, 30, 150, {-500, -500});
 
 	collisionManager = new CollisionManager();
+
+	pathfinder->generateBoundsFromGraph(collisionManager, &bounds);
+
+	
 }
 
 void Scene::draw()

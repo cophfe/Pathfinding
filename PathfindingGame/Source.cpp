@@ -22,6 +22,7 @@
 #include "NecessaryHeaders.h"
 #include "Game.h"
 #include <filesystem>
+#include <chrono>
 
 #define RAYGUI_IMPLEMENTATION
 #define RAYGUI_SUPPORT_ICONS
@@ -32,6 +33,8 @@ int main(int argc, char* argv[])
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	// Initialization
 	//--------------------------------------------------------------------------------------
+	srand(time(0));
+
 	Game& game = Game::getInstance();
 	//The game can be initiated with a GameProperties struct with game info (it just feels cleaner than a long list of values being passed in)
 	//it will use default values if this is not passed in

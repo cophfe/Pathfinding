@@ -67,6 +67,12 @@ void GameObject::draw()
 {
 	sprite->Draw();
 
+#ifdef DRAW_DEBUG
+	for (auto& component : components)
+	{
+		component->debugDraw();
+	}
+#endif
 	for (auto& child : transform->getChildArray())
 	{
 		child->getGameObject()->draw();

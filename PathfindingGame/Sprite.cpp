@@ -42,9 +42,9 @@ void Sprite::UpdateSpriteRectangle()
 {
 	Vector2& pos = transform->getGlobalPosition();
 	float scale = transform->getGlobalScale();
-	destRect = Rectangle{ pos.x, pos.y, texture->width * scale, texture->height * scale };
+	destRect = Rectangle{ pos.x, pos.y + drawOffset, texture->width * scale, texture->height * scale };
 	pivot.x = destRect.width / 2;
-	pivot.y = destRect.height / 2;
+	pivot.y = destRect.height / 2 + drawOffset;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -97,7 +97,7 @@ void AnimatedSprite::UpdateSpriteRectangle()
 {
 	Vector2& pos = transform->getGlobalPosition();
 	float scale = transform->getGlobalScale();
-	destRect = Rectangle{ pos.x, pos.y, ((AnimatedTexture*)texture)->spriteWidth* scale, ((AnimatedTexture*)texture)->spriteHeight* scale };
+	destRect = Rectangle{ pos.x, pos.y + drawOffset, ((AnimatedTexture*)texture)->spriteWidth* scale, ((AnimatedTexture*)texture)->spriteHeight* scale };
 	pivot.x = destRect.width / 2;
-	pivot.y = destRect.height / 2;
+	pivot.y = destRect.height / 2 + drawOffset;
 }

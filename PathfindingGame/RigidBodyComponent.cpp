@@ -10,7 +10,7 @@ void RigidBodyComponent::init(CollisionManager* collisionManager, b2BodyDef& bod
 	
 	//Creating body
 	//first define body settings
-	bodyDef.position.Set(transform->getPosition().x / PHYSICS_UNIT_SCALE, transform->getPosition().y / PHYSICS_UNIT_SCALE);
+	bodyDef.position.Set(transform->getPosition().x / PHYSICS_UNIT_SCALE, -transform->getPosition().y / PHYSICS_UNIT_SCALE);
 	bodyDef.angle = transform->getRotation();
 	//this one ensures the pointer is always correct
 	bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(&body);

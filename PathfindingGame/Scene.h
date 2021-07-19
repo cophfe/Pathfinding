@@ -61,5 +61,7 @@ private:
 	Pathfinder* pathfinder;
 
 	CollisionManager* collisionManager;
+
+	b2Body* bounds;
 };
 

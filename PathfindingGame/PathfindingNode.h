@@ -1,4 +1,6 @@
 #pragma once
+#include "NecessaryHeaders.h"
+
 struct PathfindingNode
 {
 	enum class Type : char
@@ -13,9 +15,10 @@ struct PathfindingNode
 	//each direction has the same cost
 	Type cost;
 	PathfindingNode* previous;
-	PathfindingNode* neighbors[4];
+	PathfindingNode* neighbors[6];
 	int fScore;
 	int gScore;
 	int indexX, indexY;
+	Vector2 position;
 
 };

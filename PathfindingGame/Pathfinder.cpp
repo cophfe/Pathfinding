@@ -1,4 +1,6 @@
 #include "Pathfinder.h"
+#include "RigidBodyComponent.h"
+#include "CollisionManager.h"
 
 Pathfinder::Pathfinder(int amountX, int amountY, float nodeOffset, Vector2 startPosition)
 {
@@ -21,30 +23,56 @@ Pathfinder::Pathfinder(int amountX, int amountY, float nodeOffset, Vector2 start
 		{
 			nodes[x][y] = new PathfindingNode();
 			nodes[x][y]->cost = PathfindingNode::Type::REGULAR;
+			if (rand() < RAND_MAX/7)
+				nodes[x][y]->cost = PathfindingNode::Type::BLOCKED;
 			nodes[x][y]->indexX = x;
 			nodes[x][y]->indexY = y;
-			memset(nodes[x][y]->neighbors, 0, sizeof(PathfindingNode*) * 4);
+			if (y % 2 != 0)
+				nodes[x][y]->position = Vector2(nodes[x][y]->indexX, (float)nodes[x][y]->indexY/ 1.15f) * nodeOffset + startPosition;
+			else	
+				nodes[x][y]->position = Vector2(nodes[x][y]->indexX + 0.5f, (float)nodes[x][y]->indexY/1.15f) * nodeOffset + startPosition;
+			
 		}
 	}
 	for (int x = 0; x < amountX; x++)
 	{
 		for (int y = 0; y < amountY; y++)
 		{
-			if (x > 0)
-				nodes[x][y]->neighbors[0] = nodes[x-1][y];
+			/*
+			  Neighbor index
 
-			if (x < amountX - 1)
-				nodes[x][y]->neighbors[1] = nodes[x+1][y];
+				 0  *  1
+			   *	     *
+			   5         2
+			   *	     *
+				 4  *  3
 
-			if (y > 0)
-				nodes[x][y]->neighbors[2] = nodes[x][y-1];
+			*/
+			//okay this is possibly the most cursed code ever but it works
+			int lX = x > 0;
+			int hX = x < amountX - 1;
+			int lY = y > 0;
+			int hY = y < amountX - 1;
 
-			if (y < amountY -1)
-				nodes[x][y]->neighbors[3] = nodes[x][y+1];
+			if ((y % 2))
+			{
+				nodes[x][y]->neighbors[0] = (PathfindingNode*)((size_t)nodes[x - 1 * lX][y - 1 * lY] * (lX * lY));
+				nodes[x][y]->neighbors[1] = (PathfindingNode*)((size_t)nodes[x][y - 1 * lY] * (lY));
+				nodes[x][y]->neighbors[3] = (PathfindingNode*)((size_t)nodes[x][y + 1 * hY] * (hY));
+				nodes[x][y]->neighbors[4] = (PathfindingNode*)((size_t)nodes[x - 1 *lX ][y + hY] * (lX * hY));
+			}
+			else
+			{
+				nodes[x][y]->neighbors[0] = (PathfindingNode*)((size_t)nodes[x - 1 * lX][y] * (lX));
+				nodes[x][y]->neighbors[1] = (PathfindingNode*)((size_t)nodes[x + 1 * hX][y - 1 * lY] * (hX * lY));
+				nodes[x][y]->neighbors[3] = (PathfindingNode*)((size_t)nodes[x + 1 * hX][y + 1 * hY] * (hX * hY));
+				nodes[x][y]->neighbors[4] = (PathfindingNode*)((size_t)nodes[x][y + 1 * hY] * (hY));
+			}
+			nodes[x][y]->neighbors[2] = (PathfindingNode*)((size_t)nodes[x + 1 * hX][y] * (hX));
+			nodes[x][y]->neighbors[5] = (PathfindingNode*)((size_t)nodes[x - 1 * lX][y] * (lX));
 		}
 		
 	}
-
 }
 
 Pathfinder::~Pathfinder()
@@ -64,18 +92,26 @@ Pathfinder::~Pathfinder()
 
 PathfindingNode* Pathfinder::getNodeFromPoint(float x, float y)
 {
-	x = (x / nodeOffset) + 0.5f + startPosition.x;
-	y = (y / nodeOffset) + 0.5f + startPosition.y;
-	if (x > sizeX || y > sizeY || x < 0 || y < 0)
-		return nullptr;
-	return nodes[(int)x][(int)y];
+	static float boxWidth = nodeOffset;
+	static float boxHalfWidth = nodeOffset/2;
+	static float boxHeight = nodeOffset / 1.15f;
+
+	int indexY = y / boxHeight;
+	
+	//check if odd
+	bool oddY = (indexY % 2) != 0;
+
+	int indexX = oddY ? (x + boxHalfWidth) / boxWidth : x / boxWidth;
+	
+	float relativeY = y - (indexY * boxHeight);
+	
 }
 
 PathfindingNode* Pathfinder::getNodeFromPoint(const Vector2* position)
 {
-	int x = (position->x / nodeOffset) + 0.5f + startPosition.x;
-	int y = (position->y / nodeOffset) + 0.5f + startPosition.y;
-	if (x > sizeX || y > sizeY || x < 0 || y < 0)
+	int x = ((position->x - startPosition.x) / nodeOffset) + 0.5f;
+	int y = ((position->y - startPosition.y) / nodeOffset) + 0.5f;
+	if (x >= sizeX || y >= sizeY || x < 0 || y < 0)
 		return nullptr;
 	return nodes[x][y];
 }
@@ -90,36 +126,58 @@ void Pathfinder::draw()
 	Color regular = GRAY;
 	Color wall = DARKBLUE;
 	regular.a = 100;
-	wall.a = 100;
-	Color& c = regular;
+	wall.a = 200;
+	Color* c = &regular;
 
 	for (int x = 0; x < sizeX; x++)
 	{
 		for (int y = 0; y < sizeY; y++)
 		{
-			c = regular;
 			if (nodes[x][y]->cost == PathfindingNode::Type::BLOCKED)
-				c = wall;
-			//DrawPoly({ 0,0 }, 6, 100, 0, BLUE);
-			DrawRectangle(nodes[x][y]->indexX * nodeOffset - nodeOffset/2 + startPosition.x, nodes[x][y]->indexY * nodeOffset - nodeOffset / 2 + startPosition.y, nodeOffset*0.95f, nodeOffset* 0.9f, c);
+				c = &wall;
+			else
+				c = &regular;
+			DrawPoly(nodes[x][y]->position, 6, nodeOffset / 2 * 1.15473441f * 0.95f, 0, *c);
+			DrawCircleV(nodes[x][y]->position, 5, BLUE);
+
+			//draw lines
+			/*for (int i = 0; i < 6; i++)
+			{
+				if (nodes[x][y]->neighbors[i])
+					DrawLineEx(nodes[x][y]->neighbors[i]->position, nodes[x][y]->position, 5, wall);
+			}*/
+	
 		}
 	}
+	
+	if (start) DrawPoly(start->position, 6, nodeOffset / 2 * 1.15473441f * 0.7f, 0, RED);
+	if (target) DrawPoly(target->position, 6, nodeOffset / 2 * 1.15473441f * 0.7f, 0, PURPLE);
+	
 }
 
 int Pathfinder::getHeuristic(PathfindingNode* node, PathfindingNode* end)
 {
-	int dx = abs(end->indexX - node->indexX);
-	int dy = abs(end->indexY - node->indexY);
+	//excellent resource for hex grid:
+	//http://www-cs-students.stanford.edu/~amitp/Articles/HexLOS.html
+	//gives exact heuristic value
+
+	int dx = end->indexX - node->indexX;
+	int dy = end->indexY - node->indexY;
+
+	if (((dx > 0) - (dx < 0)) == ((dy > 0) - (dy < 0)))
+		return std::max(abs(dx), abs(dy));
+	else
+		return abs(dx) + abs(dy);
 
 	return (int)PathfindingNode::Type::REGULAR * (dx + dy);
 }
 
-int Pathfinder::AStarPath(PathfindingNode* start, PathfindingNode* end, std::vector<Vector2>* finalPath)
+int Pathfinder::AStarPath(PathfindingNode* start, PathfindingNode* target, std::vector<Vector2>* finalPath)
 {
-	finalPath->clear();
-
-	//if (bool)end->cost is false, then end 
-	if (start == nullptr || end == nullptr || end->cost == PathfindingNode::Type::BLOCKED || start == end)
+	this->start = start;
+	this->target = target;
+	//if (bool)target->cost is false, then target 
+	if (start == nullptr || target == nullptr || target->cost == PathfindingNode::Type::BLOCKED || start == target)
 		return 0;
 
 	openList.clear();
@@ -134,20 +192,21 @@ int Pathfinder::AStarPath(PathfindingNode* start, PathfindingNode* end, std::vec
 		PathfindingNode* current = openList.pop();
 		closedList[current->indexX + current->indexY * sizeX] = true;
 
-		if (current == end)
+		if (current == target)
 		{
-			finalPath->push_back(Vector2{ (float)end->indexX , (float)end->indexY } * nodeOffset + startPosition);
+			finalPath->clear();
+			finalPath->push_back(current->position);
 			static int pathLength = 0;
 			pathLength = current->gScore;
 			while (current->previous != nullptr)
 			{
-				finalPath->push_back({ Vector2{ (float)current->indexX , (float)current->indexY } *nodeOffset + startPosition });
+				finalPath->push_back( current->position );
 				current = current->previous;
 			}
 			return pathLength;
 		}
 
-		for (int n = 0; n < 4; n++)
+		for (int n = 0; n < 6; n++)
 		{
 			PathfindingNode* neighbor = current->neighbors[n];
 
@@ -161,7 +220,7 @@ int Pathfinder::AStarPath(PathfindingNode* start, PathfindingNode* end, std::vec
 				{
 					neighbor->previous = current;
 					neighbor->gScore = newScore;
-					neighbor->fScore = neighbor->gScore + getHeuristic(neighbor, end);
+					neighbor->fScore = neighbor->gScore + getHeuristic(neighbor, target);
 					openList.updateNode(neighbor);
 				}
 			}
@@ -169,9 +228,31 @@ int Pathfinder::AStarPath(PathfindingNode* start, PathfindingNode* end, std::vec
 			{
 				neighbor->previous = current;
 				neighbor->gScore = newScore;
-				neighbor->fScore = neighbor->gScore + getHeuristic(neighbor, end);
+				neighbor->fScore = neighbor->gScore + getHeuristic(neighbor, target);
 				openList.push(neighbor);
 			}
 		}
 	}
+}
+
+void Pathfinder::generateBoundsFromGraph(CollisionManager* collision, b2Body** boundsBodyPointer)
+{
+	//generate bounds surrounding the graph
+
+	b2BodyDef bDef; //default bodyDef is perfect
+	bDef.userData.pointer = (uintptr_t)*boundsBodyPointer;
+	b2FixtureDef fDef;
+	fDef.filter.categoryBits = RigidBodyComponent::BOUNDS;
+	fDef.filter.maskBits = RigidBodyComponent::ALL;
+	b2ChainShape bounds;
+	Vector2* vertices = new Vector2[4];
+	vertices[0] = { (startPosition.x - nodeOffset / 2) / PHYSICS_UNIT_SCALE, -(startPosition.y - nodeOffset/2) / PHYSICS_UNIT_SCALE };
+	vertices[1] = { (startPosition.x + nodeOffset * sizeX - nodeOffset / 2) / PHYSICS_UNIT_SCALE, -(startPosition.y - nodeOffset / 2) / PHYSICS_UNIT_SCALE };
+	vertices[2] = { (startPosition.x + nodeOffset * sizeX - nodeOffset / 2) / PHYSICS_UNIT_SCALE, (startPosition.y + nodeOffset * sizeY - nodeOffset / 2) / -PHYSICS_UNIT_SCALE };
+	vertices[3] = { (startPosition.x - nodeOffset / 2) / PHYSICS_UNIT_SCALE, (startPosition.y + nodeOffset * sizeY - nodeOffset / 2) / -PHYSICS_UNIT_SCALE };
+	bounds.CreateLoop((b2Vec2*)vertices, 4);
+	fDef.shape = &bounds;
+
+	b2Body* boundsBody = collision->getWorld()->CreateBody(&bDef);
+	boundsBody->CreateFixture(&fDef);
 }

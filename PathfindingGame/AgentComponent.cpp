@@ -4,46 +4,48 @@ void AgentComponent::init(AgentDataComponent* blackboard)
 {
 	this->blackboard = blackboard;
 	pathfinder = blackboard->getPathfinder();
+	destination = transform->getPosition();
+	currentNode = pathfinder->getNodeFromPoint(&transform->getPosition());
 }
 
 void AgentComponent::start()
 {
-	rigidbody = gameObject->getComponentOfType<RigidBodyComponent>();
+	rigidBody = gameObject->getComponentOfType<RigidBodyComponent>();
 }
 
 void AgentComponent::fixedUpdate()
 {
 	//path following code
 	
-	//check if the target has moved from one node to another
-	if (!targetMovedNode)
-		targetMovedNode = checkTargetMoved();
-
-	//check if it is within reach of the destination
-	if ((transform->getPosition() - destination).magnitudeSquared() < minDistanceToNode * minDistanceToNode)
+	if (!shouldReconstructPath)
 	{
-		//check if destination (that was just reached) is the target node
-		if (!path.empty() && path[path.size() - 1] == destination)
+		//if player moves to a different node the path should be reconstructed
+		shouldReconstructPath = checkTargetMoved();
+		shouldReconstructPath = true;
+	}
+
+	if (true)//(transform->getPosition() - destination).magnitudeSquared() < minDistanceToNode * minDistanceToNode)
+	{
+		if (pathIndex == 0)
 		{
-			std::cout << "CHANGE STATE!\n";
+			std::cout << "reached end!\n";
+		}
+		if (shouldReconstructPath)
+		{
+			if (pathfinder->AStarPath(pathfinder->getNodeFromPoint(&transform->getPosition()), getTargetNode(), &path) > 0)
+			{
+				//if astar returns a result, set the destination to the first node
+				pathIndex = path.size() - 1;
+				destination = path[pathIndex];
+			}
+			//otherwise the destination stays the same and we wait till we should reconstruct the path again
+			shouldReconstructPath = false;
 		}
 		else
 		{
-			if (targetMovedNode)
+			if (!path.empty() && pathIndex > 0)
 			{
-				//if the target has moved nodes, redo astar.
-				pathIndex = 0;
-				if (pathfinder->AStarPath(pathfinder->getNodeFromPoint(&transform->getPosition()), getTargetNode(), &path) > 0)
-				{
-					//if astar returns a result, set the destination to the first node
-					destination = path[pathIndex];
-				}
-				targetMovedNode = false;
-			}
-			else
-			{
-				//if the target hasn't moved nodes, just use the next node up the path
-				pathIndex++;
+				pathIndex--;
 				destination = path[pathIndex];
 			}
 		}
@@ -51,7 +53,26 @@ void AgentComponent::fixedUpdate()
 
 	//move toward destination
 	movementDirection = (destination - transform->getPosition()).normalised();
-	rigidbody->setVelocity(movementDirection * acceleration * PHYSICS_TIME_STEP);
+	movementDirection.y *= -1;
+	Vector2 velocity = (movementDirection * maxVelocity - rigidBody->getVelocity());
+	if (velocity.magnitudeSquared() > maxAcceleration * maxAcceleration * PHYSICS_TIME_STEP * PHYSICS_TIME_STEP)
+		velocity = velocity.normalised() * maxAcceleration * PHYSICS_TIME_STEP;
+	rigidBody->addVelocity(velocity);
+	
 	
 	
 }
+
+#ifdef DRAW_DEBUG
+void AgentComponent::debugDraw()
+{
+	if (!path.empty())
+	{
+		for (size_t i = 0; i < path.size() - 1; i++)
+		{
+			DrawLineEx(path[i], path[i + 1], 8, BLACK);
+			DrawCircle(path[i].x, path[i].y, 10, BLACK);
+		}
+	}
+}
+#endif // DRAW_DEBUG

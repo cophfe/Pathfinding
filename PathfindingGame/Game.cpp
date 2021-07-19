@@ -63,15 +63,14 @@ void Game::init(GameProperties* properties )
 	blackboard->init(target, scenes[currentScene]->getPathfinder());
 	//then actors
 	b2BodyDef actorbDef = RigidBodyComponent::genBodyDef(b2_dynamicBody, true);
-	b2FixtureDef actorfDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::ENEMY);
+	b2FixtureDef actorfDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::ENEMY, 0);
 	b2PolygonShape dynamicBox;
 	dynamicBox.SetAsBox(1.0f, 1.0f);
 	actorfDef.shape = &dynamicBox;
-	GameObject* actor = new GameObject(scenes[currentScene], "birdChill", true, { 300,400 }, 0, 1);
+	GameObject* actor = new GameObject(scenes[currentScene], "birdChill", true, { 300,400 }, 0, 0.25f);
 	actor->addComponent<RigidBodyComponent>()->init(scenes[currentScene]->getCollisionManager(), actorbDef, actorfDef);
 	actor->addComponent<AgentComponent>()->init(blackboard);
 	
-
 	scenes[0]->start();
 }
 

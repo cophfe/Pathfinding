@@ -38,6 +38,8 @@ public:
 	inline Rectangle* getDestinationRectangle() { return &destRect; }
 	float getWidth() { return destRect.width; }
 	float getHeight() { return destRect.height; }
+	void setDrawOffset(float drawOffset) { this->drawOffset = drawOffset; }
+	float drawOffset = 0;
 protected:
 	Transform* transform;
 	Texture2D* texture;
@@ -59,6 +61,8 @@ public:
 
 	inline void setTimePerFrame(float seconds) { secondsPerFrame = seconds; }
 	void UpdateSpriteRectangle();
+
+	
 private:
 	bool paused;
 	int currentFrame;

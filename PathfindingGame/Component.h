@@ -16,6 +16,12 @@ public:
 	virtual void onEnable();
 	virtual void unload();
 
+#ifdef DRAW_DEBUG
+	virtual void debugDraw() {};
+#endif // DRAW_DEBUG
+
+
+
 	void setGameObject(GameObject* connected);
 
 	void disableComponent();

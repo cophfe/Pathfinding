@@ -3,6 +3,8 @@
 #include "NecessaryHeaders.h"
 #include "Heap.h"
 
+class CollisionManager;
+
 class Pathfinder
 {
 public:
@@ -18,6 +20,7 @@ public:
 	int getHeuristic(PathfindingNode* node, PathfindingNode* end);
 	int AStarPath(PathfindingNode* start, PathfindingNode* end, std::vector<Vector2>* finalPath);
 
+	void generateBoundsFromGraph(CollisionManager* collision, b2Body** boundsBodyPointer);
 private:
 	PathHeap openList;
 	bool* closedList;
@@ -27,5 +30,8 @@ private:
 	Vector2 startPosition;
 	int sizeX, sizeY, length;
 	float nodeOffset;
+
+	PathfindingNode* start;
+	PathfindingNode* target;
 };
 

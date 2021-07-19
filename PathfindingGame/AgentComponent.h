@@ -13,6 +13,10 @@ public:
 	void start();
 	void fixedUpdate();
 
+#ifdef DRAW_DEBUG
+	void debugDraw();
+#endif // DRAW_DEBUG
+
 private:
 
 	//this is here for the future, just in case target should be able to be changed
@@ -22,18 +26,21 @@ private:
 	Pathfinder* pathfinder;
 
 	AgentDataComponent* blackboard;
-	RigidBodyComponent* rigidbody;
+	RigidBodyComponent* rigidBody;
 
 	std::vector<Vector2> path;
 	Vector2 destination;
 	
-	float acceleration = 2.0f;
+	float maxAcceleration = 140.0f;
+	float maxVelocity = 8.0f / 10;
 
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   internal only
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	bool targetMovedNode;
+	bool shouldReconstructPath = true;
 	Vector2 movementDirection;
 	int pathIndex = 0;
+
+	PathfindingNode* currentNode;
 };
 
