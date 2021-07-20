@@ -3,13 +3,16 @@
 #include "Transform.h"
 #include "Game.h"
 
+#define PATHWIDTH 16
+#define PATHHEIGHT 10
+#define HEX_OFFSET 200
 void Scene::load()
 {
 	//GameObject* gO = new GameObject("Player.png", nullptr, true, Vector2(0, 0), 30, 1);
 	//sortingLayers[SORTING::MIDGROUND].push_back(gO);
 	camera = new SmoothCamera({ 0,0 }, 0, 1 , { 0 }, 10);
 
-	pathfinder = new Pathfinder(30, 30, 150, {-500, -500});
+	pathfinder = new Pathfinder(PATHWIDTH, PATHHEIGHT, HEX_OFFSET, { -PATHWIDTH * HEX_OFFSET * 0.5f, -PATHHEIGHT * HEX_OFFSET * 0.5f });
 
 	collisionManager = new CollisionManager();
 
@@ -37,7 +40,13 @@ void Scene::draw()
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #ifdef DRAW_DEBUG
 	pathfinder->draw();
-	
+	for (auto& drawLayer : sortingLayers)
+	{
+		for (auto gameObject : drawLayer)
+		{
+			gameObject->debugDraw();
+		}
+	}
 	collisionManager->debugDraw();
 #endif // DRAW_DEBUG
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

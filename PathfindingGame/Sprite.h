@@ -26,11 +26,11 @@ public:
 	Sprite();
 	Sprite(Texture2D* textureComplex, GameObject* attached);
 
-	virtual void Draw();
+	virtual void draw();
 	virtual void UpdateSpriteRectangle();
 	virtual bool isNull() { return false; }
 	void flip();
-	void setFlipped(bool flippedValue);
+	virtual void setFlipped(bool flippedValue);
 	bool getFlipped() { return srcRect.width < 0; }
 	inline void setTint(Color tint) { this->tint = tint; }
 	inline Color& getTint() { return tint; }
@@ -55,15 +55,23 @@ class AnimatedSprite : public Sprite
 public:
 	AnimatedSprite(AnimatedTexture* textureComplex, GameObject* attached);
 
-	void Play();
-	void Pause();
-	void Draw();
+	void play();
+	void pause();
+	void pauseAt(int frame);
+	void playAt(int frame);
+	void setSettings(int startFrame, int endFrame, int currentFrame);
+	void draw();
+	void setFlipped(bool flippedValue);
 
 	inline void setTimePerFrame(float seconds) { secondsPerFrame = seconds; }
 	void UpdateSpriteRectangle();
 
 	
 private:
+	inline void updateSrcCoordinates() {
+		srcRect.x = ((AnimatedTexture*)texture)->coordinates[currentFrame].x;
+		srcRect.y = ((AnimatedTexture*)texture)->coordinates[currentFrame].y;
+	}
 	bool paused;
 	int currentFrame;
 	float secondsPerFrame;
@@ -85,7 +93,7 @@ public:
 		srcRect = { 0 };
 		destRect = { 0 };
 	}
-	void Draw() {}
+	void draw() {}
 	void UpdateSpriteRectangle() {}
 	bool isNull() { return true; }
 };

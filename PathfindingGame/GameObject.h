@@ -33,6 +33,9 @@ public:
 	//		Rendering
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	void draw();
+#ifdef DRAW_DEBUG
+	void debugDraw();
+#endif
 	inline Sprite* getSprite() { return sprite; };
 	inline void setSprite(Sprite* sprite) { this->sprite = sprite; }
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

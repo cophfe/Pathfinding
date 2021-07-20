@@ -22,7 +22,7 @@ Sprite::Sprite(Texture2D* textureComplex, GameObject* attached)
 	UpdateSpriteRectangle();
 }
 
-void Sprite::Draw()
+void Sprite::draw()
 {
 	DrawTexturePro(*texture, srcRect, destRect, pivot, transform->getGlobalRotation() * rad2Deg, tint);
 }
@@ -66,18 +66,40 @@ AnimatedSprite::AnimatedSprite(AnimatedTexture* textureComplex, GameObject* atta
 	UpdateSpriteRectangle();
 }
 
-void AnimatedSprite::Play()
+void AnimatedSprite::play()
 {
 	paused = false;
+}
+
+void AnimatedSprite::pause()
+{
+	paused = true;
 	frameTimer = 0;
 }
 
-void AnimatedSprite::Pause()
+void AnimatedSprite::pauseAt(int frame)
 {
+	currentFrame = frame;
+	updateSrcCoordinates();
 	paused = true;
+	frameTimer = 0;
 }
 
-void AnimatedSprite::Draw()
+void AnimatedSprite::playAt(int frame)
+{
+	currentFrame = frame;
+	paused = false;
+}
+
+void AnimatedSprite::setSettings(int startFrame, int endFrame, int currentFrame)
+{
+	this->currentFrame = currentFrame;
+	this->endFrame == endFrame;
+	this->startFrame = startFrame;
+	frameTimer = 0;
+}
+
+void AnimatedSprite::draw()
 {
 	frameTimer += Game::getDeltaTime();
 
@@ -86,8 +108,7 @@ void AnimatedSprite::Draw()
 		currentFrame++;
 		if (currentFrame > endFrame)
 			currentFrame = startFrame;
-		srcRect.x = ((AnimatedTexture*)texture)->coordinates[currentFrame].x;
-		srcRect.y = ((AnimatedTexture*)texture)->coordinates[currentFrame].y;
+		updateSrcCoordinates();
 		frameTimer -= secondsPerFrame;
 	}
 	DrawTexturePro(*texture, srcRect, destRect, pivot, transform->getGlobalRotation() * rad2Deg, tint);
@@ -97,7 +118,12 @@ void AnimatedSprite::UpdateSpriteRectangle()
 {
 	Vector2& pos = transform->getGlobalPosition();
 	float scale = transform->getGlobalScale();
-	destRect = Rectangle{ pos.x, pos.y + drawOffset, ((AnimatedTexture*)texture)->spriteWidth* scale, ((AnimatedTexture*)texture)->spriteHeight* scale };
+	destRect = Rectangle{ pos.x, pos.y, ((AnimatedTexture*)texture)->spriteWidth* scale, ((AnimatedTexture*)texture)->spriteHeight* scale };
 	pivot.x = destRect.width / 2;
 	pivot.y = destRect.height / 2 + drawOffset;
+}
+
+void AnimatedSprite::setFlipped(bool flippedValue)
+{
+	srcRect.width = flippedValue ? (float)-((AnimatedTexture*)texture)->spriteWidth : (float)((AnimatedTexture*)texture)->spriteWidth;
 }

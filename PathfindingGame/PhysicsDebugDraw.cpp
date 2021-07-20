@@ -49,7 +49,9 @@ void PhysicsDebugDraw::b2DebugDrawCircle(const b2Vec2& center, float radius, con
 
 void PhysicsDebugDraw::b2DebugDrawSolidCircle(const b2Vec2& center, float radius, const b2Vec2& axis, const b2Color& color)
 {
-	DrawCircle(center.x * PHYSICS_UNIT_SCALE, center.y * -PHYSICS_UNIT_SCALE, radius * PHYSICS_UNIT_SCALE, convertColorToRaylib(color));
+	DrawCircleLines(center.x * PHYSICS_UNIT_SCALE, center.y * -PHYSICS_UNIT_SCALE, radius * PHYSICS_UNIT_SCALE, convertColorToRaylib(color));
+	
+	//DrawCircle(center.x * PHYSICS_UNIT_SCALE, center.y * -PHYSICS_UNIT_SCALE, radius * PHYSICS_UNIT_SCALE, convertColorToRaylib(color));
 }
 
 void PhysicsDebugDraw::b2DebugDrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color)

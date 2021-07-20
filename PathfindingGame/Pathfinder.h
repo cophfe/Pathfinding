@@ -30,8 +30,5 @@ private:
 	Vector2 startPosition;
 	int sizeX, sizeY, length;
 	float nodeOffset;
-
-	PathfindingNode* start;
-	PathfindingNode* target;
 };
 

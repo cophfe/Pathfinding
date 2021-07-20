@@ -45,7 +45,12 @@ void PlayerComponent::update()
 	if (moved)
 	{
 		//normalize() does nothing if it has a magnitude of zero
+		((AnimatedSprite*)gameObject->getSprite())->play();
 		direction.normalize();
+	}
+	else
+	{
+		((AnimatedSprite*)gameObject->getSprite())->pauseAt(0);
 	}
 }
 

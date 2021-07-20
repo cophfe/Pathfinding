@@ -22,7 +22,7 @@ void Game::init(GameProperties* properties )
 		SetTargetFPS(properties->targetFPS);
 
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 	   Draw Loading Screen
+	// 	   draw Loading Screen
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// since loading the textures can take a while first a loading screen is rendered
 	BeginDrawing();
@@ -40,18 +40,19 @@ void Game::init(GameProperties* properties )
 	currentScene = 0;
 	scenes.push_back(new Scene());
 	scenes[currentScene]->load();
-	auto background = new GameObject(scenes[currentScene], "player", true, { 0 }, { 0 }, 5.0f);
-	background->getSprite()->setTint({ 0xFF,0,0,0xCF });
-
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   Initialize Player
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	auto target = new GameObject(scenes[currentScene], "player");
+	auto target = new GameObject(scenes[currentScene], "beear");
 	PlayerComponent* pC = target->addComponent<PlayerComponent>();
-	pC->init(10, 90.0f);
+	pC->init(4, 90.0f);
 	b2BodyDef bDef = RigidBodyComponent::genBodyDef(b2_dynamicBody, true);
 	b2FixtureDef fDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::PLAYER);
-	target->addComponent<RigidBodyComponent>()->init(scenes[currentScene]->getCollisionManager(), bDef, fDef, true);
+	b2CircleShape playerShape;
+	target->getSprite()->setDrawOffset(target->getSprite()->getDestinationRectangle()->height / 2 - 80);
+	playerShape.m_radius = 0.7f;
+	fDef.shape = &playerShape;
+	target->addComponent<RigidBodyComponent>()->init(scenes[currentScene]->getCollisionManager(), bDef, fDef);
 	scenes[0]->getCamera()->Target(target->getTransform());
 	//also create child
 	new GameObject(target, "bee", true, Vector2{ 500, 0 }, 0.0f, 0.5f);
@@ -64,10 +65,11 @@ void Game::init(GameProperties* properties )
 	//then actors
 	b2BodyDef actorbDef = RigidBodyComponent::genBodyDef(b2_dynamicBody, true);
 	b2FixtureDef actorfDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::ENEMY, 0);
-	b2PolygonShape dynamicBox;
-	dynamicBox.SetAsBox(1.0f, 1.0f);
-	actorfDef.shape = &dynamicBox;
+	b2CircleShape actorShape = b2CircleShape();
+	actorShape.m_radius = 0.5f;
+	actorfDef.shape = &actorShape;
 	GameObject* actor = new GameObject(scenes[currentScene], "birdChill", true, { 300,400 }, 0, 0.25f);
+	actor->getSprite()->setDrawOffset(actor->getSprite()->getDestinationRectangle()->height/2 - 60);
 	actor->addComponent<RigidBodyComponent>()->init(scenes[currentScene]->getCollisionManager(), actorbDef, actorfDef);
 	actor->addComponent<AgentComponent>()->init(blackboard);
 	
@@ -83,7 +85,7 @@ void Game::gameLoop()
         // update Scene
         scenes[currentScene]->update();
         
-        // Draw Scene
+        // draw Scene
         scenes[currentScene]->draw();
 
 		std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();

@@ -24,7 +24,7 @@ void AgentComponent::fixedUpdate()
 		shouldReconstructPath = true;
 	}
 
-	if (true)//(transform->getPosition() - destination).magnitudeSquared() < minDistanceToNode * minDistanceToNode)
+	if ((transform->getPosition() - destination).magnitudeSquared() < minDistanceToNode * minDistanceToNode)
 	{
 		if (pathIndex == 0)
 		{
@@ -66,13 +66,15 @@ void AgentComponent::fixedUpdate()
 #ifdef DRAW_DEBUG
 void AgentComponent::debugDraw()
 {
+	static Color b = { 0,0,0,200 };
 	if (!path.empty())
 	{
 		for (size_t i = 0; i < path.size() - 1; i++)
 		{
-			DrawLineEx(path[i], path[i + 1], 8, BLACK);
-			DrawCircle(path[i].x, path[i].y, 10, BLACK);
+			DrawLineEx(path[i], path[i + 1], 8, b);
+			DrawCircle(path[i].x, path[i].y, 10, b);
 		}
 	}
+	DrawCircle(blackboard->getTargetPosition()->x, blackboard->getTargetPosition()->y, 10, RED);
 }
 #endif // DRAW_DEBUG

@@ -65,20 +65,23 @@ void GameObject::deleteSelf()
 
 void GameObject::draw()
 {
-	sprite->Draw();
+	sprite->draw();
 
-#ifdef DRAW_DEBUG
-	for (auto& component : components)
-	{
-		component->debugDraw();
-	}
-#endif
 	for (auto& child : transform->getChildArray())
 	{
 		child->getGameObject()->draw();
 	}
-
 }
+
+#ifdef DRAW_DEBUG
+void GameObject::debugDraw()
+{
+	for (auto& component : components)
+	{
+		component->debugDraw();
+	}
+}
+#endif
 
 void GameObject::updateComponents()
 {
