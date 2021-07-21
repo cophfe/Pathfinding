@@ -5,7 +5,7 @@
 
 #define PATHWIDTH 16
 #define PATHHEIGHT 10
-#define HEX_OFFSET 200
+#define HEX_OFFSET 250
 void Scene::load()
 {
 	//GameObject* gO = new GameObject("Player.png", nullptr, true, Vector2(0, 0), 30, 1);
@@ -17,7 +17,7 @@ void Scene::load()
 	collisionManager = new CollisionManager();
 
 	pathfinder->generateBoundsFromGraph(collisionManager, &bounds);
-
+	pathfinder->generateWalls(collisionManager, "wall", this);
 	
 }
 
@@ -27,6 +27,8 @@ void Scene::draw()
     ClearBackground(RAYWHITE);
 
 	camera->StartCamera();
+
+    //DrawTextureTiled(); 
 
 	for (auto& drawLayer : sortingLayers)
 	{
@@ -52,7 +54,6 @@ void Scene::draw()
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	camera->EndCamera();
-    
 	for (auto gameObject : UI)
 	{
 		gameObject->draw();

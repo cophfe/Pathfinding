@@ -31,7 +31,7 @@ public:
 	inline const Vector2& getVelocity() { return reinterpret_cast<const Vector2&>(body->GetLinearVelocity()); }
 	
 
-	static b2BodyDef genBodyDef(b2BodyType type, bool fixedRotation = false, Vector2 velocity = { 0 }, float angularVelocity = { 0 }, float angularDamping = 0, float linearDamping = 0);
+	static b2BodyDef genBodyDef(b2BodyType Type, bool fixedRotation = false, Vector2 velocity = { 0 }, float angularVelocity = { 0 }, float angularDamping = 0, float linearDamping = 0);
 	static b2FixtureDef genFixtureDef(uint16 collisionCategory, uint16 collisionMask = ALL, b2Shape* shape = nullptr, bool isSensor = false, float friction = 0.0f, float restitution = 0.0f, float density = 1.0f, float restitutionThreshold = 0);
 	enum CollisionCategories : uint16 //16 total
 	{
@@ -43,14 +43,13 @@ public:
 	};
 private:
 	b2Body* body;
-
 	b2World* world;
 
 	//collision callbacks should only influence game logic through the update function
 	std::forward_list<b2ContactListener> collisionCallback;
 };
 
-/// The body type.
+/// The body Type.
 /// static: zero mass, zero velocity, may be manually moved
 /// kinematic: zero mass, non-zero velocity set by user, moved by solver
 /// dynamic: positive mass, non-zero velocity determined by forces, moved by solver

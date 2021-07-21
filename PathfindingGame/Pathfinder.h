@@ -4,6 +4,8 @@
 #include "Heap.h"
 
 class CollisionManager;
+class Scene;
+class GameObject;
 
 class Pathfinder
 {
@@ -21,6 +23,7 @@ public:
 	int AStarPath(PathfindingNode* start, PathfindingNode* end, std::vector<Vector2>* finalPath);
 
 	void generateBoundsFromGraph(CollisionManager* collision, b2Body** boundsBodyPointer);
+	void generateWalls(CollisionManager* collision, const char* texture, Scene* scene);
 private:
 	PathHeap openList;
 	bool* closedList;

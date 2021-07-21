@@ -25,13 +25,52 @@ void GameObject::init(const char* spriteName, GameObject* parent, bool isDrawn, 
 
 GameObject::GameObject(Scene* parent, const char* spriteName, bool isDrawn, Vector2 position, float rotation, float scale, SORTING layer)
 {
-	init(spriteName, nullptr, isDrawn, position, rotation, scale);
+	this->isDrawn = isDrawn;
+
+	TextureManager* tM = Game::getInstance().getTextureManager();
+	transform = new Transform(position, scale, rotation, nullptr, this);
+
+	if (isDrawn)
+		sprite = tM->GenSprite(std::string(spriteName), this);
+	else
+		sprite = new NullSprite();
+
+	id = idCounter;
+	++idCounter;
+
+	parent->addGameObject(this, layer);
+}
+
+GameObject::GameObject(Scene* parent, Texture2D* texture, Vector2 position, float rotation, float scale, SORTING layer)
+{
+	isDrawn = true;
+
+	TextureManager* tM = Game::getInstance().getTextureManager();
+	transform = new Transform(position, scale, rotation, nullptr, this);
+	sprite = new Sprite(texture, this);
+
+	id = idCounter;
+	++idCounter;
+
 	parent->addGameObject(this, layer);
 }
 
 GameObject::GameObject(GameObject* parent, const char* spriteName, bool isDrawn, Vector2 position, float rotation, float scale)
 {
-	init(spriteName, parent, isDrawn, position, rotation, scale);
+	this->isDrawn = isDrawn;
+
+	TextureManager* tM = Game::getInstance().getTextureManager();
+	if (parent == nullptr)
+		transform = new Transform(position, scale, rotation, nullptr, this);
+	else
+		transform = new Transform(position, scale, rotation, parent->getTransform(), this);
+	if (isDrawn)
+		sprite = tM->GenSprite(std::string(spriteName), this);
+	else
+		sprite = new NullSprite();
+
+	id = idCounter;
+	++idCounter;
 }
 
 GameObject::~GameObject()

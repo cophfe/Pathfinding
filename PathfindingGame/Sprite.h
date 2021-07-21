@@ -39,7 +39,7 @@ public:
 	float getWidth() { return destRect.width; }
 	float getHeight() { return destRect.height; }
 	void setDrawOffset(float drawOffset) { this->drawOffset = drawOffset; }
-	float drawOffset = 0;
+	float getDrawOffset() { return drawOffset; }
 protected:
 	Transform* transform;
 	Texture2D* texture;
@@ -48,6 +48,7 @@ protected:
 	Rectangle srcRect;
 	Rectangle destRect;
 	Vector2 pivot;
+	float drawOffset = 0;
 };
 
 class AnimatedSprite : public Sprite

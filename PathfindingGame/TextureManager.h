@@ -30,6 +30,7 @@ public:
 	void LoadTexturesFromFolder(std::string folder);
 
 	Sprite* GenSprite(std::string name, GameObject* gameObject);
+	Texture2D* getTextureInfo(std::string name);
 
 	void UnloadTextures();
 

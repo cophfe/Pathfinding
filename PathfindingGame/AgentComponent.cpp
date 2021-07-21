@@ -1,11 +1,13 @@
 #include "AgentComponent.h"
+#include "Game.h"
 
 void AgentComponent::init(AgentDataComponent* blackboard)
 {
 	this->blackboard = blackboard;
 	pathfinder = blackboard->getPathfinder();
 	destination = transform->getPosition();
-	currentNode = pathfinder->getNodeFromPoint(&transform->getPosition());
+	sprite = (AnimatedSprite*)gameObject->getSprite();
+	spriteHover = sprite->getDrawOffset();
 }
 
 void AgentComponent::start()
@@ -16,27 +18,22 @@ void AgentComponent::start()
 void AgentComponent::fixedUpdate()
 {
 	//path following code
-	
-	if (!shouldReconstructPath)
-	{
-		//if player moves to a different node the path should be reconstructed
-		shouldReconstructPath = checkTargetMoved();
-		shouldReconstructPath = true;
-	}
 
 	if ((transform->getPosition() - destination).magnitudeSquared() < minDistanceToNode * minDistanceToNode)
 	{
 		if (pathIndex == 0)
 		{
 			std::cout << "reached end!\n";
+			movementDirection = { 0 };
 		}
-		if (shouldReconstructPath)
+		if (checkTargetMoved())
 		{
-			if (pathfinder->AStarPath(pathfinder->getNodeFromPoint(&transform->getPosition()), getTargetNode(), &path) > 0)
+			if (pathfinder->AStarPath(pathfinder->getNodeFromPoint(&transform->getPosition()), playerNode, &path) > 0)
 			{
 				//if astar returns a result, set the destination to the first node
 				pathIndex = path.size() - 1;
 				destination = path[pathIndex];
+				
 			}
 			//otherwise the destination stays the same and we wait till we should reconstruct the path again
 			shouldReconstructPath = false;
@@ -47,6 +44,7 @@ void AgentComponent::fixedUpdate()
 			{
 				pathIndex--;
 				destination = path[pathIndex];
+				
 			}
 		}
 	}
@@ -54,6 +52,7 @@ void AgentComponent::fixedUpdate()
 	//move toward destination
 	movementDirection = (destination - transform->getPosition()).normalised();
 	movementDirection.y *= -1;
+	sprite->setFlipped(movementDirection.x > 0);
 	Vector2 velocity = (movementDirection * maxVelocity - rigidBody->getVelocity());
 	if (velocity.magnitudeSquared() > maxAcceleration * maxAcceleration * PHYSICS_TIME_STEP * PHYSICS_TIME_STEP)
 		velocity = velocity.normalised() * maxAcceleration * PHYSICS_TIME_STEP;
@@ -61,6 +60,13 @@ void AgentComponent::fixedUpdate()
 	
 	
 	
+}
+
+void AgentComponent::update()
+{
+	static float timer = 0;
+	timer += Game::getDeltaTime();
+	gameObject->getSprite()->setDrawOffset(spriteHover + sin(timer * floatSpeed) * floatMagnitude);
 }
 
 #ifdef DRAW_DEBUG

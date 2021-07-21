@@ -5,6 +5,8 @@
 #include "RigidBodyComponent.h"
 #include "Pathfinder.h"
 constexpr float minDistanceToNode = 10.0f;
+constexpr float floatMagnitude = 15.0f;
+constexpr float floatSpeed = 10.0f;
 
 class AgentComponent : public Component
 {
@@ -12,7 +14,7 @@ public:
 	void init(AgentDataComponent* blackboard );
 	void start();
 	void fixedUpdate();
-
+	void update();
 #ifdef DRAW_DEBUG
 	void debugDraw();
 #endif // DRAW_DEBUG
@@ -21,9 +23,23 @@ private:
 
 	//this is here for the future, just in case target should be able to be changed
 	inline PathfindingNode* getTargetNode() { return blackboard->getTargetPathfinderNode(); }
-	inline bool checkTargetMoved() { return blackboard->checkTargetMovedThisFrame(); }
+	inline bool checkTargetMoved()
+	{
+		PathfindingNode* node = blackboard->getTargetPathfinderNode();
+		if (node == playerNode)
+		{
+			playerNode = node;
+			return false;
+		}
+		else
+		{
+			playerNode = node;
+			return true;
+		}
+	}
 	
 	Pathfinder* pathfinder;
+	AnimatedSprite* sprite;
 
 	AgentDataComponent* blackboard;
 	RigidBodyComponent* rigidBody;
@@ -31,8 +47,8 @@ private:
 	std::vector<Vector2> path;
 	Vector2 destination;
 	
-	float maxAcceleration = 140.0f;
-	float maxVelocity = 8.0f / 10;
+	float maxAcceleration = 4.0f;
+	float maxVelocity = 2.0f;
 
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   internal only
@@ -41,6 +57,8 @@ private:
 	Vector2 movementDirection;
 	int pathIndex = 0;
 
-	PathfindingNode* currentNode;
+	float spriteHover;
+
+	PathfindingNode* playerNode;
 };
 

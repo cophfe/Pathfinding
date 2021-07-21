@@ -94,7 +94,7 @@ void AnimatedSprite::playAt(int frame)
 void AnimatedSprite::setSettings(int startFrame, int endFrame, int currentFrame)
 {
 	this->currentFrame = currentFrame;
-	this->endFrame == endFrame;
+	this->endFrame = endFrame;
 	this->startFrame = startFrame;
 	frameTimer = 0;
 }

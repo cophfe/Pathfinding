@@ -3,7 +3,7 @@
 
 CollisionManager::CollisionManager() : world(b2World(b2Vec2(0,0)))
 {
-	//		Test debug with this:
+	//		Test with this:
 	/*
 	b2BodyDef groundBodyDef;
 	groundBodyDef.position.Set(0.0f, -10.0f);
@@ -11,12 +11,11 @@ CollisionManager::CollisionManager() : world(b2World(b2Vec2(0,0)))
 	b2PolygonShape groundBox;
 	groundBox.SetAsBox(50.0f, 10.0f);
 	groundBody->CreateFixture(&groundBox, 0.0f);
-	*/
 
 	b2BodyDef bodyDef;
 	bodyDef.linearDamping = 0.4f;
 	bodyDef.angularDamping= 0.4f;
-	bodyDef.type = b2_dynamicBody;
+	bodyDef.Type = b2_dynamicBody;
 	bodyDef.position.Set(0.0f, 4.0f);
 	body = world.CreateBody(&bodyDef);
 	b2PolygonShape dynamicBox;
@@ -27,6 +26,7 @@ CollisionManager::CollisionManager() : world(b2World(b2Vec2(0,0)))
 	
 	fixtureDef.friction = 0.3f;
 	body->CreateFixture(&fixtureDef);
+	*/
 	
 #ifdef DRAW_DEBUG
 	debugDrawer = new PhysicsDebugDraw();

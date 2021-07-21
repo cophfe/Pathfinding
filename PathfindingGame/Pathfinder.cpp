@@ -1,9 +1,13 @@
 #include "Pathfinder.h"
 #include "RigidBodyComponent.h"
 #include "CollisionManager.h"
+#include "Scene.h"
+#include "GameObject.h"
+#include "Game.h"
 
 #define HEX_RAD_TO_APOTHEM 0.86602540378f //approx 6/7, exact sqrt(3)/2
 #define HEX_APOTHEM_TO_RAD 1.15470053838f //approx 7/6, exact 2/sqrt(3)
+
 Pathfinder::Pathfinder(int amountX, int amountY, float nodeOffset, Vector2 startPosition)
 {
 	this->startPosition = startPosition;
@@ -26,8 +30,11 @@ Pathfinder::Pathfinder(int amountX, int amountY, float nodeOffset, Vector2 start
 		{
 			nodes[x][y] = new PathfindingNode();
 			nodes[x][y]->Type = PathfindingNode::Type::REGULAR;
-			if (rand() < RAND_MAX/7)
+			if (y == 0 || y == amountY - 1 || x == 0 || x == amountX - 1 || rand() < RAND_MAX/6)
+			{
 				nodes[x][y]->Type = PathfindingNode::Type::BLOCKED;
+			}
+			
 			nodes[x][y]->indexX = x;
 			nodes[x][y]->indexY = y;
 			if (y % 2 == 0)
@@ -103,16 +110,17 @@ PathfindingNode* Pathfinder::getNodeFromPoint(float x, float y)
 	float boxWidth = nodeOffset;
 	float boxHalfWidth = nodeOffset/2;
 	float boxHeight = nodeOffset * HEX_RAD_TO_APOTHEM;
+	float sideLen = (nodeOffset / 2 * HEX_APOTHEM_TO_RAD);
 
 	int indexY = y / boxHeight;
 	
 	//check if odd
-	bool oddY = (indexY % 2) != 0;
-	int indexX = oddY ? ((x + boxHalfWidth) / boxWidth) : (x / boxWidth);
-	
-	float relativeY = y - (indexY * boxHeight);
-	float relativeX = oddY ? (indexX * boxWidth) : (indexX * boxHeight - boxHalfWidth);
+	bool oddY = (indexY % 2) == 1;
+	//int indexX = oddY ? ((position->x + boxHalfWidth - startPosition.x) / boxWidth) : ((position->x - startPosition.x) / boxWidth);
+	int indexX = oddY ? ((x - startPosition.x) / boxWidth) : ((x - startPosition.x + boxHalfWidth) / boxWidth);
 
+	float relativeY = (y - startPosition.y + sideLen) - (indexY * boxHeight);
+	float relativeX = oddY ? (x - startPosition.x) - (indexX * boxWidth) : (x - startPosition.x) - (indexX * boxWidth) + boxHalfWidth;
 	/*
 		relative X and relative Y are now relative to the top left of the box
 		we need m to check if it is in the hexagon or not
@@ -135,7 +143,7 @@ PathfindingNode* Pathfinder::getNodeFromPoint(float x, float y)
 	*/
 	const float m = 2 * HEX_RAD_TO_APOTHEM - HEX_APOTHEM_TO_RAD;
 	float c = m * boxHalfWidth;
-	
+
 	//if y < mx + c the point lies under the line and it is in a different hexagon then the box would suggest
 	if (relativeY < (-m * relativeX) + c)
 	{
@@ -143,13 +151,15 @@ PathfindingNode* Pathfinder::getNodeFromPoint(float x, float y)
 		if (!oddY)
 			indexX--;
 	}
-	if (relativeY < (m * relativeX) - c)
+	//same if the point lies under this opposite line
+	else if (relativeY < (m * relativeX) - c)
 	{
 		indexY--;
 		if (oddY)
 			indexX++;
 	}
 
+	//now check if it is in the bounds of what makes sense
 	if (indexX >= sizeX || indexY >= sizeY || indexX < 0 || indexY < 0)
 		return nullptr;
 	else
@@ -158,12 +168,6 @@ PathfindingNode* Pathfinder::getNodeFromPoint(float x, float y)
 
 PathfindingNode* Pathfinder::getNodeFromPoint(const Vector2* position)
 {
-	/*int x = ((position->x - startPosition.x) / nodeOffset) + 0.5f;
-	int y = ((position->y - startPosition.y) / nodeOffset) + 0.5f;
-	if (x >= sizeX || y >= sizeY || x < 0 || y < 0)
-		return nullptr;
-	return nodes[x][y];*/
-
 	float boxWidth = nodeOffset;
 	float boxHalfWidth = nodeOffset / 2;
 	float boxHeight = nodeOffset * HEX_RAD_TO_APOTHEM;
@@ -215,32 +219,32 @@ void Pathfinder::draw()
 	wall.a = 200;
 	Color* c = &regular;
 
-	for (int x = 0; x < sizeX; x++)
-	{
-		for (int y = 0; y < sizeY; y++)
-		{
-			if (nodes[x][y]->Type == PathfindingNode::Type::BLOCKED)
-				c = &wall;
-			else
-				c = &regular;
+	//for (int x = 0; x < sizeX; x++)
+	//{
+	//	for (int y = 0; y < sizeY; y++)
+	//	{
+	//		if (nodes[x][y]->Type == PathfindingNode::Type::BLOCKED)
+	//			c = &wall;
+	//		else
+	//			c = &regular;
 
-			DrawPoly(nodes[x][y]->position, 6, nodeOffset / 2 * HEX_APOTHEM_TO_RAD * 0.95f, 0, *c);
+	//		DrawPoly(nodes[x][y]->position, 6, nodeOffset / 2 * HEX_APOTHEM_TO_RAD * 0.95f, 0, *c);
 
-			//draw centrepoint
-			DrawCircleV(nodes[x][y]->position, 5, BLUE);
+	//		//draw centre point
+	//		//DrawCircleV(nodes[x][y]->position, 5, BLUE);
 
-			//draw square grid (used for getting which hexagon we're in)
-			//DrawRectangleLinesEx(Rectangle{ nodes[x][y]->position.x - (nodeOffset / 2),nodes[x][y]->position.y - (nodeOffset / 2 * HEX_APOTHEM_TO_RAD), nodeOffset,nodeOffset * HEX_RAD_TO_APOTHEM }, 4, BLACK);
-			
-			//draw lines
-			/*for (int i = 0; i < 6; i++)
-			{
-				if (nodes[x][y]->neighbors[i])
-					DrawLineEx(nodes[x][y]->neighbors[i]->position, nodes[x][y]->position, 5, regular);
-			}*/
-	
-		}
-	}
+	//		//draw square grid (used for getting which hexagon we're in)
+	//		//DrawRectangleLinesEx(Rectangle{ nodes[x][y]->position.x - (nodeOffset / 2),nodes[x][y]->position.y - (nodeOffset / 2 * HEX_APOTHEM_TO_RAD), nodeOffset,nodeOffset * HEX_RAD_TO_APOTHEM }, 4, BLACK);
+	//		
+	//		//draw lines
+	//		/*for (int i = 0; i < 6; i++)
+	//		{
+	//			if (nodes[x][y]->neighbors[i])
+	//				DrawLineEx(nodes[x][y]->neighbors[i]->position, nodes[x][y]->position, 5, regular);
+	//		}*/
+	//
+	//	}
+	//}
 	
 }
 
@@ -342,4 +346,42 @@ void Pathfinder::generateBoundsFromGraph(CollisionManager* collision, b2Body** b
 
 	b2Body* boundsBody = collision->getWorld()->CreateBody(&bDef);
 	boundsBody->CreateFixture(&fDef);
+}
+
+void Pathfinder::generateWalls(CollisionManager* collision, const char* textureName, Scene* scene)
+{
+	
+	Texture2D* texture = Game::getInstance().getTextureManager()->getTextureInfo(textureName);
+	float radius = (nodeOffset / 2 * HEX_APOTHEM_TO_RAD) / PHYSICS_UNIT_SCALE;
+	float apothem = nodeOffset / 2 / PHYSICS_UNIT_SCALE;
+	float textureScale = nodeOffset/texture->width;
+	GameObject* wall;
+	RigidBodyComponent* rigidBody;
+	b2BodyDef bDef = RigidBodyComponent::genBodyDef(b2_staticBody);
+	b2FixtureDef fDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::BOUNDS, RigidBodyComponent::ALL);
+	b2PolygonShape shape;
+	b2Vec2 polygonVertices[6] = {	{0, radius},
+									{-apothem, radius/2},		{apothem, radius/2},
+									{-apothem, -radius/2},	{apothem, -radius/2},
+									{0, -radius} };
+	shape.Set(polygonVertices, 6);
+	fDef.shape = &shape;
+
+	for (int x = 0; x < sizeX; x++)
+	{
+		for (int y = 0; y < sizeY; y++)
+		{
+			switch (nodes[x][y]->Type)
+			{
+			case PathfindingNode::Type::BLOCKED:
+			{
+				wall = new GameObject(scene, texture, nodes[x][y]->position, 0, textureScale);
+				bDef.position = wall->getTransform()->getPosition();
+				rigidBody = wall->addComponent<RigidBodyComponent>();
+				rigidBody->init(collision, bDef, fDef);
+			}
+			break;
+			}
+		}
+	}
 }

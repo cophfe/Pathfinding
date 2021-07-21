@@ -125,6 +125,16 @@ Sprite* TextureManager::GenSprite(std::string name, GameObject* gameObject)
 	
 }
 
+Texture2D* TextureManager::getTextureInfo(std::string name)
+{
+	auto iterator = textureMap.find(name);
+	if (iterator != textureMap.end())
+		return (*iterator).second.texture;
+	else
+		return textureMap["missing"].texture;
+
+}
+
 void TextureManager::UnloadTextures()
 {
 	for (auto& textureComplex : textureMap)

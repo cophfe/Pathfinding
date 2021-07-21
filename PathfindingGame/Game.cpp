@@ -54,8 +54,6 @@ void Game::init(GameProperties* properties )
 	fDef.shape = &playerShape;
 	target->addComponent<RigidBodyComponent>()->init(scenes[currentScene]->getCollisionManager(), bDef, fDef);
 	scenes[0]->getCamera()->Target(target->getTransform());
-	//also create child
-	new GameObject(target, "bee", true, Vector2{ 500, 0 }, 0.0f, 0.5f);
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   Initialize Actors
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -64,11 +62,12 @@ void Game::init(GameProperties* properties )
 	blackboard->init(target, scenes[currentScene]->getPathfinder());
 	//then actors
 	b2BodyDef actorbDef = RigidBodyComponent::genBodyDef(b2_dynamicBody, true);
-	b2FixtureDef actorfDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::ENEMY, 0);
+	b2FixtureDef actorfDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::ENEMY);
 	b2CircleShape actorShape = b2CircleShape();
 	actorShape.m_radius = 0.5f;
 	actorfDef.shape = &actorShape;
-	GameObject* actor = new GameObject(scenes[currentScene], "birdChill", true, { 300,400 }, 0, 0.25f);
+	GameObject* actor = new GameObject(scenes[currentScene], "bee", true, { 300,400 }, 0, 1.0f);
+	((AnimatedSprite*)actor->getSprite())->setSettings(0, 5, 0);
 	actor->getSprite()->setDrawOffset(actor->getSprite()->getDestinationRectangle()->height/2 - 60);
 	actor->addComponent<RigidBodyComponent>()->init(scenes[currentScene]->getCollisionManager(), actorbDef, actorfDef);
 	actor->addComponent<AgentComponent>()->init(blackboard);
