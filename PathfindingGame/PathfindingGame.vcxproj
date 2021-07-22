@@ -167,6 +167,7 @@
     <ClCompile Include="AgentDataComponent.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="ContactListener.cpp" />
     <ClCompile Include="Heap.cpp" />
     <ClCompile Include="Matrix3.cpp">
       <DeploymentContent>false</DeploymentContent>
@@ -194,6 +195,7 @@
     <ClInclude Include="AgentDataComponent.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="ContactListener.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Heap.h" />

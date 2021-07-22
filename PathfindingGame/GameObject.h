@@ -10,6 +10,7 @@
 
 class Game;
 class Scene;
+class RigidBodyComponent;
 
 class GameObject
 {
@@ -76,9 +77,9 @@ protected:
 	//drawing
 	bool isDrawn;
 
-	////sprite can access all protected shiz because it is easier that way
-	//friend Sprite;
-
+	friend RigidBodyComponent;
+	void onCollisionExitComponents(RigidBodyComponent* collisionBody, b2Manifold* manifold);
+	void onCollisionEnterComponents(RigidBodyComponent* collisionBody, b2Manifold* manifold);
 };
 
 template<typename T>

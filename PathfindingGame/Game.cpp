@@ -39,17 +39,23 @@ void Game::init(GameProperties* properties )
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	currentScene = 0;
 	scenes.push_back(new Scene());
-	scenes[currentScene]->load();
+	SceneProperties scene1Properties;
+	scene1Properties.backgroundTiling = "background";
+	scene1Properties.backgroundScale = 1.436781609195402f;
+	scenes[currentScene]->load(scene1Properties);
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   Initialize Player
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	auto target = new GameObject(scenes[currentScene], "beear");
+	auto target = new GameObject(scenes[currentScene], "beearBody");
+	auto armSprite = new GameObject(target, "beearAttack", true, { 3,24 });
+	((AnimatedSprite*)armSprite->getSprite())->setSettings(0, 11,0);
 	PlayerComponent* pC = target->addComponent<PlayerComponent>();
-	pC->init(4, 90.0f);
+	pC->init(4, 90.0f, armSprite);
 	b2BodyDef bDef = RigidBodyComponent::genBodyDef(b2_dynamicBody, true);
 	b2FixtureDef fDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::PLAYER);
 	b2CircleShape playerShape;
 	target->getSprite()->setDrawOffset(target->getSprite()->getDestinationRectangle()->height / 2 - 80);
+	armSprite->getSprite()->setDrawOffset(target->getSprite()->getDrawOffset());
 	playerShape.m_radius = 0.7f;
 	fDef.shape = &playerShape;
 	target->addComponent<RigidBodyComponent>()->init(scenes[currentScene]->getCollisionManager(), bDef, fDef);

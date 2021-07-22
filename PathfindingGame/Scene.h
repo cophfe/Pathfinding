@@ -7,10 +7,20 @@ class GameObject;
 #include "CollisionManager.h"
 class Transform;
 
+
+#define PATHWIDTH 16
+#define PATHHEIGHT 10
+#define HEX_OFFSET 250
+
 struct SceneProperties
 {
-	Color backgroundColor;
-	bool enablePhysics;
+	const char* backgroundTiling = nullptr;
+	float backgroundScale = 1;
+	const char* wall = "wall";
+	Color backgroundColor = BLACK;
+	int pathWidth = 10;
+	int pathHeight = 10;
+	float hexOffset = 250;
 };
 
 enum class SORTING
@@ -24,7 +34,7 @@ enum class SORTING
 class Scene
 {
 public:
-	void load();
+	void load(SceneProperties& properties);
 	void draw();
 	void update();
 	void unload(); 
@@ -63,5 +73,21 @@ private:
 	CollisionManager* collisionManager;
 
 	b2Body* bounds;
+
+	Color backgroundColor;
 };
 
+/*
+{
+	"gameobjects" : [
+	{
+		"components" : [
+		],
+
+	}
+	,{
+
+	}
+	]
+}
+*/

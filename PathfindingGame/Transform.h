@@ -18,7 +18,7 @@ public:
 	void addScale(float scale);
 
 	void setRotation(float rad);
-	void setTransform(Vector2 pos);
+	void setPosition(Vector2 pos);
 	void setScale(float scale);
 
 	Vector2& getGlobalPosition();
@@ -29,6 +29,8 @@ public:
 	Matrix3& getLocalTransform();
 	void updateLocalTransform();
 	void updateGlobalTransform();
+
+	void flipPositionX();
 
 	inline Transform* getParent() { return parent; }
 	void addChild(Transform* child);

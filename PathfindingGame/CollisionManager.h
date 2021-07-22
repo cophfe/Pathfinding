@@ -1,6 +1,7 @@
 #pragma once
 #include "NecessaryHeaders.h"
 #include "PhysicsDebugDraw.h"
+#include "ContactListener.h"
 #include <iostream>
 
 class Game;
@@ -34,5 +35,6 @@ private:
 #ifdef DRAW_DEBUG
 	PhysicsDebugDraw* debugDrawer;
 #endif // DRAW_DEBUG
+	ContactListener* contactListener;
 };
 

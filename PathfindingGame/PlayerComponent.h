@@ -6,11 +6,12 @@
 #include <iostream>
 
 class GameObject;
+class AnimatedSprite;
 
 class PlayerComponent : public Component
 {
 public:
-	void init(float maxSpeed, float maxAcceleration);
+	void init(float maxSpeed, float maxAcceleration, GameObject* arm);
 	void start();
 	void update();
 	void fixedUpdate();
@@ -21,5 +22,8 @@ private:
 	RigidBodyComponent* rigidBody;
 	
 	Vector2 direction;
+	AnimatedSprite* armSprite;
+	GameObject* armObject;
+	bool flipped = false;
 };
 

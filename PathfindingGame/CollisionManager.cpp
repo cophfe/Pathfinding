@@ -27,7 +27,8 @@ CollisionManager::CollisionManager() : world(b2World(b2Vec2(0,0)))
 	fixtureDef.friction = 0.3f;
 	body->CreateFixture(&fixtureDef);
 	*/
-	
+	contactListener = new ContactListener;
+	world.SetContactListener(contactListener);
 #ifdef DRAW_DEBUG
 	debugDrawer = new PhysicsDebugDraw();
 	world.SetDebugDraw(debugDrawer);

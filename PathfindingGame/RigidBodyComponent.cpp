@@ -12,8 +12,8 @@ void RigidBodyComponent::init(CollisionManager* collisionManager, b2BodyDef& bod
 	//first define body settings
 	bodyDef.position.Set(transform->getPosition().x / PHYSICS_UNIT_SCALE, -transform->getPosition().y / PHYSICS_UNIT_SCALE);
 	bodyDef.angle = transform->getRotation();
-	//this one ensures the pointer is always correct
-	bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(&body);
+	//this is used for collision callbacks
+	bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(this);
 	//now create the body
 	body = world->CreateBody(&bodyDef);
 	//body still needs a fixture (holds shape and a lot of important things)
@@ -42,7 +42,7 @@ void RigidBodyComponent::fixedUpdate()
 {
 	b2Vec2 pos = body->GetPosition();
 	transform->setRotation(-body->GetAngle());
-	transform->setTransform({ pos.x * PHYSICS_UNIT_SCALE, pos.y * -PHYSICS_UNIT_SCALE });
+	transform->setPosition({ pos.x * PHYSICS_UNIT_SCALE, pos.y * -PHYSICS_UNIT_SCALE });
 }
 
 void RigidBodyComponent::onDisable()
@@ -62,6 +62,14 @@ void RigidBodyComponent::unload()
 		world->DestroyBody(body);
 		body = nullptr;
 	}
+}
+
+void RigidBodyComponent::OnCollisionEnter(RigidBodyComponent* collisionBody, b2Manifold* manifold)
+{
+}
+
+void RigidBodyComponent::OnCollisionLeave(RigidBodyComponent* collisionBody, b2Manifold* manifold)
+{
 }
 
 void RigidBodyComponent::applyTorque(float torque)
@@ -99,12 +107,12 @@ void RigidBodyComponent::setVelocity(float x, float y)
 	body->SetLinearVelocity({ x,y });
 }
 
-void RigidBodyComponent::setTransform(Vector2 position, float angle)
+void RigidBodyComponent::setPosition(Vector2 position, float angle)
 {
 	body->SetTransform(position, angle);
 }
 
-void RigidBodyComponent::setTransform(float x, float y, float angle)
+void RigidBodyComponent::setPosition(float x, float y, float angle)
 {
 	body->SetTransform({ x,y }, angle);
 }
@@ -114,11 +122,9 @@ void RigidBodyComponent::addImpulse(Vector2 impulse, Vector2 position)
 	body->ApplyLinearImpulse(impulse, position, true);
 }
 
-b2BodyDef RigidBodyComponent::genBodyDef(b2BodyType type, bool fixedRotation, Vector2 velocity, float angularVelocity, float angularDamping, float linearDamping)
+b2BodyDef RigidBodyComponent::genBodyDef(b2BodyType type, bool fixedRotation, float angularDamping, float linearDamping)
 {
 	b2BodyDef def;
-	def.linearVelocity = velocity;
-	def.angularVelocity = angularVelocity;
 	def.angularDamping = angularDamping;
 	def.linearDamping = linearDamping;
 	def.fixedRotation = fixedRotation;

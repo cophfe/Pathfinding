@@ -1,35 +1,10 @@
 #include "Component.h"
 #include "GameObject.h"
-
-Component::Component() {}
+#include "RigidBodyComponent.h"
 
 void Component::init()
 {
 	onEnable();
-}
-
-void Component::start()
-{
-}
-
-void Component::update()
-{
-}
-
-void Component::fixedUpdate()
-{
-}
-
-void Component::onDisable()
-{
-}
-
-void Component::onEnable()
-{
-}
-
-void Component::unload()
-{
 }
 
 void Component::setGameObject(GameObject* connected)

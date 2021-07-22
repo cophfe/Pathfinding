@@ -17,7 +17,11 @@ public:
 	PathfindingNode* getNodeFromPoint(const Vector2* position);
 	PathfindingNode* getNodeFromIndex(int x, int y);
 
+	void initDraw(const char* tilingTexture, float textureScale);
 	void draw();
+#ifdef DRAW_DEBUG
+	void drawDebug();
+#endif
 
 	int getHeuristic(PathfindingNode* node, PathfindingNode* end);
 	int AStarPath(PathfindingNode* start, PathfindingNode* end, std::vector<Vector2>* finalPath);
@@ -33,5 +37,10 @@ private:
 	Vector2 startPosition;
 	int sizeX, sizeY, length;
 	float nodeOffset;
+
+	Texture2D* backgroundTexture;
+	Rectangle srcRect;
+	Rectangle destRect;
+	float texScale;
 };
 

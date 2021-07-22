@@ -48,6 +48,7 @@ void TextureManager::LoadTexturesFromFolder(std::string folder)
 			{
 				Texture2D* tex = new Texture2D();
 				*tex = LoadTexture(path.string().c_str());
+				SetTextureFilter(*tex, FILTER_BILINEAR);
 				//if it failed to load do not add it to the map
 				if (tex->id == 0)
 				{
@@ -75,7 +76,7 @@ void TextureManager::LoadTexturesFromFolder(std::string folder)
 			Texture2D* oldTexture = (*iterator).second.texture;
 			AnimatedTexture* animatedTexture = new AnimatedTexture();
 			memcpy(animatedTexture, oldTexture, sizeof(Texture2D));
-			
+			SetTextureFilter(*animatedTexture, FILTER_BILINEAR);
 			(*iterator).second.texture = animatedTexture; //copy data into the new animated textures
 			(*iterator).second.isAnimated = true;
 			//goodbye old pal

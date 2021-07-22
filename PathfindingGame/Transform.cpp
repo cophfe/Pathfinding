@@ -42,7 +42,7 @@ void Transform::setRotation(float rad)
 	updateLocalTransform();
 }
 
-void Transform::setTransform(Vector2 pos)
+void Transform::setPosition(Vector2 pos)
 {
 	position = pos;
 	updateLocalTransform();
@@ -109,6 +109,12 @@ void Transform::updateGlobalTransform()
 		child->updateGlobalTransform();
 		child->gameObject->getSprite()->UpdateSpriteRectangle();
 	}
+}
+
+void Transform::flipPositionX()
+{
+	position.x *= -1;
+	updateLocalTransform();
 }
 
 void Transform::addChild(Transform* child)

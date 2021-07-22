@@ -1,6 +1,7 @@
 #include "GameObject.h"
 #include "Game.h"
 #include "Scene.h"
+#include "RigidBodyComponent.h"
 
 int GameObject::idCounter = 0;
 
@@ -155,5 +156,29 @@ void GameObject::startComponents()
 	for (auto& component : components)
 	{
 		component->start();
+	}
+}
+
+void GameObject::onCollisionEnterComponents(RigidBodyComponent* collisionBody, b2Manifold* manifold)
+{
+	for (auto& child : transform->getChildArray())
+	{
+		child->getGameObject()->onCollisionEnterComponents(collisionBody, manifold);
+	}
+	for (auto& component : components)
+	{
+		component->onCollisionEnter(collisionBody, manifold);
+	}
+}
+
+void GameObject::onCollisionExitComponents(RigidBodyComponent* collisionBody, b2Manifold* manifold)
+{
+	for (auto& child : transform->getChildArray())
+	{
+		child->getGameObject()->onCollisionExitComponents(collisionBody, manifold);
+	}
+	for (auto& component : components)
+	{
+		component->onCollisionExit(collisionBody, manifold);
 	}
 }

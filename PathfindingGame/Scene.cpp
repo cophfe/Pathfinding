@@ -3,32 +3,32 @@
 #include "Transform.h"
 #include "Game.h"
 
-#define PATHWIDTH 16
-#define PATHHEIGHT 10
-#define HEX_OFFSET 250
-void Scene::load()
+void Scene::load(SceneProperties& properties)
 {
 	//GameObject* gO = new GameObject("Player.png", nullptr, true, Vector2(0, 0), 30, 1);
 	//sortingLayers[SORTING::MIDGROUND].push_back(gO);
 	camera = new SmoothCamera({ 0,0 }, 0, 1 , { 0 }, 10);
 
-	pathfinder = new Pathfinder(PATHWIDTH, PATHHEIGHT, HEX_OFFSET, { -PATHWIDTH * HEX_OFFSET * 0.5f, -PATHHEIGHT * HEX_OFFSET * 0.5f });
+	pathfinder = new Pathfinder(properties.pathWidth, properties.pathHeight, properties.hexOffset,
+			{ -properties.pathWidth * properties.hexOffset * 0.5f, -properties.pathHeight * properties.hexOffset * 0.5f });
 
 	collisionManager = new CollisionManager();
 
 	pathfinder->generateBoundsFromGraph(collisionManager, &bounds);
-	pathfinder->generateWalls(collisionManager, "wall", this);
+	pathfinder->generateWalls(collisionManager, properties.wall, this);
+	pathfinder->initDraw(properties.backgroundTiling, properties.backgroundScale);
 	
+	backgroundColor = properties.backgroundColor;
 }
 
 void Scene::draw()
 {
     BeginDrawing();
-    ClearBackground(RAYWHITE);
+    ClearBackground(backgroundColor);
 
 	camera->StartCamera();
 
-    //DrawTextureTiled(); 
+	pathfinder->draw();
 
 	for (auto& drawLayer : sortingLayers)
 	{
@@ -41,7 +41,6 @@ void Scene::draw()
 	//		DEBUG RENDERING
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #ifdef DRAW_DEBUG
-	pathfinder->draw();
 	for (auto& drawLayer : sortingLayers)
 	{
 		for (auto gameObject : drawLayer)

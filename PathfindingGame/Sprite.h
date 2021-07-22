@@ -67,6 +67,10 @@ public:
 	inline void setTimePerFrame(float seconds) { secondsPerFrame = seconds; }
 	void UpdateSpriteRectangle();
 
+	inline int getEndFrame() { return startFrame; }
+	inline int getStartFrame() { return endFrame; }
+	inline int getCurrentFrame() { return currentFrame; }
+
 	
 private:
 	inline void updateSrcCoordinates() {
