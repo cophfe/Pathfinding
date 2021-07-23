@@ -37,11 +37,20 @@
     <Filter Include="Header Files\Objects">
       <UniqueIdentifier>{053ad7fb-a010-448a-8ad8-657553c35fde}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Other">
+      <UniqueIdentifier>{952b3208-1015-4e87-9f2e-ac21ff91e1c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Other">
+      <UniqueIdentifier>{eda8b71b-8b4a-42fa-b84c-605aead95453}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Behaviours">
+      <UniqueIdentifier>{4c1cf7c2-2da4-4df8-a184-d8d1a6526e90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Behaviours">
+      <UniqueIdentifier>{007493a0-4fb9-422d-bcf1-84e7c2d91270}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AgentComponent.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
@@ -87,29 +96,44 @@
     <ClCompile Include="CollisionManager.cpp">
       <Filter>Source Files\Managers</Filter>
     </ClCompile>
-    <ClCompile Include="PhysicsDebugDraw.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RigidBodyComponent.cpp">
       <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Heap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PathfindingNode.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AgentDataComponent.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
     <ClCompile Include="ContactListener.cpp">
+      <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="Behaviour.cpp">
+      <Filter>Source Files\Behaviours</Filter>
+    </ClCompile>
+    <ClCompile Include="Heap.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="PathfindingNode.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsDebugDraw.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="Source.cpp">
+      <Filter>Source Files\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="SequenceBehaviour.cpp">
+      <Filter>Source Files\Behaviours</Filter>
+    </ClCompile>
+    <ClCompile Include="CompositeBehaviour.cpp">
+      <Filter>Source Files\Behaviours</Filter>
+    </ClCompile>
+    <ClCompile Include="SelectorBehaviour.cpp">
+      <Filter>Source Files\Behaviours</Filter>
+    </ClCompile>
+    <ClCompile Include="BooleanBehaviour.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NecessaryHeaders.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Vector2.h">
       <Filter>Header Files\Math</Filter>
     </ClInclude>
@@ -158,22 +182,40 @@
     <ClInclude Include="SmoothCamera.h">
       <Filter>Header Files\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="PhysicsDebugDraw.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RigidBodyComponent.h">
       <Filter>Header Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Heap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PathfindingNode.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AgentDataComponent.h">
       <Filter>Header Files\Components</Filter>
     </ClInclude>
+    <ClInclude Include="Behaviour.h">
+      <Filter>Header Files\Behaviours</Filter>
+    </ClInclude>
     <ClInclude Include="ContactListener.h">
+      <Filter>Header Files\Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="Heap.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="NecessaryHeaders.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="PathfindingNode.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsDebugDraw.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="CompositeBehaviour.h">
+      <Filter>Header Files\Behaviours</Filter>
+    </ClInclude>
+    <ClInclude Include="SelectorBehaviour.h">
+      <Filter>Header Files\Behaviours</Filter>
+    </ClInclude>
+    <ClInclude Include="SequenceBehaviour.h">
+      <Filter>Header Files\Behaviours</Filter>
+    </ClInclude>
+    <ClInclude Include="BooleanBehaviour.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

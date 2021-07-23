@@ -1,6 +1,11 @@
 #include "AgentComponent.h"
 #include "Game.h"
 
+//behaviour tree
+#include "BooleanBehaviour.h"
+#include "SelectorBehaviour.h"
+#include "SequenceBehaviour.h"
+
 void AgentComponent::init(AgentDataComponent* blackboard)
 {
 	this->blackboard = blackboard;
@@ -8,6 +13,102 @@ void AgentComponent::init(AgentDataComponent* blackboard)
 	destination = transform->getPosition();
 	sprite = (AnimatedSprite*)gameObject->getSprite();
 	spriteHover = sprite->getDrawOffset();
+
+	/*
+		Generate behaviour tree
+		this is very messy
+		it was easier to do this per agent, but it could be modified to be inside the data component, saving a lot of memory
+		but come on, gotta use these gigabytes for something
+
+		? == Question
+		! == Action
+		(AND) == Sequence
+		(OR) == Selector
+	*/
+	behaviourTree = new SequenceBehaviour();
+	behaviourTree->addMultiple(
+		7,
+		//Check for player (OR)
+		(new SelectorBehaviour())->addMultiple(
+			2,
+			//React to finding player (AND)
+			(new SequenceBehaviour())->addMultiple(
+				3,
+				//Player found but not targeted?
+				new BooleanBehaviour(),
+				//Play alert animation!
+				new Behaviour(),
+				//Target player!
+				new Behaviour()
+			),
+			//Search for player (AND)
+			(new SequenceBehaviour())->addMultiple(
+				3,
+				//Player not found?
+				new BooleanBehaviour(),
+				//Seen player?
+				new BooleanBehaviour(),
+				//Alert blackboard!
+				new Behaviour()
+			)
+		),
+		//Generate path
+		(new SelectorBehaviour())->addMultiple(
+			2,
+			//Need to generate a path?
+			new BooleanBehaviour(),
+			//Generate path!
+			new Behaviour()
+		),
+		//Direction of path is opposite current sprite direction?
+		(new SelectorBehaviour())->addMultiple(
+			2,
+			//Don't need to turn?
+			new BooleanBehaviour(),
+			//Play turn animation!
+			new Behaviour
+		),
+		//Move to next node!
+		new Behaviour(),
+		//Reached end?
+		new BooleanBehaviour(),
+		//Do end action (OR)
+		(new SelectorBehaviour())->addMultiple(
+			2,
+			//Attack player (AND)
+			(new SequenceBehaviour())->addMultiple(
+				4,
+				//Targetting player?
+				new BooleanBehaviour(),
+				//Start attack animation!
+				new Behaviour(),
+				//Hit player (OR)
+				(new SelectorBehaviour())->addMultiple(
+					2,
+					//Not still near player?
+					new BooleanBehaviour(),
+					//Damage player!
+					new Behaviour()
+				),
+				//End attack animation!
+				new Behaviour()
+			),
+			(new SelectorBehaviour())->addMultiple(
+				2,
+				//Idle (AND)
+				(new SequenceBehaviour)->addMultiple(
+					2,
+					// Should idle? 
+					BooleanBehaviour(),
+					//Idle!
+					Behaviour()
+				),
+				//Target random valid position!
+				new Behaviour()
+			)
+		)
+	);
+	
 }
 
 void AgentComponent::start()

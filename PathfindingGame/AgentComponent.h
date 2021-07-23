@@ -8,6 +8,8 @@ constexpr float minDistanceToNode = 10.0f;
 constexpr float floatMagnitude = 15.0f;
 constexpr float floatSpeed = 10.0f;
 
+class SequenceBehaviour;
+
 class AgentComponent : public Component
 {
 public:
@@ -50,9 +52,9 @@ private:
 	float maxAcceleration = 4.0f;
 	float maxVelocity = 2.0f;
 
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 	   internal only
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//behaviour node
+	SequenceBehaviour* behaviourTree;
+
 	bool shouldReconstructPath = true;
 	Vector2 movementDirection;
 	int pathIndex = 0;

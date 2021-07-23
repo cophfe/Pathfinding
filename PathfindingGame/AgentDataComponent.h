@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "Pathfinder.h"
 
+//note while this is technically a blackboard, it isn't very complex, only holding a few variables for the agents to read
 class AgentDataComponent : public Component
 {
 public:

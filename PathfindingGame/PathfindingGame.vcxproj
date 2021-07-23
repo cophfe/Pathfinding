@@ -165,8 +165,11 @@
   <ItemGroup>
     <ClCompile Include="AgentComponent.cpp" />
     <ClCompile Include="AgentDataComponent.cpp" />
+    <ClCompile Include="Behaviour.cpp" />
+    <ClCompile Include="BooleanBehaviour.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="CompositeBehaviour.cpp" />
     <ClCompile Include="ContactListener.cpp" />
     <ClCompile Include="Heap.cpp" />
     <ClCompile Include="Matrix3.cpp">
@@ -176,6 +179,8 @@
     <ClCompile Include="PhysicsDebugDraw.cpp" />
     <ClCompile Include="PlayerComponent.cpp" />
     <ClCompile Include="RigidBodyComponent.cpp" />
+    <ClCompile Include="SelectorBehaviour.cpp" />
+    <ClCompile Include="SequenceBehaviour.cpp" />
     <ClCompile Include="SmoothCamera.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Vector2.cpp">
@@ -193,8 +198,11 @@
   <ItemGroup>
     <ClInclude Include="AgentComponent.h" />
     <ClInclude Include="AgentDataComponent.h" />
+    <ClInclude Include="Behaviour.h" />
+    <ClInclude Include="BooleanBehaviour.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="CompositeBehaviour.h" />
     <ClInclude Include="ContactListener.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />
@@ -208,6 +216,8 @@
     <ClInclude Include="PlayerComponent.h" />
     <ClInclude Include="RigidBodyComponent.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="SelectorBehaviour.h" />
+    <ClInclude Include="SequenceBehaviour.h" />
     <ClInclude Include="SmoothCamera.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="TextureManager.h" />
