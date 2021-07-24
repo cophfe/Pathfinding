@@ -11,7 +11,7 @@ public:
 
 	inline const Vector2* getTargetPosition() { return &target->getTransform()->getGlobalPosition(); }
 	inline PathfindingNode* getTargetPathfinderNode() { return pathfinder->getNodeFromPoint(&target->getTransform()->getGlobalPosition()); }
-	inline bool targetIsFound() { return targetHasBeenFound; }
+	inline const bool& targetIsFound() { return targetHasBeenFound; }
 	inline void setFoundTarget(bool isFound = true) { targetHasBeenFound = isFound; }
 	inline Pathfinder* getPathfinder() { return pathfinder; }
 private:

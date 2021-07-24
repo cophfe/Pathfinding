@@ -1,18 +1,66 @@
 #include "AgentComponent.h"
 #include "Game.h"
 
-//behaviour tree
+//	Behaviour tree
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#include "Behaviour.h"
 #include "BooleanBehaviour.h"
 #include "SelectorBehaviour.h"
 #include "SequenceBehaviour.h"
+#include "AgentBehaviours.h"
 
-void AgentComponent::init(AgentDataComponent* blackboard)
+//	Question functions
+
+static BehaviourResult checkIfAlerted(AgentComponent* agent)
+{
+	return (BehaviourResult)(agent->getDataComponent()->targetIsFound() && agent->checkTargettingPlayer());
+}
+
+static BehaviourResult targetPlayer(AgentComponent* agent)
+{
+	agent->setTargettingPlayer(true);
+	return BehaviourResult::SUCCESS;
+}
+
+static BehaviourResult alertPlayers(AgentComponent* agent)
+{
+	agent->getDataComponent()->setFoundTarget(true);
+	return BehaviourResult::SUCCESS;
+}
+
+static BehaviourResult shouldTurn(AgentComponent* agent)
+{
+	
+	return (BehaviourResult)agent->checkShouldTurn();
+}
+
+static BehaviourResult checkGenPath(AgentComponent* agent)
+{
+	return (BehaviourResult)agent->checkShouldGeneratePath();
+}
+
+static BehaviourResult reachedEnd(AgentComponent* agent)
+{
+	//if targetting player, check what node was last reached, and if within chase distance
+	//if targetting random position, check what node was last reached
+}
+
+static BehaviourResult checkWithinAttackDistance(AgentComponent* agent)
+{
+	//pretty simple
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void AgentComponent::init(AgentDataComponent* blackboard, GameObject* child)
 {
 	this->blackboard = blackboard;
 	pathfinder = blackboard->getPathfinder();
 	destination = transform->getPosition();
 	sprite = (AnimatedSprite*)gameObject->getSprite();
 	spriteHover = sprite->getDrawOffset();
+	this->child = child;
 
 	/*
 		Generate behaviour tree
@@ -25,6 +73,7 @@ void AgentComponent::init(AgentDataComponent* blackboard)
 		(AND) == Sequence
 		(OR) == Selector
 	*/
+
 	behaviourTree = new SequenceBehaviour();
 	behaviourTree->addMultiple(
 		7,
@@ -35,43 +84,43 @@ void AgentComponent::init(AgentDataComponent* blackboard)
 			(new SequenceBehaviour())->addMultiple(
 				3,
 				//Player found but not targeted?
-				new BooleanBehaviour(),
+				new QuestionBehaviour(checkIfAlerted),
 				//Play alert animation!
-				new Behaviour(),
+				new AnimationBehaviour((AnimatedSprite*)child->getSprite(), beeAlertStartFrame, beeAlertEndFrame),
 				//Target player!
-				new Behaviour()
+				new QuestionBehaviour(targetPlayer)
 			),
 			//Search for player (AND)
 			(new SequenceBehaviour())->addMultiple(
 				3,
 				//Player not found?
-				new BooleanBehaviour(),
+				new BooleanBehaviour(targettingPlayer),
 				//Seen player?
-				new BooleanBehaviour(),
+				new BooleanBehaviour(collidedWithPlayer),
 				//Alert blackboard!
-				new Behaviour()
+				new QuestionBehaviour(alertPlayers)
 			)
 		),
 		//Generate path
 		(new SelectorBehaviour())->addMultiple(
 			2,
 			//Need to generate a path?
-			new BooleanBehaviour(),
-			//Generate path!
-			new Behaviour()
+			new QuestionBehaviour(checkGenPath),
+			//Generate path! (if targettingPlayer is false, generate a path to a random non-wall position. if cannot generate path, return false)
+			new GeneratePathBehaviour()
 		),
 		//Direction of path is opposite current sprite direction?
 		(new SelectorBehaviour())->addMultiple(
 			2,
 			//Don't need to turn?
-			new BooleanBehaviour(),
+			new QuestionBehaviour(shouldTurn),
 			//Play turn animation!
-			new Behaviour
+			new FlipAgentBehaviour((AnimatedSprite*)gameObject->getSprite(), child)
 		),
 		//Move to next node!
-		new Behaviour(),
+		new AgentMoveNodeBehaviour(),
 		//Reached end?
-		new BooleanBehaviour(),
+		new QuestionBehaviour(reachedEnd),
 		//Do end action (OR)
 		(new SelectorBehaviour())->addMultiple(
 			2,
@@ -79,19 +128,19 @@ void AgentComponent::init(AgentDataComponent* blackboard)
 			(new SequenceBehaviour())->addMultiple(
 				4,
 				//Targetting player?
-				new BooleanBehaviour(),
+				new BooleanBehaviour(targettingPlayer),
 				//Start attack animation!
-				new Behaviour(),
+				new Behaviour(), //~~~~~~~~~~this one will require it's own behaviour like flip animation, since the child node has to be updated too. should really make a parallel behaviour (allow two things to be pending at once)
 				//Hit player (OR)
 				(new SelectorBehaviour())->addMultiple(
 					2,
 					//Not still near player?
-					new BooleanBehaviour(),
+					new BooleanBehaviour(checkWithinAttackDistance),
 					//Damage player!
-					new Behaviour()
+					new AttackPlayerBehaviour()
 				),
 				//End attack animation!
-				new Behaviour()
+				new Behaviour() //~~~~~~~~ also needs work
 			),
 			(new SelectorBehaviour())->addMultiple(
 				2,
@@ -99,12 +148,10 @@ void AgentComponent::init(AgentDataComponent* blackboard)
 				(new SequenceBehaviour)->addMultiple(
 					2,
 					// Should idle? 
-					BooleanBehaviour(),
+					RandomBehaviour(idleChance),
 					//Idle!
-					Behaviour()
-				),
-				//Target random valid position!
-				new Behaviour()
+					CountdownBehaviour(idleTime + ((float)rand()/RAND_MAX - 0.5f) * idleVarience)
+				)
 			)
 		)
 	);
@@ -170,6 +217,12 @@ void AgentComponent::update()
 	gameObject->getSprite()->setDrawOffset(spriteHover + sin(timer * floatSpeed) * floatMagnitude);
 }
 
+void AgentComponent::onCollisionEnter(RigidBodyComponent* collisionBody, b2Manifold* manifold)
+{
+	if (collisionBody->getBody()->GetFixtureList()->GetFilterData().categoryBits == RigidBodyComponent::PLAYER)
+		collidedWithPlayer = true;
+}
+
 #ifdef DRAW_DEBUG
 void AgentComponent::debugDraw()
 {
@@ -183,5 +236,21 @@ void AgentComponent::debugDraw()
 		}
 	}
 	DrawCircle(blackboard->getTargetPosition()->x, blackboard->getTargetPosition()->y, 10, RED);
+}
+
+bool AgentComponent::checkShouldGeneratePath()
+{
+	//if targetting player
+	//  if player moved since last generated path
+	//		generate path
+	//	else 
+	//		move up the index (technically this is an action but whatever it's easier this way)
+	//else
+	//	if path does not exist already 
+	//		if end has not been reached
+	//			generatePath
+	//	else
+	//		move up the index
+	return true;
 }
 #endif // DRAW_DEBUG

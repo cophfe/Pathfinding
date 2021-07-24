@@ -64,6 +64,9 @@ AnimatedSprite::AnimatedSprite(AnimatedTexture* textureComplex, GameObject* atta
 
 	srcRect = { 0, 0, (float)((AnimatedTexture*)texture)->spriteWidth, (float)((AnimatedTexture*)texture)->spriteHeight };
 	UpdateSpriteRectangle();
+
+	endCallback = nullptr;
+	callbackPointer = nullptr;
 }
 
 void AnimatedSprite::play()
@@ -99,6 +102,12 @@ void AnimatedSprite::setSettings(int startFrame, int endFrame, int currentFrame)
 	frameTimer = 0;
 }
 
+void AnimatedSprite::setCallback(void(*function)(void*), void* callbackPointer)
+{
+	endCallback = function;
+	this->callbackPointer = callbackPointer;
+}
+
 void AnimatedSprite::draw()
 {
 	frameTimer += Game::getDeltaTime();
@@ -107,7 +116,13 @@ void AnimatedSprite::draw()
 	{
 		currentFrame++;
 		if (currentFrame > endFrame)
+		{
 			currentFrame = startFrame;
+			if (endCallback != nullptr)
+			{
+				endCallback(callbackPointer);
+			}
+		}
 		updateSrcCoordinates();
 		frameTimer -= secondsPerFrame;
 	}

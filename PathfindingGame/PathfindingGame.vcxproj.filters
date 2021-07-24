@@ -130,7 +130,7 @@
       <Filter>Source Files\Behaviours</Filter>
     </ClCompile>
     <ClCompile Include="BooleanBehaviour.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Behaviours</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -215,8 +215,11 @@
     <ClInclude Include="SequenceBehaviour.h">
       <Filter>Header Files\Behaviours</Filter>
     </ClInclude>
+    <ClInclude Include="AgentBehaviours.h">
+      <Filter>Header Files\Behaviours</Filter>
+    </ClInclude>
     <ClInclude Include="BooleanBehaviour.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Behaviours</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -72,11 +72,12 @@ void Game::init(GameProperties* properties )
 	b2CircleShape actorShape = b2CircleShape();
 	actorShape.m_radius = 0.5f;
 	actorfDef.shape = &actorShape;
-	GameObject* actor = new GameObject(scenes[currentScene], "bee", true, { 300,400 }, 0, 1.0f);
+	GameObject* actor = new GameObject(scenes[currentScene], "beeBody", true, { 300,400 }, 0, 1.0f);
+	auto actorFace = new GameObject(actor, "beeFace", true, { 0,0 });
 	((AnimatedSprite*)actor->getSprite())->setSettings(0, 5, 0);
 	actor->getSprite()->setDrawOffset(actor->getSprite()->getDestinationRectangle()->height/2 - 60);
 	actor->addComponent<RigidBodyComponent>()->init(scenes[currentScene]->getCollisionManager(), actorbDef, actorfDef);
-	actor->addComponent<AgentComponent>()->init(blackboard);
+	actor->addComponent<AgentComponent>()->init(blackboard, actorFace);
 	
 	scenes[0]->start();
 }

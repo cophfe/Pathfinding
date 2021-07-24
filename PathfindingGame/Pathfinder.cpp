@@ -344,6 +344,7 @@ int Pathfinder::AStarPath(PathfindingNode* start, PathfindingNode* target, std::
 			}
 		}
 	}
+	return 0;
 }
 
 void Pathfinder::generateBoundsFromGraph(CollisionManager* collision, b2Body** boundsBodyPointer)

@@ -199,6 +199,7 @@
     <ClInclude Include="AgentComponent.h" />
     <ClInclude Include="AgentDataComponent.h" />
     <ClInclude Include="Behaviour.h" />
+    <ClInclude Include="AgentBehaviours.h" />
     <ClInclude Include="BooleanBehaviour.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Component.h" />

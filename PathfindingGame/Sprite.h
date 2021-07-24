@@ -61,6 +61,7 @@ public:
 	void pauseAt(int frame);
 	void playAt(int frame);
 	void setSettings(int startFrame, int endFrame, int currentFrame);
+	void setCallback(void(*function)(void*), void* callbackPointer);
 	void draw();
 	void setFlipped(bool flippedValue);
 
@@ -74,8 +75,8 @@ public:
 	
 private:
 	inline void updateSrcCoordinates() {
-		srcRect.x = ((AnimatedTexture*)texture)->coordinates[currentFrame].x;
-		srcRect.y = ((AnimatedTexture*)texture)->coordinates[currentFrame].y;
+		srcRect.x = (float)((AnimatedTexture*)texture)->coordinates[currentFrame].x;
+		srcRect.y = (float)((AnimatedTexture*)texture)->coordinates[currentFrame].y;
 	}
 	bool paused;
 	int currentFrame;
@@ -83,6 +84,9 @@ private:
 	int startFrame;
 	int endFrame;
 	float frameTimer = 0;
+
+	void* callbackPointer;
+	void(*endCallback)(void*);
 };
 
 // Easy way to get out of checking if a sprite is null
