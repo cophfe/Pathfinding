@@ -6,6 +6,7 @@
 
 #include "AgentComponent.h"
 #include "AgentDataComponent.h"
+#include "PlayerComponent.h"
 
 void Game::init(GameProperties* properties )
 {
@@ -50,12 +51,13 @@ void Game::init(GameProperties* properties )
 	auto armSprite = new GameObject(target, "beearAttack", true, { 3,24 });
 	((AnimatedSprite*)armSprite->getSprite())->setSettings(0, 11,0);
 	PlayerComponent* pC = target->addComponent<PlayerComponent>();
-	pC->init(4, 90.0f, armSprite);
+	pC->init(armSprite);
 	b2BodyDef bDef = RigidBodyComponent::genBodyDef(b2_dynamicBody, true);
 	b2FixtureDef fDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::PLAYER);
 	b2CircleShape playerShape;
-	target->getSprite()->setDrawOffset(target->getSprite()->getDestinationRectangle()->height / 2 - 80);
+	target->getSprite()->setDrawOffset(target->getSprite()->getDestinationRectangle()->height / 2 - 40);
 	armSprite->getSprite()->setDrawOffset(target->getSprite()->getDrawOffset());
+	playerShape.m_p.Set(0, 40.0f / PHYSICS_UNIT_SCALE);
 	playerShape.m_radius = 0.7f;
 	fDef.shape = &playerShape;
 	target->addComponent<RigidBodyComponent>()->init(scenes[currentScene]->getCollisionManager(), bDef, fDef);
@@ -67,16 +69,28 @@ void Game::init(GameProperties* properties )
 	AgentDataComponent* blackboard = (new GameObject(scenes[currentScene], nullptr, false, { 0 }, 0, 1, SORTING::BACKGROUND))->addComponent<AgentDataComponent>();
 	blackboard->init(target, scenes[currentScene]->getPathfinder());
 	//then actors
+	
+	GameObject* actor = new GameObject(scenes[currentScene], "beeBody", true, { 300,400 }, 0, 1.0f);
+	((AnimatedSprite*)actor->getSprite())->setSettings(0, 5, 0);
+	actor->getSprite()->setDrawOffset(20);
+	//actor child:
+	auto actorFace = new GameObject(actor, "beeFace", true, { -9,-41 });
+	((AnimatedSprite*)actorFace->getSprite())->pause();
+	actorFace->getSprite()->setDrawOffset(target->getSprite()->getDrawOffset());
+	//add rigidbody
 	b2BodyDef actorbDef = RigidBodyComponent::genBodyDef(b2_dynamicBody, true);
 	b2FixtureDef actorfDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::ENEMY);
 	b2CircleShape actorShape = b2CircleShape();
-	actorShape.m_radius = 0.5f;
+	actorShape.m_radius = AgentComponent::colliderRadius;
 	actorfDef.shape = &actorShape;
-	GameObject* actor = new GameObject(scenes[currentScene], "beeBody", true, { 300,400 }, 0, 1.0f);
-	auto actorFace = new GameObject(actor, "beeFace", true, { 0,0 });
-	((AnimatedSprite*)actor->getSprite())->setSettings(0, 5, 0);
-	actor->getSprite()->setDrawOffset(actor->getSprite()->getDestinationRectangle()->height/2 - 60);
-	actor->addComponent<RigidBodyComponent>()->init(scenes[currentScene]->getCollisionManager(), actorbDef, actorfDef);
+	auto actorRb = actor->addComponent<RigidBodyComponent>();
+	actorRb->init(scenes[currentScene]->getCollisionManager(), actorbDef, actorfDef);
+	//add trigger
+	b2FixtureDef actorTriggerfDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::ENEMY, RigidBodyComponent::PLAYER, nullptr, true);
+	b2CircleShape actorTriggerShape = b2CircleShape();
+	actorTriggerShape.m_radius = AgentComponent::triggerRadius;
+	actorTriggerfDef.shape = &actorTriggerShape;
+	actorRb->addFixture(actorTriggerfDef);
 	actor->addComponent<AgentComponent>()->init(blackboard, actorFace);
 	
 	scenes[0]->start();

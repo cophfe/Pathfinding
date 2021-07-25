@@ -15,7 +15,7 @@ CollisionManager::CollisionManager() : world(b2World(b2Vec2(0,0)))
 	b2BodyDef bodyDef;
 	bodyDef.linearDamping = 0.4f;
 	bodyDef.angularDamping= 0.4f;
-	bodyDef.Type = b2_dynamicBody;
+	bodyDef.type = b2_dynamicBody;
 	bodyDef.position.Set(0.0f, 4.0f);
 	body = world.CreateBody(&bodyDef);
 	b2PolygonShape dynamicBox;

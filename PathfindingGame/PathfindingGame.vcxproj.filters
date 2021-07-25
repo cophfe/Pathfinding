@@ -132,6 +132,9 @@
     <ClCompile Include="BooleanBehaviour.cpp">
       <Filter>Source Files\Behaviours</Filter>
     </ClCompile>
+    <ClCompile Include="ParallelBehaviour.cpp">
+      <Filter>Source Files\Behaviours</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vector2.h">
@@ -219,6 +222,12 @@
       <Filter>Header Files\Behaviours</Filter>
     </ClInclude>
     <ClInclude Include="BooleanBehaviour.h">
+      <Filter>Header Files\Behaviours</Filter>
+    </ClInclude>
+    <ClInclude Include="ParallelBehaviour.h">
+      <Filter>Header Files\Behaviours</Filter>
+    </ClInclude>
+    <ClInclude Include="Behaviours.h">
       <Filter>Header Files\Behaviours</Filter>
     </ClInclude>
   </ItemGroup>

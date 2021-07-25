@@ -100,35 +100,35 @@ namespace mlib
 		return Vector2(mlib::lerp(a.x, b.x, t), mlib::lerp(a.y, b.y, t));
 	}
 
-	Vector2 Vector2::operator+ (Vector2 const& v)
+	Vector2 Vector2::operator+ (const Vector2 & v) const
 	{
 		return Vector2(x + v.x, y + v.y);
 	}
-	Vector2 Vector2::operator- (Vector2 const& v)
+	Vector2 Vector2::operator- (const Vector2 & v) const
 	{
 		return Vector2(x - v.x, y - v.y);
 	}
-	Vector2 Vector2::operator* (Vector2 const& v)
+	Vector2 Vector2::operator* (const Vector2 & v) const
 	{
 		return Vector2(x * v.x, y * v.y);
 	}
-	Vector2 Vector2::operator* (float f)
+	Vector2 Vector2::operator* (float f) const
 	{
 		return Vector2(x * f, y * f);
 	}
-	Vector2 Vector2::operator/ (float f)
+	Vector2 Vector2::operator/ (float f) const
 	{
 		return Vector2(x / f, y / f);
 	}
-	Vector2 Vector2::operator/ (Vector2 const& v)
+	Vector2 Vector2::operator/ (const Vector2& v) const
 	{
 		return Vector2(x / v.x, y / v.y);
 	}
-	Vector2::operator RLVector2()
+	Vector2::operator RLVector2() const
 	{
 		return RLVector2{ x,y };
 	}
-	Vector2::operator b2Vec2()
+	Vector2::operator b2Vec2() const
 	{
 		return b2Vec2{ x,y };
 	}

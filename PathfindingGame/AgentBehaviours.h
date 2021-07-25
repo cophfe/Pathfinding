@@ -4,93 +4,14 @@
 #include "SelectorBehaviour.h"
 #include "SequenceBehaviour.h"
 #include "AgentComponent.h"
-
 #include "Game.h"
+#include "PlayerComponent.h"
 
-class AnimationBehaviour : public Behaviour
-{
-public:
-	AnimationBehaviour(AnimatedSprite* sprite, int startFrame, int endFrame) : status(BehaviourResult::FAILURE), startFrame(startFrame), endFrame(endFrame), sprite(sprite)
-	{
-		
-	}
-
-	virtual BehaviourResult execute(AgentComponent* agent) 
-	{
-		switch (status)
-		{
-		case BehaviourResult::FAILURE: //this only happens once
-			{
-				sprite->setSettings(startFrame, endFrame, startFrame);
-				sprite->play();
-				sprite->setCallback(endOfAnimationCallback, this);
-				status = BehaviourResult::RUNNING;
-			}
-			break;
-		case BehaviourResult::SUCCESS:
-			{
-				status = BehaviourResult::FAILURE;
-				return BehaviourResult::SUCCESS;
-			}
-			break;
-		}
-		return status;
-	};
-
-	static void endOfAnimationCallback(void* instancePointer)
-	{
-		auto self = (AnimationBehaviour*)instancePointer;
-		self->sprite->pauseAt(self->endFrame);
-		self->status = BehaviourResult::SUCCESS;
-	}
-protected:
-	BehaviourResult status;
-	AnimatedSprite* sprite; int startFrame; int endFrame;
-};
-
-class RandomBehaviour : public Behaviour
-{
-public:
-	RandomBehaviour(float chanceToSucceed) : chance(chanceToSucceed)
-	{	}
-
-	virtual BehaviourResult execute(AgentComponent* agent)
-	{
-		return rand() < chance * RAND_MAX ? BehaviourResult::SUCCESS : BehaviourResult::FAILURE;
-	};
-
-protected:
-	float chance;
-};
-
-class CountdownBehaviour : public Behaviour
-{
-public:
-	CountdownBehaviour(float time) : time(time), timer(time)
-	{
-		
-	}
-
-	virtual BehaviourResult execute(AgentComponent* agent)
-	{
-		timer -= Game::getDeltaTime();
-		if (timer <= 0)
-		{
-			timer = time;
-			return BehaviourResult::SUCCESS;
-		}
-		return BehaviourResult::RUNNING;
-	};
-
-protected:
-	float timer;
-	const float time;
-};
-
+//flips the bee sprite
 class FlipAgentBehaviour : public Behaviour
 {
 public:
-	FlipAgentBehaviour(AnimatedSprite* sprite, GameObject* child) : sprite(sprite), child(child), status(BehaviourResult::FAILURE), staticFaceFrame(faceStaticCalmFrame)
+	FlipAgentBehaviour(AnimatedSprite* sprite, GameObject* child) : sprite(sprite), child(child), status(BehaviourResult::FAILURE), staticFaceFrame(AgentComponent::faceStaticCalm)
 	{
 		
 	}
@@ -101,17 +22,22 @@ public:
 		{
 		case BehaviourResult::FAILURE: //this only happens once
 			{
-				staticFaceFrame = agent->checkTargettingPlayer() ? faceStaticAngryFrame : faceStaticCalmFrame;
-				sprite->setSettings(startFrame, endFrame, startFrame);
-				sprite->playAt(startFrame);
+				//set body settings
+				sprite->setSettings(AgentComponent::beeTurnStart , AgentComponent::beeTurnEnd, AgentComponent::beeTurnStart);
+				sprite->playAt(AgentComponent::beeTurnStart);
+				//set callback (runs at end of sprite loop)
 				sprite->setCallback(endOfAnimationCallback, this);
-				((AnimatedSprite*)child->getSprite())->setSettings(faceStartFrame, faceEndFrame, faceStartFrame);
-				((AnimatedSprite*)child->getSprite())->playAt(faceStartFrame);
+				//set face settings
+				staticFaceFrame = agent->checkTargettingPlayer() ? AgentComponent::faceStaticAngry : AgentComponent::faceStaticCalm;
+				((AnimatedSprite*)child->getSprite())->setSettings(AgentComponent::faceTurnStart, AgentComponent::faceTurnEnd, AgentComponent::faceTurnStart);
+				((AnimatedSprite*)child->getSprite())->playAt(AgentComponent::faceTurnStart);
+
 				status = BehaviourResult::RUNNING;
 			}
 			break;
 		case BehaviourResult::SUCCESS:
 			{
+				//at end of animation return success
 				status = BehaviourResult::FAILURE;
 				return BehaviourResult::SUCCESS;
 			}
@@ -126,7 +52,7 @@ public:
 		
 		//flip sprite
 		self->sprite->flip();
-		self->sprite->setSettings(flyingStartFrame, flyingEndFrame, flyingStartFrame);
+		self->sprite->setSettings(AgentComponent::beeFlyingStart, AgentComponent::beeFlyingEnd, AgentComponent::beeFlyingStart);
 		//flip child sprite
 		AnimatedSprite* childSprite = (AnimatedSprite *)self->child->getSprite();
 		childSprite->pauseAt(self->staticFaceFrame);
@@ -134,17 +60,11 @@ public:
 		self->child->getTransform()->flipPositionX();
 		//end action
 		self->status = BehaviourResult::SUCCESS;
+		//delete callback
+		self->sprite->setCallback(nullptr, nullptr);
 	}
 protected:
-	static constexpr int faceStaticAngryFrame = 14;
-	static constexpr int faceStaticCalmFrame = 14;
 	int staticFaceFrame;
-	static constexpr int faceStartFrame = 15;
-	static constexpr int faceEndFrame = 24;
-	static constexpr int startFrame = 15;
-	static constexpr int endFrame = 24;
-	static constexpr int flyingStartFrame = 0;
-	static constexpr int flyingEndFrame = 5;
 
 	BehaviourResult status;
 	AnimatedSprite* sprite; GameObject* child;
@@ -153,36 +73,49 @@ protected:
 class GeneratePathBehaviour : public Behaviour
 {
 public:
-	GeneratePathBehaviour() : status(BehaviourResult::FAILURE)
+	GeneratePathBehaviour()
 	{
 	}
 
 	virtual BehaviourResult execute(AgentComponent* agent)
 	{
-		switch (status)
+		if (agent->targettingPlayer)
 		{
-		case BehaviourResult::FAILURE: //this only happens once
+			if (agent->pathfinder->AStarPath(agent->pathfinder->getNodeFromPoint(&agent->transform->getPositionReference()), agent->playerNode, &agent->path) > 0)
 			{
-
+				//if astar returns a result, set the destination to the first node
+				agent->pathIndex = agent->path.size() - 1;
+				agent->destination = agent->path[agent->pathIndex];
+				agent->movementDirection = (agent->destination - agent->transform->getPosition()).normalised();
+				agent->movementDirection.y *= -1;
 			}
-			break;
-		case BehaviourResult::RUNNING:
+			else
 			{
-
+				return BehaviourResult::FAILURE;
 			}
-			break;
-		case BehaviourResult::SUCCESS:
-			{
-				status = BehaviourResult::FAILURE;
-				return BehaviourResult::SUCCESS;
-			}
-			break;
 		}
-		return status;
-	};
+		else
+		{
+			auto pathfinder = agent->pathfinder;
 
-protected:
-	BehaviourResult status;
+			PathfindingNode* node = pathfinder->getRandomUnblockedNode();
+
+			if (pathfinder->AStarPath(agent->pathfinder->getNodeFromPoint(&agent->transform->getPositionReference()), node, &agent->path) > 0)
+			{
+				//if astar returns a result, set the destination to the first node
+				agent->pathIndex = agent->path.size() - 1;
+				agent->destination = agent->path[agent->pathIndex];
+				agent->movementDirection = (agent->destination - agent->transform->getPosition()).normalised();
+				agent->movementDirection.y *= -1;
+			}
+			else
+			{
+				return BehaviourResult::FAILURE;
+			}
+		}
+
+		return BehaviourResult::SUCCESS;
+	};
 };
 
 class AgentMoveNodeBehaviour : public Behaviour
@@ -198,18 +131,22 @@ public:
 		{
 		case BehaviourResult::FAILURE: //this only happens once
 			{
-
+				//movement happens through fixedUpdate(), this just notifies the agent it to start and waits until it reaches the end
+				agent->movingToNode = true;
+				status = BehaviourResult::RUNNING;
 			}
 			break;
 		case BehaviourResult::RUNNING:
 			{
-
-			}
-			break;
-		case BehaviourResult::SUCCESS:
-			{
-				status = BehaviourResult::FAILURE;
-				return BehaviourResult::SUCCESS;
+				if (agent->targettingPlayer != agent->collidedWithPlayer)
+				{
+					return BehaviourResult::FAILURE;
+				}
+				if (agent->movingToNode == false || ((agent->getTransform()->getPosition() - *agent->getDataComponent()->getTargetPosition()).magnitudeSquared() < AgentComponent::minDistanceToFinalNode * AgentComponent::minDistanceToFinalNode))
+				{
+					status = BehaviourResult::FAILURE;
+					return BehaviourResult::SUCCESS;
+				}
 			}
 			break;
 		}
@@ -220,37 +157,20 @@ protected:
 	BehaviourResult status;
 };
 
+//used to hit the player
 class AttackPlayerBehaviour : public Behaviour
 {
 public:
-	AttackPlayerBehaviour() : status(BehaviourResult::FAILURE)
+	AttackPlayerBehaviour(PlayerComponent* player) : player(player)
 	{
 	}
 
 	virtual BehaviourResult execute(AgentComponent* agent)
 	{
-		switch (status)
-		{
-		case BehaviourResult::FAILURE: //this only happens once
-			{
-
-			}
-			break;
-		case BehaviourResult::RUNNING:
-			{
-
-			}
-			break;
-		case BehaviourResult::SUCCESS:
-			{
-				status = BehaviourResult::FAILURE;
-				return BehaviourResult::SUCCESS;
-			}
-			break;
-		}
-		return status;
+		player->hit(agent->getTransform()->getPosition());
+		return BehaviourResult::SUCCESS;
 	};
 
 protected:
-	BehaviourResult status;
+	PlayerComponent* player;
 };

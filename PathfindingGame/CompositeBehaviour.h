@@ -2,14 +2,14 @@
 #include "Behaviour.h"
 #include <vector>
 
+//has multiple child behaviours.
 class CompositeBehaviour :
     public Behaviour
 {
 public:
-	CompositeBehaviour* add(Behaviour* childBehaviour);
-
-	CompositeBehaviour* addMultiple(int count, ... );
-	void remove(Behaviour* childBehaviour);
+	virtual CompositeBehaviour* add(Behaviour* childBehaviour);
+	virtual CompositeBehaviour* addMultiple(int count, ... );
+	virtual void remove(Behaviour* childBehaviour);
 	virtual ~CompositeBehaviour();
 protected:
 	std::vector<Behaviour*> children;

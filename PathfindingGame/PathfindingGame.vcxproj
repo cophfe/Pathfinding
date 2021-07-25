@@ -175,6 +175,7 @@
     <ClCompile Include="Matrix3.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="ParallelBehaviour.cpp" />
     <ClCompile Include="PathfindingNode.cpp" />
     <ClCompile Include="PhysicsDebugDraw.cpp" />
     <ClCompile Include="PlayerComponent.cpp" />
@@ -200,6 +201,7 @@
     <ClInclude Include="AgentDataComponent.h" />
     <ClInclude Include="Behaviour.h" />
     <ClInclude Include="AgentBehaviours.h" />
+    <ClInclude Include="Behaviours.h" />
     <ClInclude Include="BooleanBehaviour.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Component.h" />
@@ -211,6 +213,7 @@
     <ClInclude Include="Matrix3.h" />
     <ClInclude Include="mlib.h" />
     <ClInclude Include="NecessaryHeaders.h" />
+    <ClInclude Include="ParallelBehaviour.h" />
     <ClInclude Include="Pathfinder.h" />
     <ClInclude Include="PathfindingNode.h" />
     <ClInclude Include="PhysicsDebugDraw.h" />

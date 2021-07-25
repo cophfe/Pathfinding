@@ -23,7 +23,7 @@ public:
 	GameObject(Scene* parent, Texture2D* texture, Vector2 position = { 0,0 }, float rotation = 0, float scale = 1, SORTING layer = SORTING::MIDGROUND);
 	~GameObject();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	//		Copy and Move constructors and assigners (deleted for now)
+	//		Copy and Move constructors and assigners 
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//copy
 	GameObject(const GameObject&) = delete;

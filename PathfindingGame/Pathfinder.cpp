@@ -29,10 +29,10 @@ Pathfinder::Pathfinder(int amountX, int amountY, float nodeOffset, Vector2 start
 		for (int y = 0; y < amountY; y++)
 		{
 			nodes[x][y] = new PathfindingNode();
-			nodes[x][y]->Type = PathfindingNode::Type::REGULAR;
+			nodes[x][y]->type = PathfindingNode::Type::REGULAR;
 			if (y == 0 || y == amountY - 1 || x == 0 || x == amountX - 1 || rand() < RAND_MAX/6)
 			{
-				nodes[x][y]->Type = PathfindingNode::Type::BLOCKED;
+				nodes[x][y]->type = PathfindingNode::Type::BLOCKED;
 			}
 			
 			nodes[x][y]->indexX = x;
@@ -211,6 +211,18 @@ PathfindingNode* Pathfinder::getNodeFromIndex(int x, int y)
 	return nodes[x][y];
 }
 
+PathfindingNode* Pathfinder::getRandomUnblockedNode()
+{
+	do
+	{
+		PathfindingNode* randomNode = nodes[rand() * sizeX / RAND_MAX][rand() * sizeY / RAND_MAX];
+		if (randomNode->type != PathfindingNode::Type::BLOCKED)
+		{
+			return randomNode;
+		}
+	} while (true);
+}
+
 void Pathfinder::initDraw(const char* tilingTexture, float textureScale)
 {
 	if (tilingTexture == nullptr)
@@ -220,7 +232,7 @@ void Pathfinder::initDraw(const char* tilingTexture, float textureScale)
 	}
 	backgroundTexture = Game::getInstance().getTextureManager()->getTextureInfo(tilingTexture);
 	srcRect = Rectangle{ 0,0, (float)backgroundTexture->width, (float)backgroundTexture->height };
-	destRect = Rectangle{ startPosition.x , startPosition.y, (sizeX * nodeOffset), (sizeY * nodeOffset * HEX_APOTHEM_TO_RAD) };
+	destRect = Rectangle{ startPosition.x , startPosition.y, (sizeX * nodeOffset - nodeOffset/2), (sizeY * nodeOffset * HEX_RAD_TO_APOTHEM - nodeOffset / 2) };
 	texScale = textureScale;
 }
 
@@ -243,7 +255,7 @@ void Pathfinder::drawDebug()
 	{
 		for (int y = 0; y < sizeY; y++)
 		{
-			if (nodes[x][y]->Type == PathfindingNode::Type::BLOCKED)
+			if (nodes[x][y]->type == PathfindingNode::Type::BLOCKED)
 				c = &wall;
 			else
 				c = &regular;
@@ -287,8 +299,8 @@ int Pathfinder::getHeuristic(PathfindingNode* node, PathfindingNode* end)
 
 int Pathfinder::AStarPath(PathfindingNode* start, PathfindingNode* target, std::vector<Vector2>* finalPath)
 {
-	//if (bool)target->Type is false, then target 
-	if (start == nullptr || target == nullptr || target->Type == PathfindingNode::Type::BLOCKED || start == target)
+	//if (bool)target->type is false, then target 
+	if (start == nullptr || target == nullptr || target->type == PathfindingNode::Type::BLOCKED || start == target)
 		return 0;
 
 	openList.clear();
@@ -321,10 +333,10 @@ int Pathfinder::AStarPath(PathfindingNode* start, PathfindingNode* target, std::
 		{
 			PathfindingNode* neighbor = current->neighbors[n];
 
-			if (neighbor == nullptr || neighbor->Type == PathfindingNode::Type::BLOCKED || closedList[neighbor->indexX + neighbor->indexY * sizeX])
+			if (neighbor == nullptr || neighbor->type == PathfindingNode::Type::BLOCKED || closedList[neighbor->indexX + neighbor->indexY * sizeX])
 				continue;
 
-			int newScore = current->gScore + (int)current->Type;
+			int newScore = current->gScore + (int)current->type;
 			if (openList.contains(neighbor))
 			{
 				if (neighbor->gScore > newScore)
@@ -358,27 +370,28 @@ void Pathfinder::generateBoundsFromGraph(CollisionManager* collision, b2Body** b
 	fDef.filter.maskBits = RigidBodyComponent::ALL;
 	b2ChainShape bounds;
 	/*
+	*/
 	Vector2* vertices = new Vector2[4];
 	vertices[0] = { (nodes[0][0]->position.x) / PHYSICS_UNIT_SCALE, -(nodes[0][0]->position.y) / PHYSICS_UNIT_SCALE };
 	vertices[1] = { (nodes[sizeX - 1][0]->position.x) / PHYSICS_UNIT_SCALE, -(nodes[0][0]->position.y) / PHYSICS_UNIT_SCALE };
 	vertices[2] = { (nodes[sizeX - 1][0]->position.x) / PHYSICS_UNIT_SCALE, (nodes[0][sizeY - 1]->position.y) / -PHYSICS_UNIT_SCALE };
 	vertices[3] = { (nodes[0][0]->position.x) / PHYSICS_UNIT_SCALE, (nodes[0][sizeY - 1]->position.y) / -PHYSICS_UNIT_SCALE };
 	bounds.CreateLoop((b2Vec2*)vertices, 4);
-	*/
-	//hexagon bounds
-	float apothem = sizeX * nodeOffset/2/PHYSICS_UNIT_SCALE;
-	float radius = apothem * HEX_APOTHEM_TO_RAD;
-	float posX = startPosition.x / PHYSICS_UNIT_SCALE; //leftmost point X
-	float posY = -radius / 2 - startPosition.y / PHYSICS_UNIT_SCALE; //centre point Y (I admit it's messed up, its just easier this way)
+	////hexagon bounds
+	//float apothem = sizeX * nodeOffset/2/PHYSICS_UNIT_SCALE;
+	//float radius = apothem * HEX_APOTHEM_TO_RAD;
+	//float posX = startPosition.x / PHYSICS_UNIT_SCALE; //leftmost point X
+	//float posY = -radius / 2 - (nodeOffset / 4 * -HEX_APOTHEM_TO_RAD + startPosition.y) / PHYSICS_UNIT_SCALE; //centre point Y (I admit it's messed up, its just easier this way)
 
-	Vector2 vertices[6] = { {posX + apothem, posY - radius},
-							{posX + apothem * 2, posY - radius / 2},
-							{posX + apothem * 2, posY + radius / 2} ,
-							{posX + apothem, posY + radius} ,
-							{posX, posY + radius / 2} ,
-							{posX, posY - radius / 2}
-						  };
-	bounds.CreateLoop((b2Vec2*)vertices, 6);
+	//Vector2 vertices[6] = { 
+	//						{posX, posY - radius / 2},
+	//						{posX, posY + radius / 2} ,
+	//						{posX + apothem, posY + radius} ,
+	//						{posX + apothem * 2, posY + radius / 2} ,
+	//						{posX + apothem * 2, posY - radius / 2},
+	//						{posX + apothem, posY - radius}
+	//					  };
+	//bounds.CreateLoop((b2Vec2*)vertices, 6);
 	fDef.shape = &bounds;
 
 	b2Body* boundsBody = collision->getWorld()->CreateBody(&bDef);
@@ -408,7 +421,7 @@ void Pathfinder::generateWalls(CollisionManager* collision, const char* textureN
 	{
 		for (int y = 0; y < sizeY; y++)
 		{
-			switch (nodes[x][y]->Type)
+			switch (nodes[x][y]->type)
 			{
 			case PathfindingNode::Type::BLOCKED:
 			{

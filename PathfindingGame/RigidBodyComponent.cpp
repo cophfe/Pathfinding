@@ -59,6 +59,7 @@ void RigidBodyComponent::unload()
 {
 	if (world != nullptr)
 	{
+		body->GetUserData().pointer = 0;
 		world->DestroyBody(body);
 		body = nullptr;
 	}
@@ -66,10 +67,12 @@ void RigidBodyComponent::unload()
 
 void RigidBodyComponent::OnCollisionEnter(RigidBodyComponent* collisionBody, b2Manifold* manifold)
 {
+	gameObject->onCollisionEnterComponents(collisionBody, manifold);
 }
 
 void RigidBodyComponent::OnCollisionLeave(RigidBodyComponent* collisionBody, b2Manifold* manifold)
 {
+	gameObject->onCollisionExitComponents(collisionBody, manifold);
 }
 
 void RigidBodyComponent::applyTorque(float torque)
@@ -120,6 +123,11 @@ void RigidBodyComponent::setPosition(float x, float y, float angle)
 void RigidBodyComponent::addImpulse(Vector2 impulse, Vector2 position)
 {
 	body->ApplyLinearImpulse(impulse, position, true);
+}
+
+void RigidBodyComponent::addFixture(b2FixtureDef& fixtureDef)
+{
+	body->CreateFixture(&fixtureDef);
 }
 
 b2BodyDef RigidBodyComponent::genBodyDef(b2BodyType type, bool fixedRotation, float angularDamping, float linearDamping)

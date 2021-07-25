@@ -16,7 +16,7 @@ public:
 	PathfindingNode* getNodeFromPoint(float x, float y);
 	PathfindingNode* getNodeFromPoint(const Vector2* position);
 	PathfindingNode* getNodeFromIndex(int x, int y);
-
+	PathfindingNode* getRandomUnblockedNode();
 	void initDraw(const char* tilingTexture, float textureScale);
 	void draw();
 #ifdef DRAW_DEBUG

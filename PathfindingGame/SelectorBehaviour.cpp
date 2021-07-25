@@ -21,12 +21,11 @@ BehaviourResult SelectorBehaviour::execute(AgentComponent* agent)
 			break;
 		case BehaviourResult::FAILURE:
 			{
+				pendingChildIndex = 0;
 				continue;
 			}
 			break;
 		}
 	}
-
-	pendingChildIndex = 0;
 	return BehaviourResult::FAILURE;
 }

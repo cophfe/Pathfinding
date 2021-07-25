@@ -8,6 +8,7 @@ BehaviourResult SequenceBehaviour::execute(AgentComponent* agent)
 		{
 		case BehaviourResult::SUCCESS:
 			{
+				pendingChildIndex = 0;
 				continue;
 			}
 			break;

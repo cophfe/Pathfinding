@@ -4,26 +4,69 @@
 #include "AgentDataComponent.h"
 #include "RigidBodyComponent.h"
 #include "Pathfinder.h"
-constexpr float minDistanceToNode = 10.0f;
-constexpr float floatMagnitude = 15.0f;
-constexpr float floatSpeed = 10.0f;
-constexpr float idleChance = 0.3f;
-constexpr float idleTime = 2.0f;
-constexpr float idleVarience = 0.5f;
-
-constexpr int beeAlertStartFrame = 1;
-constexpr int beeAlertEndFrame = 14;
-
-constexpr float attackDistance = 50.0f;
 
 class SequenceBehaviour;
 class Behaviour;
+class AgentMoveNodeBehaviour;
+class GeneratePathBehaviour;
 
 class AgentComponent : public Component
 {
 public:
-	//overloaded functions
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//movement settings
+	static constexpr float chaseVelocityMultiplier = 3.0f;
+	static constexpr float chaseAccelerationMultiplier = 15.0f;
+	static constexpr float chaseAccelerationMultiplierSq = chaseAccelerationMultiplier * chaseAccelerationMultiplier;
+	static constexpr float maxAcceleration = 4.0f;
+	static constexpr float maxVelocity = 2.0f;
+	static constexpr float minDistanceToNode = 55.0f;
+	static constexpr float minDistanceToFinalNode = 200.0f;
+	//hover settings
+	static constexpr float floatMagnitude = 15.0f;
+	static constexpr float floatSpeed = 10.0f;
+	//idle settings
+	static constexpr float idleChance = 0.9f;
+	static constexpr float idleTime = 2.0f;
+	static constexpr float idleVarience = 0.5f;
+	static constexpr float attackDistance = 200.0f;
+	//collider size settings
+	static constexpr float colliderRadius = 0.5f;
+	static constexpr float triggerRadius = 3.0f;
+
+	//amimation start and end frames:
+	//face:
+	static constexpr int faceAlertStartFrame = 1;
+	static constexpr int faceAlertEndFrame = 14;
+	static constexpr int faceStaticAngry = 14;
+	static constexpr int faceStaticCalm = 0;
+	static constexpr int faceAttackStart = 24;
+	static constexpr int faceAttackHitPoint = 36;
+	static constexpr int faceAttackEnd = 48;
+	static constexpr int faceTurnStart = 15;
+	static constexpr int faceTurnEnd = 23;
+	//body:
+	static constexpr int beeFlyingStart = 0;
+	static constexpr int beeFlyingEnd = 5;
+	static constexpr int beeAttackStart = 15;
+	static constexpr int beeAttackHitPoint = 27;
+	static constexpr int beeAttackEnd = 39;
+	static constexpr int beeTurnStart = 6;
+	static constexpr int beeTurnEnd = 14;
+
+	AgentComponent() = default;
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//		Copy and Move constructors and assigners 
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//copy
+	AgentComponent(const AgentComponent&) = delete;
+	AgentComponent& operator=(const AgentComponent&) = delete;
+	//move
+	AgentComponent(AgentComponent&&) = delete;
+	AgentComponent& operator=(AgentComponent&&) = delete;
+	virtual ~AgentComponent();
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//		Overloaded functions
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	void init(AgentDataComponent* blackboard, GameObject* child);
 	void start();
 	void fixedUpdate();
@@ -36,7 +79,10 @@ public:
 
 	inline AgentDataComponent* getDataComponent() { return blackboard; }
 	inline const bool& checkTargettingPlayer() { return targettingPlayer; }
-	inline void setTargettingPlayer(bool value) { targettingPlayer = value; }
+	inline void setTargettingPlayer(bool value)
+	{
+		targettingPlayer = value;
+	}
 	bool checkShouldGeneratePath();
 	const bool& searchForPlayer()
 	{
@@ -46,9 +92,14 @@ public:
 
 	inline bool checkShouldTurn()
 	{
-		return (movementDirection.x > 0 != gameObject->getSprite()->getFlipped());
+		return (destination - transform->getPosition()).x < 0 != gameObject->getSprite()->getFlipped();
 	}
+
+	Vector2 getEndPosition() { return path.empty() ? Vector2{99999999.0f, 99999999.0f } : path[0]; }
 private:
+	//behaviours have access to agent if they want, as some of them work as though they are functions of the agentcomponent
+	friend class AgentMoveNodeBehaviour;
+	friend class GeneratePathBehaviour;
 
 	//this is here for the future, just in case target should be able to be changed
 	inline PathfindingNode* getTargetNode() { return blackboard->getTargetPathfinderNode(); }
@@ -67,33 +118,29 @@ private:
 		}
 	}
 	
+	//	Pathfinding
 	Pathfinder* pathfinder;
-	AnimatedSprite* sprite;
-
 	AgentDataComponent* blackboard;
 	RigidBodyComponent* rigidBody;
-
 	std::vector<Vector2> path;
+	PathfindingNode* playerNode = nullptr;
 	Vector2 destination;
-	
-	float maxAcceleration = 4.0f;
-	float maxVelocity = 2.0f;
-
-	//behaviour node
-	SequenceBehaviour* behaviourTree;
-
 	bool shouldReconstructPath = true;
 	Vector2 movementDirection;
 	int pathIndex = 0;
+	bool movingToNode = false;
 
-	float spriteHover;
-	GameObject* child;
-
-	PathfindingNode* playerNode;
-
+	//	Behaviour tree
+	SequenceBehaviour* behaviourTree;
 	bool targettingPlayer = false;
 	bool collidedWithPlayer = false;
-	//behaviours have access to agent
-	friend Behaviour;
+
+
+	//	Rendering
+	float spriteHover;
+	AnimatedSprite* sprite;
+	GameObject* child;
+
+	
 };
 

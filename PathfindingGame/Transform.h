@@ -9,9 +9,10 @@ class Transform
 public:
 	Transform(Vector2 position, float scale, float rotation, Transform* parent, GameObject* attachedGameObject);
 
-	float getRotation() { return rotation; }
-	Vector2& getPosition() { return position; }
-	float getScale() { return scale; }
+	float getRotation() const { return rotation; }
+	const Vector2& getPositionReference() const { return position; }
+	Vector2 getPosition() const { return position; }
+	float getScale() const { return scale; }
 
 	void addRotation(float rad);
 	void addPosition(Vector2 pos);

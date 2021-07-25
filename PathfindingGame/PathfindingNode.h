@@ -11,9 +11,9 @@ struct PathfindingNode
 		HARD = 20
 	};
 
-	//the game does not support nodes with a Type per direction
-	//each direction has the same Type
-	Type Type;
+	//the game does not support nodes with a type per direction
+	//each direction has the same type
+	Type type;
 	PathfindingNode* previous;
 	PathfindingNode* neighbors[6];
 	int fScore;

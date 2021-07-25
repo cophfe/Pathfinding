@@ -33,16 +33,16 @@ namespace mlib
 
 		Vector2 lerp(Vector2& a, Vector2& b, float t);
 
-		Vector2 operator+ (Vector2 const& v);
-		Vector2 operator- (Vector2 const& v);
-		Vector2 operator* (Vector2 const& v);
-		Vector2 operator* (float f);
-		Vector2 operator/ (float f);
-		Vector2 operator/ (Vector2 const& v);
+		Vector2 operator+ (const Vector2& v) const;
+		Vector2 operator- (const Vector2& v) const;
+		Vector2 operator* (const Vector2& v) const;
+		Vector2 operator* (float f) const;
+		Vector2 operator/ (float f) const;
+		Vector2 operator/ (const Vector2& v) const;
 
-		operator RLVector2();
+		operator RLVector2() const;
 		
-		operator b2Vec2();
+		operator b2Vec2() const;
 	};
 
 }

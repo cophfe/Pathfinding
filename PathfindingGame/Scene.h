@@ -7,11 +7,6 @@ class GameObject;
 #include "CollisionManager.h"
 class Transform;
 
-
-#define PATHWIDTH 16
-#define PATHHEIGHT 10
-#define HEX_OFFSET 250
-
 struct SceneProperties
 {
 	const char* backgroundTiling = nullptr;
@@ -19,7 +14,7 @@ struct SceneProperties
 	const char* wall = "wall";
 	Color backgroundColor = BLACK;
 	int pathWidth = 10;
-	int pathHeight = 10;
+	int pathHeight = 12;
 	float hexOffset = 250;
 };
 

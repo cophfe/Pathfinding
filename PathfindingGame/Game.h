@@ -1,12 +1,10 @@
 #pragma once
-
 #include "NecessaryHeaders.h"
 #include "TextureManager.h"
-
 #include "RigidBodyComponent.h"
-#include "PlayerComponent.h"
 #include <chrono>
 
+class PlayerComponent;
 class Scene;
 class GameObject;
 class TransformObject;

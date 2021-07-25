@@ -7,7 +7,6 @@ class GameObject;
 
 struct AnimatedTexture : public Texture2D
 {
-
 	/*unsigned int id;
 	int width;
 	int height;
@@ -68,6 +67,7 @@ public:
 	inline void setTimePerFrame(float seconds) { secondsPerFrame = seconds; }
 	void UpdateSpriteRectangle();
 
+	inline void setCurrentFrame(int currentFrame) { this->currentFrame = currentFrame; updateSrcCoordinates(); }
 	inline int getEndFrame() { return startFrame; }
 	inline int getStartFrame() { return endFrame; }
 	inline int getCurrentFrame() { return currentFrame; }
