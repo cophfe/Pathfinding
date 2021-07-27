@@ -3,11 +3,11 @@
 #include "Transform.h"
 #include "Game.h"
 
-void Scene::load(SceneProperties& properties)
+void Scene::load(SceneProperties& properties, int sceneID)
 {
-	//GameObject* gO = new GameObject("Player.png", nullptr, true, Vector2(0, 0), 30, 1);
-	//sortingLayers[SORTING::MIDGROUND].push_back(gO);
+
 	camera = new SmoothCamera({ 0,0 }, 0, 1 , { 0 }, 10);
+	GameObject::resetIdCounter();
 
 	pathfinder = new Pathfinder(properties.pathWidth, properties.pathHeight, properties.hexOffset,
 			{ -properties.pathWidth * properties.hexOffset * 0.5f, -properties.pathHeight * properties.hexOffset * 0.5f });
@@ -41,9 +41,9 @@ void Scene::draw()
 	//		DEBUG RENDERING
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #ifdef DRAW_DEBUG
-	for (auto& drawLayer : sortingLayers)
+	for (int i = 0; i < (int)SORTING::COUNT - 1; ++i)
 	{
-		for (auto gameObject : drawLayer)
+		for (auto gameObject : sortingLayers[i])
 		{
 			gameObject->debugDraw();
 		}
@@ -53,7 +53,7 @@ void Scene::draw()
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
 	camera->EndCamera();
-	for (auto gameObject : UI)
+	for (auto gameObject : sortingLayers[(int)SORTING::UI])
 	{
 		gameObject->draw();
 	}
@@ -105,6 +105,9 @@ void Scene::unload()
 			delete sortingLayers[i][j];
 		}
 	}
+
+	if (bounds)
+		collisionManager->getWorld()->DestroyBody(bounds);
 
 	delete collisionManager;
 

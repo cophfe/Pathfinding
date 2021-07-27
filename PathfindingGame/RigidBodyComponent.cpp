@@ -65,16 +65,6 @@ void RigidBodyComponent::unload()
 	}
 }
 
-void RigidBodyComponent::OnCollisionEnter(RigidBodyComponent* collisionBody, b2Manifold* manifold)
-{
-	gameObject->onCollisionEnterComponents(collisionBody, manifold);
-}
-
-void RigidBodyComponent::OnCollisionLeave(RigidBodyComponent* collisionBody, b2Manifold* manifold)
-{
-	gameObject->onCollisionExitComponents(collisionBody, manifold);
-}
-
 void RigidBodyComponent::applyTorque(float torque)
 {
 	body->ApplyTorque(torque, true);
@@ -125,9 +115,9 @@ void RigidBodyComponent::addImpulse(Vector2 impulse, Vector2 position)
 	body->ApplyLinearImpulse(impulse, position, true);
 }
 
-void RigidBodyComponent::addFixture(b2FixtureDef& fixtureDef)
+b2Fixture* RigidBodyComponent::addFixture(b2FixtureDef& fixtureDef)
 {
-	body->CreateFixture(&fixtureDef);
+	return body->CreateFixture(&fixtureDef);
 }
 
 b2BodyDef RigidBodyComponent::genBodyDef(b2BodyType type, bool fixedRotation, float angularDamping, float linearDamping)
@@ -154,4 +144,24 @@ b2FixtureDef RigidBodyComponent::genFixtureDef(uint16 collisionCategory, uint16 
 	filter.maskBits = collisionMask;
 	def.filter = filter;
 	return def;
+}
+
+void RigidBodyComponent::OnCollisionEnter(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
+{
+	gameObject->onCollisionEnterComponents(collisionBody, collisionFixture);
+}
+
+void RigidBodyComponent::OnCollisionLeave(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
+{
+	gameObject->onCollisionExitComponents(collisionBody, collisionFixture);
+}
+
+void RigidBodyComponent::OnTriggerEnter(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
+{
+	gameObject->onTriggerEnterComponents(collisionBody, collisionFixture);
+}
+
+void RigidBodyComponent::OnTriggerLeave(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
+{
+	gameObject->onTriggerExitComponents(collisionBody, collisionFixture);
 }

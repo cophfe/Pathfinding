@@ -32,7 +32,11 @@ public:
 	//collider size settings
 	static constexpr float colliderRadius = 0.5f;
 	static constexpr float triggerRadius = 3.0f;
-
+	//attack settings
+	static constexpr int healthMax = 2;
+	static constexpr float knockback = 10;
+	static constexpr int damage = 1;
+	
 	//amimation start and end frames:
 	//face:
 	static constexpr int faceAlertStartFrame = 1;
@@ -67,11 +71,12 @@ public:
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//		Overloaded functions
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	void init(AgentDataComponent* blackboard, GameObject* child);
+	void init(AgentDataComponent* blackboard, CollisionManager* manager);
 	void start();
 	void fixedUpdate();
 	void update();
-	void onCollisionEnter(RigidBodyComponent* collisionBody, b2Manifold* manifold);
+	void hit(int damage, float knockback, const Vector2& position);
+	void onTriggerEnter(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
 #ifdef DRAW_DEBUG
 	void debugDraw();
 #endif // DRAW_DEBUG
@@ -118,6 +123,9 @@ private:
 		}
 	}
 	
+	//	Health
+	int health = healthMax;
+
 	//	Pathfinding
 	Pathfinder* pathfinder;
 	AgentDataComponent* blackboard;

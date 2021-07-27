@@ -2,11 +2,6 @@
 #include "GameObject.h"
 #include "RigidBodyComponent.h"
 
-void Component::init()
-{
-	onEnable();
-}
-
 void Component::setGameObject(GameObject* connected)
 {
 	gameObject = connected;

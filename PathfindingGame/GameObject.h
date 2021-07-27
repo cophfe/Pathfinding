@@ -59,7 +59,10 @@ public:
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	virtual void deleteSelf();
 	inline int getId() { return id; }
+	inline void setIsDrawn(bool value) { isDrawn = value; }
+	inline bool getIsDrawn() { return isDrawn; }
 
+	inline static void resetIdCounter() { idCounter = 0; }
 protected:
 	//id system used to identify gameObjects
 	//using an id counter ensures each gameObject has a unique id
@@ -75,11 +78,13 @@ protected:
 	std::forward_list<Component*> components;
 
 	//drawing
-	bool isDrawn;
+	bool isDrawn = true;
 
 	friend RigidBodyComponent;
-	void onCollisionExitComponents(RigidBodyComponent* collisionBody, b2Manifold* manifold);
-	void onCollisionEnterComponents(RigidBodyComponent* collisionBody, b2Manifold* manifold);
+	void onCollisionExitComponents(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
+	void onCollisionEnterComponents(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
+	void onTriggerExitComponents(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
+	void onTriggerEnterComponents(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
 };
 
 template<typename T>

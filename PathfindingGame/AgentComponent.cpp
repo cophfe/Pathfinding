@@ -66,8 +66,29 @@ AgentComponent::~AgentComponent()
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void AgentComponent::init(AgentDataComponent* blackboard, GameObject* child)
+void AgentComponent::init(AgentDataComponent* blackboard, CollisionManager* manager)
 {
+	((AnimatedSprite*)gameObject->getSprite())->setSettings(0, 5, 0);
+	gameObject->getSprite()->setDrawOffset(20);
+	//actor child:
+	this->child = new GameObject(gameObject, "beeFace", true, { -9,-41 });
+	((AnimatedSprite*)this->child->getSprite())->pause();
+	this->child->getSprite()->setDrawOffset(20);
+	//add rigidbody
+	b2BodyDef actorbDef = RigidBodyComponent::genBodyDef(b2_dynamicBody, true);
+	b2FixtureDef actorfDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::ENEMY);
+	b2CircleShape actorShape = b2CircleShape();
+	actorShape.m_radius = AgentComponent::colliderRadius;
+	actorfDef.shape = &actorShape;
+	auto actorRb = gameObject->addComponent<RigidBodyComponent>();
+	actorRb->init(manager, actorbDef, actorfDef);
+	//add trigger
+	b2FixtureDef actorTriggerfDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::ENEMY, RigidBodyComponent::PLAYER, nullptr, true);
+	b2CircleShape actorTriggerShape = b2CircleShape();
+	actorTriggerShape.m_radius = AgentComponent::triggerRadius;
+	actorTriggerfDef.shape = &actorTriggerShape;
+	actorRb->addFixture(actorTriggerfDef);
+
 	this->blackboard = blackboard;
 	pathfinder = blackboard->getPathfinder();
 	destination = transform->getPosition();
@@ -142,7 +163,7 @@ void AgentComponent::init(AgentDataComponent* blackboard, GameObject* child)
 			4,
 			//Targetting player?
 			new BooleanBehaviour(targettingPlayer),
-			//Start attack animation!
+			//start attack animation!
 			(new ParallelBehaviour())->addMultiple(
 				2,
 				new AnimationBehaviour((AnimatedSprite*)gameObject->getSprite(), beeAttackStart, beeAttackHitPoint),
@@ -193,37 +214,6 @@ void AgentComponent::fixedUpdate()
 			velocity = velocity.normalised() * (maxAcceleration + chaseAccelerationMultiplier * targettingPlayer) * PHYSICS_TIME_STEP;
 		rigidBody->addVelocity(velocity);
 	}
-
-
-	//if ((transform->getPosition() - destination).magnitudeSquared() < minDistanceToNode * minDistanceToNode)
-	//{
-	//	if (pathIndex == 0)
-	//	{
-	//		std::cout << "reached end!\n";
-	//		movementDirection = { 0 };
-	//	}
-	//	if (checkTargetMoved())
-	//	{
-	//		if (pathfinder->AStarPath(pathfinder->getNodeFromPoint(&transform->getPositionReference()), playerNode, &path) > 0)
-	//		{
-	//			//if astar returns a result, set the destination to the first node
-	//			pathIndex = path.size() - 1;
-	//			destination = path[pathIndex];
-	//			
-	//		}
-	//		//otherwise the destination stays the same and we wait till we should reconstruct the path again
-	//		shouldReconstructPath = false;
-	//	}
-	//	else
-	//	{
-	//		if (!path.empty() && pathIndex > 0)
-	//		{
-	//			pathIndex--;
-	//			destination = path[pathIndex];
-	//			
-	//		}
-	//	}
-	//}	
 }
 
 void AgentComponent::update()
@@ -236,11 +226,17 @@ void AgentComponent::update()
 	behaviourTree->execute(this);
 }
 
-void AgentComponent::onCollisionEnter(RigidBodyComponent* collisionBody, b2Manifold* manifold)
+void AgentComponent::hit(int damage, float knockback, const Vector2& position)
 {
-	if (!collidedWithPlayer)
+	health -= damage;
+	rigidBody->addVelocity((position - transform->getPosition()).normalised() * Vector2 { -knockback, knockback });
+}
+
+void AgentComponent::onTriggerEnter(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
+{
+	if (!collidedWithPlayer && !collisionFixture->IsSensor())
 	{
-		if (collisionBody != nullptr && collisionBody->getBody()->GetFixtureList()->GetFilterData().categoryBits == RigidBodyComponent::PLAYER)
+		if (collisionBody != nullptr && collisionFixture->GetFilterData().categoryBits == RigidBodyComponent::PLAYER)
 		{
 			collidedWithPlayer = true;
 		}

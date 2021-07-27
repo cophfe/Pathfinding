@@ -82,7 +82,7 @@ namespace mlib
 		return angle;
 	}
 
-	float Vector2::getAngle(Vector2& v)
+	float Vector2::getAngle(Vector2 v)
 	{
 		Vector2 norm = normalised();
 
@@ -97,7 +97,7 @@ namespace mlib
 
 	Vector2 Vector2::lerp(Vector2& a, Vector2& b, float t)
 	{
-		return Vector2(mlib::lerp(a.x, b.x, t), mlib::lerp(a.y, b.y, t));
+		return Vector2(std::lerp(a.x, b.x, t), std::lerp(a.y, b.y, t));
 	}
 
 	Vector2 Vector2::operator+ (const Vector2 & v) const

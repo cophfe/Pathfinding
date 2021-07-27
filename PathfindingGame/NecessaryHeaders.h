@@ -10,6 +10,8 @@
 #include <string>
 #include <stdlib.h>
 #include <forward_list>
+#include <map>
+#include <unordered_map>
 //maths
 #include "mlib.h"
 #include "Matrix3.h"

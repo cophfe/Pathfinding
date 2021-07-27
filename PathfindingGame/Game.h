@@ -2,6 +2,7 @@
 #include "NecessaryHeaders.h"
 #include "TextureManager.h"
 #include "RigidBodyComponent.h"
+#include "RoomManager.h"
 #include <chrono>
 
 class PlayerComponent;
@@ -14,6 +15,7 @@ struct GameProperties
 {
 	std::string windowName = "Game";
 	std::string spriteLocation;
+	std::string shaderLocation;
 	int windowWidth = 800;
 	int windowHeight = 600;
 	int targetFPS = 0;
@@ -32,6 +34,8 @@ public:
 
 	void changeScene(int sceneIndex);
 
+	void GenerateScene(int sceneIndex);
+
 	static Game& getInstance();
 
 	Game(Game const&) = delete;
@@ -48,7 +52,10 @@ private:
 	char currentScene;
 	
 	std::vector<Scene*> scenes;
+	//std::map<int, SceneData*> savedData;
+	int timeAtStart;
 
 	TextureManager* textureManager;
+	RoomManager* roomManager;
 };
 

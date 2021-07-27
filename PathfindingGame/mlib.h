@@ -1,6 +1,7 @@
 #pragma once
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <cmath>
 #include "raylib/raylib.h"
 #include "box2d//box2d.h"
 

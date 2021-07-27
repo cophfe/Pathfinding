@@ -22,6 +22,7 @@ void Game::init(GameProperties* properties )
 	if (properties->targetFPS != 0)
 		SetTargetFPS(properties->targetFPS);
 
+	timeAtStart = time(0);
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   draw Loading Screen
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -34,7 +35,13 @@ void Game::init(GameProperties* properties )
 	// 	   Initialize TextureManager
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	textureManager = new TextureManager();
-	textureManager->LoadTexturesFromFolder(properties->spriteLocation);
+	textureManager->loadTexturesFromFolder(properties->spriteLocation);
+	textureManager->loadShadersFromFolder(properties->shaderLocation);
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//	   Generate Rooms
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	roomManager = new RoomManager(time(0));
+	roomManager->generateMap();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   Create Scene
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -43,55 +50,23 @@ void Game::init(GameProperties* properties )
 	SceneProperties scene1Properties;
 	scene1Properties.backgroundTiling = "background";
 	scene1Properties.backgroundScale = 1.436781609195402f;
-	scenes[currentScene]->load(scene1Properties);
+	scenes[currentScene]->load(scene1Properties, currentScene);
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   Initialize Player
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	auto target = new GameObject(scenes[currentScene], "beearBody");
-	auto armSprite = new GameObject(target, "beearAttack", true, { 3,24 });
-	((AnimatedSprite*)armSprite->getSprite())->setSettings(0, 11,0);
 	PlayerComponent* pC = target->addComponent<PlayerComponent>();
-	pC->init(armSprite);
-	b2BodyDef bDef = RigidBodyComponent::genBodyDef(b2_dynamicBody, true);
-	b2FixtureDef fDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::PLAYER);
-	b2CircleShape playerShape;
-	target->getSprite()->setDrawOffset(target->getSprite()->getDestinationRectangle()->height / 2 - 40);
-	armSprite->getSprite()->setDrawOffset(target->getSprite()->getDrawOffset());
-	playerShape.m_p.Set(0, 40.0f / PHYSICS_UNIT_SCALE);
-	playerShape.m_radius = 0.7f;
-	fDef.shape = &playerShape;
-	target->addComponent<RigidBodyComponent>()->init(scenes[currentScene]->getCollisionManager(), bDef, fDef);
-	scenes[0]->getCamera()->Target(target->getTransform());
+	pC->init(scenes[currentScene]);
+	
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   Initialize Actors
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	///first blackboard is made
+	///actor blackboard is made
 	AgentDataComponent* blackboard = (new GameObject(scenes[currentScene], nullptr, false, { 0 }, 0, 1, SORTING::BACKGROUND))->addComponent<AgentDataComponent>();
 	blackboard->init(target, scenes[currentScene]->getPathfinder());
 	//then actors
-	
 	GameObject* actor = new GameObject(scenes[currentScene], "beeBody", true, { 300,400 }, 0, 1.0f);
-	((AnimatedSprite*)actor->getSprite())->setSettings(0, 5, 0);
-	actor->getSprite()->setDrawOffset(20);
-	//actor child:
-	auto actorFace = new GameObject(actor, "beeFace", true, { -9,-41 });
-	((AnimatedSprite*)actorFace->getSprite())->pause();
-	actorFace->getSprite()->setDrawOffset(target->getSprite()->getDrawOffset());
-	//add rigidbody
-	b2BodyDef actorbDef = RigidBodyComponent::genBodyDef(b2_dynamicBody, true);
-	b2FixtureDef actorfDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::ENEMY);
-	b2CircleShape actorShape = b2CircleShape();
-	actorShape.m_radius = AgentComponent::colliderRadius;
-	actorfDef.shape = &actorShape;
-	auto actorRb = actor->addComponent<RigidBodyComponent>();
-	actorRb->init(scenes[currentScene]->getCollisionManager(), actorbDef, actorfDef);
-	//add trigger
-	b2FixtureDef actorTriggerfDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::ENEMY, RigidBodyComponent::PLAYER, nullptr, true);
-	b2CircleShape actorTriggerShape = b2CircleShape();
-	actorTriggerShape.m_radius = AgentComponent::triggerRadius;
-	actorTriggerfDef.shape = &actorTriggerShape;
-	actorRb->addFixture(actorTriggerfDef);
-	actor->addComponent<AgentComponent>()->init(blackboard, actorFace);
+	actor->addComponent<AgentComponent>()->init(blackboard, scenes[currentScene]->getCollisionManager());
 	
 	scenes[0]->start();
 }
@@ -122,6 +97,7 @@ void Game::shutdown()
 		delete scenes[i];
 	}
 
+	delete roomManager;
 	delete textureManager;
 }
 
@@ -144,6 +120,11 @@ void Game::changeScene(int sceneIndex)
 	//load in new scene info 
 	//scenes[currentScene]->start();
 	//success?
+}
+
+void Game::GenerateScene(int sceneIndex)
+{
+	
 }
 
 Game& Game::getInstance()

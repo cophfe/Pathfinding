@@ -1,25 +1,28 @@
 #include "TextureManager.h"
 #include <iostream>
 
-static bool checkExtension(const std::filesystem::path& path)
+static bool checkExtensionTexture(const std::filesystem::path& path)
 {	
 	return (std::filesystem::is_regular_file(path) && (path.extension().string() == std::string(".png") || path.extension().string() == std::string(".gif")));
 }
 
-static bool checkIsSpriteSheet(std::filesystem::path& jsonDirectory, std::filesystem::path& )
+static bool checkExtensionShader(const std::filesystem::path& path)
 {
-
+	//not sure if I should check the extension here, as it is just a text file
+	return (std::filesystem::is_regular_file(path));// && (path.extension().string() == std::string(".fs")));
 }
+
+
 TextureManager::TextureManager()
 {
 }
 
 TextureManager::~TextureManager()
 {
-	UnloadTextures();
+	unload();
 }
 
-void TextureManager::LoadTexturesFromFolder(std::string folder)
+void TextureManager::loadTexturesFromFolder(std::string folder)
 {
 	//This whole thing isn't very performant but it only happens once at the start so whatever
 	//should textures be loaded in and out depending on when they're needed? HAHA no of course not, just load them all in at once thats completely reasonable
@@ -44,7 +47,7 @@ void TextureManager::LoadTexturesFromFolder(std::string folder)
 			}
 			//if it's not a subdirectory we check if it has the correct extensions
 			//if so it will be loaded onto the gpu
-			else if (checkExtension(path))
+			else if (checkExtensionTexture(path))
 			{
 				Texture2D* tex = new Texture2D();
 				*tex = LoadTexture(path.string().c_str());
@@ -91,7 +94,7 @@ void TextureManager::LoadTexturesFromFolder(std::string folder)
 			//this will break if the json file isn't formatted correctly
 			auto& frames = document["frames"];
 				
-			animatedTexture->textureNumber = frames.size();
+			animatedTexture->textureNumber = (int)frames.size();
 			animatedTexture->coordinates = new Vector2i[animatedTexture->textureNumber];
 			animatedTexture->spriteWidth = frames[0]["frame"]["w"];
 			animatedTexture->spriteHeight = frames[0]["frame"]["h"];
@@ -108,7 +111,25 @@ void TextureManager::LoadTexturesFromFolder(std::string folder)
 	}
 }
 
-Sprite* TextureManager::GenSprite(std::string name, GameObject* gameObject)
+void TextureManager::loadShadersFromFolder(std::string folder)
+{
+	//load fragment shaders
+	for (auto& entry : std::filesystem::directory_iterator(folder))
+	{
+		if (checkExtensionShader(entry.path()))
+		{
+			Shader s = LoadShader(0, entry.path().string().c_str());
+
+			//idk how to check if it failed to load so let's just cross our fingers and hope it's the same as textures
+			if (s.id == 0)
+				continue;
+
+			shaderMap[entry.path().stem().string()] = s;
+		}
+	}
+}
+
+Sprite* TextureManager::genSprite(std::string name, GameObject* gameObject)
 {
 	auto iterator = textureMap.find(name);
 	if (iterator != textureMap.end())
@@ -136,7 +157,17 @@ Texture2D* TextureManager::getTextureInfo(std::string name)
 
 }
 
-void TextureManager::UnloadTextures()
+Shader* TextureManager::getShader(std::string name)
+{
+	auto iterator = shaderMap.find(name);
+	if (iterator != shaderMap.end())
+	{
+		return &((*iterator).second);
+	}
+	return nullptr;
+}
+
+void TextureManager::unload()
 {
 	for (auto& textureComplex : textureMap)
 	{
@@ -147,5 +178,9 @@ void TextureManager::UnloadTextures()
 			delete[]((AnimatedTexture*)textureComplex.second.texture)->coordinates;
 		}
 		delete textureComplex.second.texture;
+	}
+	for (auto& shader : shaderMap)
+	{
+		UnloadShader(shader.second);
 	}
 }

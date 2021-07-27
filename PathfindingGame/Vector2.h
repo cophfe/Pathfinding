@@ -29,9 +29,9 @@ namespace mlib
 		Vector2 perpendicular() const;
 
 		static float getAngle(Vector2& a, Vector2& b);
-		float getAngle(Vector2& v);
+		float getAngle(Vector2 v);
 
-		Vector2 lerp(Vector2& a, Vector2& b, float t);
+		static Vector2 lerp(Vector2& a, Vector2& b, float t);
 
 		Vector2 operator+ (const Vector2& v) const;
 		Vector2 operator- (const Vector2& v) const;

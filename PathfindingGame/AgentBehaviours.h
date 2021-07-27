@@ -84,7 +84,7 @@ public:
 			if (agent->pathfinder->AStarPath(agent->pathfinder->getNodeFromPoint(&agent->transform->getPositionReference()), agent->playerNode, &agent->path) > 0)
 			{
 				//if astar returns a result, set the destination to the first node
-				agent->pathIndex = agent->path.size() - 1;
+				agent->pathIndex = (int)agent->path.size() - 1;
 				agent->destination = agent->path[agent->pathIndex];
 				agent->movementDirection = (agent->destination - agent->transform->getPosition()).normalised();
 				agent->movementDirection.y *= -1;
@@ -103,7 +103,7 @@ public:
 			if (pathfinder->AStarPath(agent->pathfinder->getNodeFromPoint(&agent->transform->getPositionReference()), node, &agent->path) > 0)
 			{
 				//if astar returns a result, set the destination to the first node
-				agent->pathIndex = agent->path.size() - 1;
+				agent->pathIndex = (int)agent->path.size() - 1;
 				agent->destination = agent->path[agent->pathIndex];
 				agent->movementDirection = (agent->destination - agent->transform->getPosition()).normalised();
 				agent->movementDirection.y *= -1;
@@ -167,7 +167,7 @@ public:
 
 	virtual BehaviourResult execute(AgentComponent* agent)
 	{
-		player->hit(agent->getTransform()->getPosition());
+		player->hit(AgentComponent::damage, AgentComponent::knockback, agent->getTransform()->getPosition());
 		return BehaviourResult::SUCCESS;
 	};
 

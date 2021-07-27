@@ -31,7 +31,7 @@ public:
 	void addImpulse(Vector2 impulse, Vector2 position);
 	inline const Vector2& getVelocity() { return reinterpret_cast<const Vector2&>(body->GetLinearVelocity()); }
 
-	void addFixture(b2FixtureDef& fixtureDef);
+	b2Fixture* addFixture(b2FixtureDef& fixtureDef);
 	inline b2Body* getBody() { return body; }
 	static b2BodyDef genBodyDef(b2BodyType type, bool fixedRotation = false, float angularDamping = 0, float linearDamping = 0);
 	static b2FixtureDef genFixtureDef(uint16 collisionCategory, uint16 collisionMask = ALL, b2Shape* shape = nullptr, bool isSensor = false, float friction = 0.0f, float restitution = 0.0f, float density = 1.0f, float restitutionThreshold = 0);
@@ -48,8 +48,10 @@ private:
 	b2World* world;
 
 	//collision callbacks
-	void OnCollisionEnter(RigidBodyComponent* collisionBody, b2Manifold* manifold);
-	void OnCollisionLeave(RigidBodyComponent* collisionBody, b2Manifold* manifold);
+	void OnCollisionEnter(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
+	void OnCollisionLeave(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
+	void OnTriggerEnter(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
+	void OnTriggerLeave(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
 
 	friend ContactListener;
 };

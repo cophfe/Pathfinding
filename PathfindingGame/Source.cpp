@@ -42,6 +42,7 @@ int main(int argc, char* argv[])
 	//sprite directory found using filesystem
 	auto sprDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path().parent_path().parent_path().string();
 	gP.spriteLocation = sprDirectory + "\\Images";
+	gP.shaderLocation = sprDirectory + "\\Shaders";
 	game.init(&gP);
 
 	game.gameLoop();

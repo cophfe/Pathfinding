@@ -24,7 +24,16 @@ Sprite::Sprite(Texture2D* textureComplex, GameObject* attached)
 
 void Sprite::draw()
 {
-	DrawTexturePro(*texture, srcRect, destRect, pivot, transform->getGlobalRotation() * rad2Deg, tint);
+	if (shader != nullptr)
+	{
+		BeginShaderMode(*shader);
+		DrawTexturePro(*texture, srcRect, destRect, pivot, transform->getGlobalRotation() * rad2Deg, tint);
+		EndShaderMode();
+	}
+	else
+	{
+		DrawTexturePro(*texture, srcRect, destRect, pivot, transform->getGlobalRotation() * rad2Deg, tint);
+	}
 }
 
 void Sprite::flip()
@@ -35,6 +44,11 @@ void Sprite::flip()
 void Sprite::setFlipped(bool flippedValue)
 {
 	srcRect.width = flippedValue ? (float)-texture->width : (float)texture->width;
+}
+
+void Sprite::setShader(const char* name)
+{
+	shader = Game::getInstance().getTextureManager()->getShader(name);
 }
 
 //the destination rectangle needs to be updated every time position or scale changes
@@ -126,7 +140,17 @@ void AnimatedSprite::draw()
 		updateSrcCoordinates();
 		frameTimer -= secondsPerFrame;
 	}
-	DrawTexturePro(*texture, srcRect, destRect, pivot, transform->getGlobalRotation() * rad2Deg, tint);
+
+	if (shader != nullptr)
+	{
+		BeginShaderMode(*shader);
+		DrawTexturePro(*texture, srcRect, destRect, pivot, transform->getGlobalRotation() * rad2Deg, tint);
+		EndShaderMode();
+	}
+	else
+	{
+		DrawTexturePro(*texture, srcRect, destRect, pivot, transform->getGlobalRotation() * rad2Deg, tint);
+	}
 }
 
 void AnimatedSprite::UpdateSpriteRectangle()

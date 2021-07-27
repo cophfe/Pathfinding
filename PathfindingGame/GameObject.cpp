@@ -14,8 +14,9 @@ void GameObject::init(const char* spriteName, GameObject* parent, bool isDrawn, 
 		transform = new Transform(position, scale, rotation, nullptr, this);
 	else	
 		transform = new Transform(position, scale, rotation, parent->getTransform(), this);
-	if (isDrawn)
-		sprite = tM->GenSprite(std::string(spriteName), this);
+	
+	if (spriteName != nullptr)
+		sprite = tM->genSprite(std::string(spriteName), this);
 	else
 		sprite = new NullSprite();
 	
@@ -31,8 +32,8 @@ GameObject::GameObject(Scene* parent, const char* spriteName, bool isDrawn, Vect
 	TextureManager* tM = Game::getInstance().getTextureManager();
 	transform = new Transform(position, scale, rotation, nullptr, this);
 
-	if (isDrawn)
-		sprite = tM->GenSprite(std::string(spriteName), this);
+	if (spriteName != nullptr)
+		sprite = tM->genSprite(std::string(spriteName), this);
 	else
 		sprite = new NullSprite();
 
@@ -65,8 +66,9 @@ GameObject::GameObject(GameObject* parent, const char* spriteName, bool isDrawn,
 		transform = new Transform(position, scale, rotation, nullptr, this);
 	else
 		transform = new Transform(position, scale, rotation, parent->getTransform(), this);
-	if (isDrawn)
-		sprite = tM->GenSprite(std::string(spriteName), this);
+	
+	if (spriteName != nullptr)
+		sprite = tM->genSprite(std::string(spriteName), this);
 	else
 		sprite = new NullSprite();
 
@@ -88,6 +90,7 @@ void GameObject::deleteSelf()
 	{
 		component->unload();
 		delete component;
+		component = nullptr;
 	}
 
 	int count = std::distance(std::begin(transform->getChildArray()), std::end(transform->getChildArray()));
@@ -105,7 +108,8 @@ void GameObject::deleteSelf()
 
 void GameObject::draw()
 {
-	sprite->draw();
+	if (isDrawn)
+		sprite->draw();
 
 	for (auto& child : transform->getChildArray())
 	{
@@ -118,7 +122,8 @@ void GameObject::debugDraw()
 {
 	for (auto& component : components)
 	{
-		component->debugDraw();
+		if (component->isEnabled())
+			component->debugDraw();
 	}
 }
 #endif
@@ -131,7 +136,8 @@ void GameObject::updateComponents()
 	}
 	for (auto& component : components)
 	{
-		component->update();
+		if (component->isEnabled())
+			component->update();
 	}
 }
 
@@ -143,7 +149,8 @@ void GameObject::fixedUpdateComponents()
 	}
 	for (auto& component : components)
 	{
-		component->fixedUpdate();
+		if (component->isEnabled())
+			component->fixedUpdate();
 	}
 }
 
@@ -159,26 +166,54 @@ void GameObject::startComponents()
 	}
 }
 
-void GameObject::onCollisionEnterComponents(RigidBodyComponent* collisionBody, b2Manifold* manifold)
+void GameObject::onCollisionEnterComponents(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
 {
 	for (auto& child : transform->getChildArray())
 	{
-		child->getGameObject()->onCollisionEnterComponents(collisionBody, manifold);
+		child->getGameObject()->onCollisionEnterComponents(collisionBody, collisionFixture);
 	}
 	for (auto& component : components)
 	{
-		component->onCollisionEnter(collisionBody, manifold);
+		if (component->isEnabled())
+			component->onCollisionEnter(collisionBody, collisionFixture);
 	}
 }
 
-void GameObject::onCollisionExitComponents(RigidBodyComponent* collisionBody, b2Manifold* manifold)
+void GameObject::onCollisionExitComponents(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
 {
 	for (auto& child : transform->getChildArray())
 	{
-		child->getGameObject()->onCollisionExitComponents(collisionBody, manifold);
+		child->getGameObject()->onCollisionExitComponents(collisionBody, collisionFixture);
 	}
 	for (auto& component : components)
 	{
-		component->onCollisionExit(collisionBody, manifold);
+		if (component->isEnabled())
+			component->onCollisionExit(collisionBody, collisionFixture);
+	}
+}
+
+void GameObject::onTriggerEnterComponents(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
+{
+	for (auto& child : transform->getChildArray())
+	{
+		child->getGameObject()->onTriggerEnterComponents(collisionBody, collisionFixture);
+	}
+	for (auto& component : components)
+	{
+		if (component->isEnabled())
+			component->onTriggerEnter(collisionBody, collisionFixture);
+	}
+}
+
+void GameObject::onTriggerExitComponents(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
+{
+	for (auto& child : transform->getChildArray())
+	{
+		child->getGameObject()->onTriggerExitComponents(collisionBody, collisionFixture);
+	}
+	for (auto& component : components)
+	{
+		if (component->isEnabled())
+			component->onTriggerExit(collisionBody, collisionFixture);
 	}
 }

@@ -180,9 +180,11 @@
     <ClCompile Include="PhysicsDebugDraw.cpp" />
     <ClCompile Include="PlayerComponent.cpp" />
     <ClCompile Include="RigidBodyComponent.cpp" />
+    <ClCompile Include="RoomManager.cpp" />
     <ClCompile Include="SelectorBehaviour.cpp" />
     <ClCompile Include="SequenceBehaviour.cpp" />
     <ClCompile Include="SmoothCamera.cpp" />
+    <ClCompile Include="SwipeComponent.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Vector2.cpp">
       <DeploymentContent>false</DeploymentContent>
@@ -219,11 +221,13 @@
     <ClInclude Include="PhysicsDebugDraw.h" />
     <ClInclude Include="PlayerComponent.h" />
     <ClInclude Include="RigidBodyComponent.h" />
+    <ClInclude Include="RoomManager.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SelectorBehaviour.h" />
     <ClInclude Include="SequenceBehaviour.h" />
     <ClInclude Include="SmoothCamera.h" />
     <ClInclude Include="Sprite.h" />
+    <ClInclude Include="SwipeComponent.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Vector2.h" />

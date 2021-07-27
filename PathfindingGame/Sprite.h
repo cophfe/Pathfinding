@@ -39,10 +39,17 @@ public:
 	float getHeight() { return destRect.height; }
 	void setDrawOffset(float drawOffset) { this->drawOffset = drawOffset; }
 	float getDrawOffset() { return drawOffset; }
+	void setShader(const char* name);
+	void setShader(Shader* shader) { this->shader = shader; }
+	void clearShader() { this->shader = nullptr; }
+	Shader* getShader() { return shader; }
 protected:
 	Transform* transform;
 	Texture2D* texture;
 	Color tint;
+
+	//pointer just so it can be nullptr
+	Shader* shader = nullptr;
 
 	Rectangle srcRect;
 	Rectangle destRect;
