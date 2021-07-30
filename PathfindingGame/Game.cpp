@@ -1,12 +1,14 @@
 #include "Game.h"
 
 #include "Scene.h"
+#include "Room.h"
 #include "GameObject.h"
 #include "Transform.h"
 
 #include "AgentComponent.h"
 #include "AgentDataComponent.h"
 #include "PlayerComponent.h"
+#include "PathfinderComponent.h"
 
 void Game::init(GameProperties* properties )
 {
@@ -41,34 +43,13 @@ void Game::init(GameProperties* properties )
 	//	   Generate Rooms
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	roomManager = new RoomManager(time(0));
-	roomManager->generateMap();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 	   Create Scene
+	// 	   Create Room
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	currentScene = 0;
-	scenes.push_back(new Scene());
-	SceneProperties scene1Properties;
-	scene1Properties.backgroundTiling = "background";
-	scene1Properties.backgroundScale = 1.436781609195402f;
-	scenes[currentScene]->load(scene1Properties, currentScene);
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 	   Initialize Player
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	auto target = new GameObject(scenes[currentScene], "beearBody");
-	PlayerComponent* pC = target->addComponent<PlayerComponent>();
-	pC->init(scenes[currentScene]);
+	Room* firstRoom = roomManager->createFirstRoom();	
+	scene = firstRoom;
 	
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 	   Initialize Actors
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	///actor blackboard is made
-	AgentDataComponent* blackboard = (new GameObject(scenes[currentScene], nullptr, false, { 0 }, 0, 1, SORTING::BACKGROUND))->addComponent<AgentDataComponent>();
-	blackboard->init(target, scenes[currentScene]->getPathfinder());
-	//then actors
-	GameObject* actor = new GameObject(scenes[currentScene], "beeBody", true, { 300,400 }, 0, 1.0f);
-	actor->addComponent<AgentComponent>()->init(blackboard, scenes[currentScene]->getCollisionManager());
-	
-	scenes[0]->start();
+	scene->start();
 }
 
 void Game::gameLoop()
@@ -78,13 +59,23 @@ void Game::gameLoop()
 		std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
         // update Scene
-        scenes[currentScene]->update();
+		scene->update();
         
         // draw Scene
-        scenes[currentScene]->draw();
+		scene->draw();
 
 		std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 		deltaTime = (float)std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count();
+
+		//have to wait until end of gameLoop to delete scene
+		if (nextScene != nullptr)
+		{
+			scene->beforeDelete(nextScene);
+			delete scene;
+			scene = nextScene;
+			scene->start();
+			nextScene = nullptr;
+		}
     }
 }
 
@@ -92,13 +83,15 @@ void Game::shutdown()
 {
     CloseWindow();
 
-	for (size_t i = 0; i < scenes.size(); i++)
-	{
-		delete scenes[i];
-	}
+	delete scene;
 
 	delete roomManager;
 	delete textureManager;
+}
+
+void Game::switchScene(Scene* newScene)
+{
+	nextScene = newScene;
 }
 
 float Game::getDeltaTime()
@@ -109,22 +102,6 @@ float Game::getDeltaTime()
 TextureManager* Game::getTextureManager()
 {
 	return textureManager;
-}
-
-void Game::changeScene(int sceneIndex)
-{
-	//move gameobjects from one scene to other IF needed (done before this function is called)
-	
-	//unload previous scene
-	
-	//load in new scene info 
-	//scenes[currentScene]->start();
-	//success?
-}
-
-void Game::GenerateScene(int sceneIndex)
-{
-	
 }
 
 Game& Game::getInstance()

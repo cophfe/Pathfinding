@@ -21,6 +21,8 @@ public:
 	GameObject(Scene* parent, const char* spriteName = "missing", bool isDrawn = true, Vector2 position = {0,0}, float rotation = 0, float scale = 1, SORTING layer = SORTING::MIDGROUND);
 	GameObject( GameObject* parent, const char* spriteName = "missing", bool isDrawn = true, Vector2 position = {0,0}, float rotation = 0, float scale = 1);
 	GameObject(Scene* parent, Texture2D* texture, Vector2 position = { 0,0 }, float rotation = 0, float scale = 1, SORTING layer = SORTING::MIDGROUND);
+	//no parent (NEEDS PARENT SET MANUALLY!!!)
+	GameObject(Texture2D* texture, Vector2 position = { 0,0 }, float rotation = 0, float scale = 1);
 	~GameObject();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//		Copy and Move constructors and assigners 
@@ -39,7 +41,7 @@ public:
 	void debugDraw();
 #endif
 	inline Sprite* getSprite() { return sprite; };
-	inline void setSprite(Sprite* sprite) { this->sprite = sprite; }
+	void setSprite(Sprite* sprite);
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   Component stuff
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -50,6 +52,8 @@ public:
 	T* addComponent();
 	template<typename T>
 	T* getComponentOfType();
+	template<typename T>
+	T* deleteComponentOfType();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//		Transform Stuff
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -57,7 +61,7 @@ public:
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//		Other
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	virtual void deleteSelf();
+	void deleteSelf();
 	inline int getId() { return id; }
 	inline void setIsDrawn(bool value) { isDrawn = value; }
 	inline bool getIsDrawn() { return isDrawn; }
@@ -103,6 +107,21 @@ inline T* GameObject::getComponentOfType()
 		if (typeid(*component) == typeid(T))
 		{
 			return (T*)component;
+		}
+	}
+	return nullptr;
+}
+template<typename T>
+inline T* GameObject::deleteComponentOfType()
+{
+	for (auto& component : components)
+	{
+		if (typeid(*component) == typeid(T))
+		{
+			component->unload();
+			delete component;
+			components.remove(component);
+			break;
 		}
 	}
 	return nullptr;

@@ -4,8 +4,10 @@
 #include "Game.h"
 #include "SmoothCamera.h"
 #include "SwipeComponent.h"
+#include "PlayerUIComponent.h"
+#include "Room.h"
 
-void PlayerComponent::init(Scene* scene)
+void PlayerComponent::init(Room* scene)
 {
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   Initialization
@@ -13,38 +15,13 @@ void PlayerComponent::init(Scene* scene)
 	//child settings
 	armObject = new GameObject(gameObject, "beearAttack", true, { 3,24 });
 	armSprite = (AnimatedSprite*)armObject->getSprite();
-	armSprite->setSettings(walkStart, walkEnd, 0);
+	armSprite->setSettings(WALK_START, WALK_END, 0);
 	//sprite settings
-	gameObject->getSprite()->setDrawOffset(gameObject->getSprite()->getDestinationRectangle()->height / 2 - drawOffset);
+	gameObject->getSprite()->setDrawOffset(gameObject->getSprite()->getDestinationRectangle()->height / 2 - DRAW_OFFSET);
 	armSprite->setDrawOffset(gameObject->getSprite()->getDrawOffset());
 	armSprite->setTimePerFrame(1.0f/30);
-	//generate rigidBody
-	b2BodyDef bDef = RigidBodyComponent::genBodyDef(b2_dynamicBody, true);
-	b2FixtureDef fDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::PLAYER);
-	b2CircleShape playerShape;
-	playerShape.m_p.Set(0, drawOffset / PHYSICS_UNIT_SCALE);
-	playerShape.m_radius = 0.7f;
-	fDef.shape = &playerShape;
-	rigidBody = gameObject->addComponent<RigidBodyComponent>();
-	rigidBody->init(scene->getCollisionManager(), bDef, fDef);
-	//create sensor
-	fDef.isSensor = true;
-	fDef.filter.maskBits = RigidBodyComponent::ENEMY;
-	playerShape.m_radius = attackDistance / PHYSICS_UNIT_SCALE;
-	rigidBody->addFixture(fDef);
-	//target camera to player
-	camera = scene->getCamera();
-	camera->Target(transform);
-	//create attack swipe object
-	swipeEffect = (new GameObject(scene, "swipe", false))->addComponent<SwipeComponent>();
-	swipeEffect->init();
-	swipeEffect->disableComponent();
-	//get shader
-	additiveShader = Game::getInstance().getTextureManager()->getShader("additiveBlend");
-	if (additiveShader != nullptr)
-	{
-		shaderTintLocation = GetShaderLocation(*additiveShader, "amount");
-	}
+
+	generateAdditional(scene);
 }
 
 void PlayerComponent::update()
@@ -53,6 +30,7 @@ void PlayerComponent::update()
 
 	direction = { 0 };
 
+	//
 	if (IsKeyDown(KEY_D))
 	{
 		direction.x = 1;
@@ -72,7 +50,7 @@ void PlayerComponent::update()
 
 	if (direction.x != 0 || direction.y != 0)
 	{
-		if (flipped != direction.x < 0)
+		if (flipped == direction.x > 0 && direction.x != 0)
 		{
 			gameObject->getSprite()->flip();
 			armSprite->flip();
@@ -87,18 +65,18 @@ void PlayerComponent::update()
 		((AnimatedSprite*)gameObject->getSprite())->pauseAt(0);
 	}
 
-	cooldownTimer -= Game::getDeltaTime();
+	//Invincibility logic here 
 	if (invincible)
 	{
 		invincibilityTimer += Game::getDeltaTime();
-		
-		
-		
-		if (invincibilityTimer <= PI/(2 * invincibilityTintSpeed))
+				
+		if (invincibilityTimer <= PI/(2 * HIT_TINT_SPEED))
 		{
-			float invincibilityTintAmount = cosf(invincibilityTimer * invincibilityTintSpeed);
-			SetShaderValue(*additiveShader, shaderTintLocation, &invincibilityTintAmount, SHADER_UNIFORM_FLOAT);
-			std::cout << invincibilityTintAmount;
+			float invincibilityTintAmount = cosf(invincibilityTimer * HIT_TINT_SPEED);
+			unsigned char invincibilityTint = cosf(invincibilityTimer * HIT_TINT_SPEED) * 0xFF;
+			//SetShaderValue(*shader, shaderTintLocation, &invincibilityTintAmount, SHADER_UNIFORM_FLOAT);
+			armSprite->setTint({ invincibilityTint,invincibilityTint,invincibilityTint,0xFF });
+			gameObject->getSprite()->setTint({ invincibilityTint,invincibilityTint,invincibilityTint,0xFF });
 		}
 		else
 		{
@@ -108,12 +86,12 @@ void PlayerComponent::update()
 				armSprite->clearShader();
 				gameObject->getSprite()->clearShader();
 			}
-			unsigned char invincibilityAlpha = 0xCF + copysignf(1.0f, sinf(invincibilityTimer * invincibilityAlphaSpeed)) * 0x30;
+			unsigned char invincibilityAlpha = 0xCF + copysignf(1.0f, sinf(invincibilityTimer * INVINCIBILITY_ALPHA_SPEED)) * 0x30;
 			armSprite->setTint({ 0xFF,0xFF,0xFF,invincibilityAlpha });
 			gameObject->getSprite()->setTint({ 0xFF,0xFF,0xFF,invincibilityAlpha });
 		}
 
-		if (invincibilityTimer >= invincibilityTime)
+		if (invincibilityTimer >= INVINCIBILITY_TIME)
 		{
 			invincible = false;
 			invincibilityTimer = 0;
@@ -122,6 +100,8 @@ void PlayerComponent::update()
 		}
 	}
 	
+	//state machine here
+	cooldownTimer -= Game::getDeltaTime();
 	if (!pending)
 	{
 		switch (armState)
@@ -134,34 +114,34 @@ void PlayerComponent::update()
 			{
 				armState = ST_ATTACK_END;
 				pending = true;
-				armSprite->setSettings(attackMiddle + 1, attackEnd, attackMiddle + 1);
-				armSprite->setCallback(spriteCallback, this);
-				spritePause = attackEnd;
+				armSprite->setSettings(ATTACK_HIT + 1, ATTACK_END, ATTACK_HIT + 1);
+				armSprite->setCallback(dieCallback, this);
+				spritePause = ATTACK_END;
 				armSprite->play();
-				cooldownTimer = cooldown;
+				cooldownTimer = ATTACK_COOLDOWN;
 				attack();
 			}
 			break;
 		case ST_ATTACK_END:
 			armState = ST_WALKING;
-			armSprite->setSettings(walkStart, walkEnd, walkStart);
+			armSprite->setSettings(WALK_START, WALK_END, WALK_START);
 			break;
 		case ST_STEALTH_ENTER:
 			armState = ST_STEALTH;
-			armSprite->setSettings(stealthWalkStart, stealthWalkEnd, stealthWalkStart);
+			armSprite->setSettings(STEALTH_WALK_START, STEALTH_WALK_END, STEALTH_WALK_START);
 			armSprite->play();
-			acceleration = maxAcceleration * stealthSpeedMultiplier;
-			speed = maxSpeed * stealthAccelerationMultiplier;
+			acceleration = MAX_ACCELERATION * STEALTH_SPEED_MULTIPLIER;
+			speed = MAX_SPEED * STEALTH_ACCELERATION_MULTIPLIER;
 			break;
 		case ST_STEALTH:
 			inStealth = true;
-			armSprite->setCurrentFrame(((AnimatedSprite*)gameObject->getSprite())->getCurrentFrame() + stealthWalkStart - walkStart);
+			armSprite->setCurrentFrame(((AnimatedSprite*)gameObject->getSprite())->getCurrentFrame() + STEALTH_WALK_START - WALK_START);
 			break;
 		case ST_STEALTH_LEAVE:
-			speed = maxSpeed;
-			acceleration = maxAcceleration;
+			speed = MAX_SPEED;
+			acceleration = MAX_ACCELERATION;
 			armSprite->setCallback(nullptr, nullptr);
-			armSprite->setSettings(walkStart, walkEnd, walkStart);
+			armSprite->setSettings(WALK_START, WALK_END, WALK_START);
 			armState = ST_WALKING;
 			break;
 		}
@@ -170,10 +150,10 @@ void PlayerComponent::update()
 		{
 			pending = true;
 			armState = ST_ATTACK_START;
-			armSprite->setSettings(attackStart, attackMiddle, attackStart);
+			armSprite->setSettings(ATTACK_START, ATTACK_HIT, ATTACK_START);
 			armSprite->play();
-			armSprite->setCallback(spriteCallback, this);
-			spritePause = attackMiddle;
+			armSprite->setCallback(dieCallback, this);
+			spritePause = ATTACK_HIT;
 		}
 		else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
 		{
@@ -181,24 +161,59 @@ void PlayerComponent::update()
 			{
 				pending = true;
 				armState = ST_STEALTH_ENTER;
-				armSprite->setSettings(stealthSwitchStart, stealthSwitchEnd, stealthSwitchStart);
+				armSprite->setSettings(STEALTH_SWITCH_START, STEALTH_SWITCH_END, STEALTH_SWITCH_START);
 				armSprite->play();
-				armSprite->setCallback(spriteCallback, this);
-				spritePause = stealthSwitchEnd;
+				armSprite->setCallback(dieCallback, this);
+				spritePause = STEALTH_SWITCH_END;
 			}
 			else if (armState == ST_STEALTH)
 			{
 				pending = true;
 				armState = ST_STEALTH_LEAVE;
-				armSprite->setSettings(unstealthSwitchStart, unstealthSwitchEnd, unstealthSwitchStart);
+				armSprite->setSettings(UNSTEALTH_SWITCH_START, UNSTEALTH_SWITCH_END, UNSTEALTH_SWITCH_START);
 				armSprite->play();
-				armSprite->setCallback(spriteCallback, this);
-				spritePause = unstealthSwitchEnd;
-
+				armSprite->setCallback(dieCallback, this);
+				spritePause = UNSTEALTH_SWITCH_END;
 			}
 			
 		}
 	}
+}
+
+void PlayerComponent::generateAdditional(Room* scene)
+{
+	//generate additional data
+	//generate rigidBody
+	b2BodyDef bDef = RigidBodyComponent::genBodyDef(b2_dynamicBody, true);
+	b2FixtureDef fDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::PLAYER);
+	b2CircleShape playerShape;
+	playerShape.m_p.Set(0, DRAW_OFFSET / PHYSICS_UNIT_SCALE);
+	playerShape.m_radius = 0.7f;
+	fDef.shape = &playerShape;
+	if (gameObject->getComponentOfType<RigidBodyComponent>() != nullptr)
+	{
+		gameObject->deleteComponentOfType<RigidBodyComponent>();
+	}
+	rigidBody = gameObject->addComponent<RigidBodyComponent>();
+	rigidBody->init(scene->getCollisionManager(), bDef, fDef);
+	//create sensor
+	fDef.isSensor = true;
+	fDef.filter.maskBits = RigidBodyComponent::ENEMY;
+	playerShape.m_p.Set(0, (gameObject->getSprite()->getDestinationRectangle()->height / 2 - DRAW_OFFSET) / PHYSICS_UNIT_SCALE);
+	playerShape.m_radius = ATTACK_DIST / PHYSICS_UNIT_SCALE;
+	rigidBody->addFixture(fDef);
+	//target camera to player
+	camera = scene->getCamera();
+	camera->Target(transform);
+	//create attack swipe object
+	swipeEffect = (new GameObject(scene, "swipe", false))->addComponent<SwipeComponent>();
+	swipeEffect->init();
+	swipeEffect->disableComponent();
+	//get shader
+	additiveShader = Game::getInstance().getTextureManager()->getShader("additiveTint");
+	//create UI object
+	UI = (new GameObject(scene, nullptr, false, { 0 }, 1, SORTING::UI))->addComponent<PlayerUIComponent>();
+	UI->init(MAX_HEALTH, health, scene);
 }
 
 void PlayerComponent::fixedUpdate()
@@ -236,7 +251,7 @@ void PlayerComponent::attack()
 	Vector2 mousePos = camera->GetCameraMousePosition();
 	Vector2 startPos = transform->getPosition() + Vector2{0, -gameObject->getSprite()->getDrawOffset()};
 	Vector2 direction = (mousePos - startPos).normalised();
-	swipeEffect->startEffect(direction * (attackDistance/5) + startPos, direction);
+	swipeEffect->startEffect(direction * (ATTACK_DIST/5) + startPos, direction, rigidBody->getVelocity());
 
 	if (attackableBees.size() > 0)
 	{
@@ -249,12 +264,12 @@ void PlayerComponent::attack()
 			Vector2 beePos = attackableBees[i]->getTransform()->getPosition();
 			Vector2 deltaBee = (playerPos - beePos);
 			
-			if (Vector2::dot(deltaCamera.normalised(), deltaBee.normalised()) > minDot)
+			if (Vector2::dot(deltaCamera.normalised(), deltaBee.normalised()) > MIN_ATTACK_DOT)
 			{
 				beeComponent = attackableBees[i]->getGameObject()->getComponentOfType<AgentComponent>();
 				if (beeComponent != nullptr)
 				{
-					beeComponent->hit(damage, knockback, transform->getPosition());
+					beeComponent->hit(DAMAGE, KNOCKBACK, transform->getPosition());
 				}
 			}
 		}
@@ -271,7 +286,10 @@ void PlayerComponent::hit(int damage, float knockback, const Vector2& position)
 	armSprite->setShader(additiveShader);
 	gameObject->getSprite()->setShader(additiveShader);
 	health -= damage;
-	rigidBody->addVelocity((position - transform->getPosition()).normalised() * Vector2 { -knockback, knockback });
+	UI->hit(damage);
+	Vector2 knockbackVector = (position - transform->getPosition()).normalised() * knockback;
+	knockbackVector.x *= -1;
+	rigidBody->addVelocity(knockbackVector);
 	invincibilityTimer = 0;
 	invincible = true;
 	hitFlashing = true;

@@ -13,7 +13,7 @@ public:
 
 	void start();
 	virtual void update();
-	void startEffect(Vector2 startPos, Vector2 endPos);
+	void startEffect(Vector2 startPos, Vector2 endPos, Vector2 velocity);
 
 private:
 	Sprite* sprite;

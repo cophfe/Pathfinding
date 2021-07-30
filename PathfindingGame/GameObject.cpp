@@ -47,9 +47,12 @@ GameObject::GameObject(Scene* parent, Texture2D* texture, Vector2 position, floa
 {
 	isDrawn = true;
 
-	TextureManager* tM = Game::getInstance().getTextureManager();
 	transform = new Transform(position, scale, rotation, nullptr, this);
-	sprite = new Sprite(texture, this);
+
+	if (texture == nullptr)
+		sprite = new NullSprite();
+	else
+		sprite = new Sprite(texture, this);
 
 	id = idCounter;
 	++idCounter;
@@ -76,6 +79,22 @@ GameObject::GameObject(GameObject* parent, const char* spriteName, bool isDrawn,
 	++idCounter;
 }
 
+GameObject::GameObject(Texture2D* texture, Vector2 position, float rotation, float scale)
+{
+	isDrawn = true;
+
+	TextureManager* tM = Game::getInstance().getTextureManager();
+	transform = new Transform(position, scale, rotation, nullptr, this);
+
+	if (texture == nullptr)
+		sprite = new NullSprite();
+	else
+		sprite = new Sprite(texture, this);
+
+	id = idCounter;
+	++idCounter;
+}
+
 GameObject::~GameObject()
 {
 	deleteSelf();
@@ -83,8 +102,14 @@ GameObject::~GameObject()
 
 void GameObject::deleteSelf()
 {
-	if (transform->getParent() != nullptr)
+	if (transform->getParent() == nullptr)
+	{
+		Game::getInstance().getScene()->removeGameObjectFromChildren(this);
+	}
+	else
+	{
 		transform->getParent()->removeChild(transform);
+	}
 	
 	for (auto& component : components)
 	{
@@ -127,6 +152,15 @@ void GameObject::debugDraw()
 	}
 }
 #endif
+
+void GameObject::setSprite(Sprite* sprite)
+{
+	if (this->sprite != nullptr)
+	{
+		delete this->sprite;
+	}
+	this->sprite = sprite;
+}
 
 void GameObject::updateComponents()
 {

@@ -14,48 +14,50 @@ class AgentComponent : public Component
 {
 public:
 	//movement settings
-	static constexpr float chaseVelocityMultiplier = 3.0f;
-	static constexpr float chaseAccelerationMultiplier = 15.0f;
-	static constexpr float chaseAccelerationMultiplierSq = chaseAccelerationMultiplier * chaseAccelerationMultiplier;
-	static constexpr float maxAcceleration = 4.0f;
-	static constexpr float maxVelocity = 2.0f;
-	static constexpr float minDistanceToNode = 55.0f;
-	static constexpr float minDistanceToFinalNode = 200.0f;
+	static constexpr float CHASE_VEL_MULTIPLIER = 3.0f;
+	static constexpr float CHASE_ACCEL_MULTIPLIER = 15.0f;
+	static constexpr float MAX_ACCELERATION = 4.0f;
+	static constexpr float MAX_VELOCITY = 2.0f;
+	static constexpr float MIN_NODE_DIST = 55.0f;
+	static constexpr float MIN_FINAL_DIST = 200.0f;
 	//hover settings
-	static constexpr float floatMagnitude = 15.0f;
-	static constexpr float floatSpeed = 10.0f;
-	//idle settings
-	static constexpr float idleChance = 0.9f;
-	static constexpr float idleTime = 2.0f;
-	static constexpr float idleVarience = 0.5f;
-	static constexpr float attackDistance = 200.0f;
+	static constexpr float HOVER_MAG = 15.0f;
+	static constexpr float HOVER_SPEED = 10.0f;
+	////idle settings
+	//static constexpr float idleChance = 0.9f;
+	//static constexpr float idleTime = 2.0f;
+	//static constexpr float idleVarience = 0.5f;
 	//collider size settings
-	static constexpr float colliderRadius = 0.5f;
-	static constexpr float triggerRadius = 3.0f;
+	static constexpr float COLLIDER_RAD = 0.5f;
+	static constexpr float TRIGGER_RAD = 3.0f;
 	//attack settings
-	static constexpr int healthMax = 2;
-	static constexpr float knockback = 10;
-	static constexpr int damage = 1;
-	
+	static constexpr float ATTACK_DIST = 200.0f;
+	static constexpr int MAX_HEALTH = 3;
+	static constexpr float KNOCKBACK = 10;
+	static constexpr int DAMAGE = 1;
+	static constexpr float HIT_TINT_SPEED = 2.5f * PI;
+
 	//amimation start and end frames:
 	//face:
-	static constexpr int faceAlertStartFrame = 1;
-	static constexpr int faceAlertEndFrame = 14;
-	static constexpr int faceStaticAngry = 14;
-	static constexpr int faceStaticCalm = 0;
-	static constexpr int faceAttackStart = 24;
-	static constexpr int faceAttackHitPoint = 36;
-	static constexpr int faceAttackEnd = 48;
-	static constexpr int faceTurnStart = 15;
-	static constexpr int faceTurnEnd = 23;
+	static constexpr int FACE_ALERT_START = 1;
+	static constexpr int FACE_ALERT_END = 14;
+	static constexpr int FACE_STATIC_ANGRY = 14;
+	static constexpr int FACE_STATIC_CALM = 0;
+	static constexpr int FACE_ATTACK_START = 24;
+	static constexpr int FACE_ATTACK_HIT = 36;
+	static constexpr int FACE_ATTACK_END = 48;
+	static constexpr int FACE_TURN_START = 15;
+	static constexpr int FACE_TURN_END = 23;
 	//body:
-	static constexpr int beeFlyingStart = 0;
-	static constexpr int beeFlyingEnd = 5;
-	static constexpr int beeAttackStart = 15;
-	static constexpr int beeAttackHitPoint = 27;
-	static constexpr int beeAttackEnd = 39;
-	static constexpr int beeTurnStart = 6;
-	static constexpr int beeTurnEnd = 14;
+	static constexpr int FLYING_START = 0;
+	static constexpr int FLYING_END = 5;
+	static constexpr int ATTACK_START = 15;
+	static constexpr int ATTACK_HIT = 27;
+	static constexpr int ATTACK_END = 39;
+	static constexpr int TURN_START = 6;
+	static constexpr int TURN_END = 14;
+	static constexpr int DEATH_START = 40;
+	static constexpr int DEATH_END = 51;
 
 	AgentComponent() = default;
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -106,8 +108,9 @@ private:
 	friend class AgentMoveNodeBehaviour;
 	friend class GeneratePathBehaviour;
 
-	//this is here for the future, just in case target should be able to be changed
 	inline PathfindingNode* getTargetNode() { return blackboard->getTargetPathfinderNode(); }
+
+	//for behaviour node
 	inline bool checkTargetMoved()
 	{
 		PathfindingNode* node = blackboard->getTargetPathfinderNode();
@@ -122,9 +125,18 @@ private:
 			return true;
 		}
 	}
+	//plays at end of death animation
+	static void deadCallback(void* ptr)
+	{
+		AgentComponent* c = (AgentComponent*)ptr;
+		c->gameObject->setIsDrawn(false);
+		c->gameObject->getComponentOfType<RigidBodyComponent>()->disableComponent();
+		c->blackboard->removeAgent();
+	}
 	
 	//	Health
-	int health = healthMax;
+	int health = MAX_HEALTH;
+	bool dead = false;
 
 	//	Pathfinding
 	Pathfinder* pathfinder;
@@ -137,18 +149,19 @@ private:
 	Vector2 movementDirection;
 	int pathIndex = 0;
 	bool movingToNode = false;
+	float timer = 0;
 
 	//	Behaviour tree
 	SequenceBehaviour* behaviourTree;
 	bool targettingPlayer = false;
 	bool collidedWithPlayer = false;
 
-
 	//	Rendering
 	float spriteHover;
 	AnimatedSprite* sprite;
 	GameObject* child;
-
-	
+	Shader* additiveShader = nullptr;
+	float hitTimer = 0;
+	bool hitFlashing = false;
 };
 

@@ -3,22 +3,13 @@
 #include "Transform.h"
 #include "Game.h"
 
-void Scene::load(SceneProperties& properties, int sceneID)
+void Scene::load(SceneProperties* properties)
 {
-
 	camera = new SmoothCamera({ 0,0 }, 0, 1 , { 0 }, 10);
 	GameObject::resetIdCounter();
 
-	pathfinder = new Pathfinder(properties.pathWidth, properties.pathHeight, properties.hexOffset,
-			{ -properties.pathWidth * properties.hexOffset * 0.5f, -properties.pathHeight * properties.hexOffset * 0.5f });
-
 	collisionManager = new CollisionManager();
-
-	pathfinder->generateBoundsFromGraph(collisionManager, &bounds);
-	pathfinder->generateWalls(collisionManager, properties.wall, this);
-	pathfinder->initDraw(properties.backgroundTiling, properties.backgroundScale);
-	
-	backgroundColor = properties.backgroundColor;
+	backgroundColor = BLACK;
 }
 
 void Scene::draw()
@@ -28,20 +19,20 @@ void Scene::draw()
 
 	camera->StartCamera();
 
-	pathfinder->draw();
 
-	for (auto& drawLayer : sortingLayers)
+	for (int i = 1; i < (int)SORTING::COUNT - 1; ++i)
 	{
-		for (auto gameObject : drawLayer)
+		for (auto gameObject : sortingLayers[i])
 		{
 			gameObject->draw();
 		}
 	}
 
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//		DEBUG RENDERING
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #ifdef DRAW_DEBUG
-	for (int i = 0; i < (int)SORTING::COUNT - 1; ++i)
+	for (int i = 0; i < (int)SORTING::COUNT; ++i)
 	{
 		for (auto gameObject : sortingLayers[i])
 		{
@@ -64,15 +55,14 @@ void Scene::draw()
 
 void Scene::update()
 {
-
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   REGULAR UPDATE
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	for (int i = 0; i < (int)SORTING::COUNT; i++)
 	{
-		for (int j = 0; j < sortingLayers[i].size(); j++)
+		for (auto gameObject : sortingLayers[i])
 		{
-			sortingLayers[i][j]->updateComponents();
+			gameObject->updateComponents();
 		}
 	}
 
@@ -88,9 +78,9 @@ void Scene::update()
 
 		for (int i = 0; i < (int)SORTING::COUNT; i++)
 		{
-			for (int j = 0; j < sortingLayers[i].size(); j++)
+			for (auto gameObject : sortingLayers[i])
 			{
-				sortingLayers[i][j]->fixedUpdateComponents();
+				gameObject->fixedUpdateComponents();
 			}
 		}
 	}
@@ -98,36 +88,29 @@ void Scene::update()
 
 void Scene::unload()
 {
+	isDeleting = true;
 	for (int i = 0; i < (int)SORTING::COUNT; i++)
 	{
-		for (int j = 0; j < sortingLayers[i].size(); j++)
+		for (auto&& gameObject : sortingLayers[i])
 		{
-			delete sortingLayers[i][j];
+			delete gameObject;
 		}
 	}
 
-	if (bounds)
-		collisionManager->getWorld()->DestroyBody(bounds);
-
 	delete collisionManager;
 
-	delete pathfinder;
-
 	delete camera;
-
 }
 
 void Scene::start()
 {
 	for (int i = 0; i < (int)SORTING::COUNT; i++)
 	{
-		for (int j = 0; j < sortingLayers[i].size(); j++)
+		for (auto gameObject : sortingLayers[i])
 		{
-			sortingLayers[i][j]->startComponents();
+			gameObject->startComponents();
 		}
 	}
-
-	
 }
 
 CollisionManager* Scene::getCollisionManager()
@@ -147,6 +130,18 @@ void Scene::setCameraTarget(Transform* transform)
 
 GameObject* Scene::addGameObject(GameObject* object, SORTING layer)
 {
-	sortingLayers[(int)layer].push_back(object);
+	sortingLayers[(int)layer].push_front(object);
 	return object;
+}
+
+void Scene::removeGameObjectFromChildren(GameObject* object)
+{
+	//do not remove gameObjects if scene is deleting itself
+	if (!isDeleting)
+	{
+		for (int i = 0; i < (int)SORTING::COUNT; i++)
+		{
+			sortingLayers[i].remove(object);
+		}
+	}
 }

@@ -37,8 +37,8 @@ public:
 	inline Rectangle* getDestinationRectangle() { return &destRect; }
 	float getWidth() { return destRect.width; }
 	float getHeight() { return destRect.height; }
-	void setDrawOffset(float drawOffset) { this->drawOffset = drawOffset; }
-	float getDrawOffset() { return drawOffset; }
+	void setDrawOffset(float DRAW_OFFSET) { this->DRAW_OFFSET = DRAW_OFFSET; }
+	float getDrawOffset() { return DRAW_OFFSET; }
 	void setShader(const char* name);
 	void setShader(Shader* shader) { this->shader = shader; }
 	void clearShader() { this->shader = nullptr; }
@@ -54,7 +54,7 @@ protected:
 	Rectangle srcRect;
 	Rectangle destRect;
 	Vector2 pivot;
-	float drawOffset = 0;
+	float DRAW_OFFSET = 0;
 };
 
 class AnimatedSprite : public Sprite

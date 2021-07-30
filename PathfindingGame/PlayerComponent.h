@@ -8,51 +8,56 @@
 class GameObject;
 class SmoothCamera;
 class Scene;
+class Room;
 class SwipeComponent;
+class PlayerUIComponent;
 
 class PlayerComponent : public Component
 {
 public:
 	//frames:
-	static constexpr int walkStart = 0;
-	static constexpr int walkEnd = 11;
-	static constexpr int attackStart = 12;
-	static constexpr int attackMiddle = 15;
-	static constexpr int attackEnd = 19;
-	static constexpr int stealthSwitchStart = 20;
-	static constexpr int stealthSwitchEnd = 26;
-	static constexpr int stealthWalkStart = 27;
-	static constexpr int stealthWalkEnd = 38;
-	static constexpr int unstealthSwitchStart = 39;
-	static constexpr int unstealthSwitchEnd = 45;
+	static constexpr int WALK_START = 0;
+	static constexpr int WALK_END = 11;
+	static constexpr int ATTACK_START = 12;
+	static constexpr int ATTACK_HIT = 15;
+	static constexpr int ATTACK_END = 19;
+	static constexpr int STEALTH_SWITCH_START = 20;
+	static constexpr int STEALTH_SWITCH_END = 26;
+	static constexpr int STEALTH_WALK_START = 27;
+	static constexpr int STEALTH_WALK_END = 38;
+	static constexpr int UNSTEALTH_SWITCH_START = 39;
+	static constexpr int UNSTEALTH_SWITCH_END = 45;
 	//other settings
-	static constexpr float maxSpeed = 5;
-	static constexpr float maxAcceleration = 90;
-	static constexpr float stealthSpeedMultiplier = 0.5f;
-	static constexpr float stealthAccelerationMultiplier = 0.8f;
-	static constexpr float attackDistance = 250.0f;
-	static constexpr float drawOffset = 40.0f;
+	static constexpr float MAX_SPEED = 5;
+	static constexpr float MAX_ACCELERATION = 90;
+	static constexpr float STEALTH_SPEED_MULTIPLIER = 0.5f;
+	static constexpr float STEALTH_ACCELERATION_MULTIPLIER = 0.8f;
+	static constexpr float ATTACK_DIST = 250.0f;
+	static constexpr float DRAW_OFFSET = 40.0f;
 	//attack settings
-	static constexpr int healthMax = 3;
-	static constexpr float invincibilityTime = 0.9f;
-	static constexpr float invincibilityTintSpeed = 5.0f * PI;
-	static constexpr float invincibilityAlphaSpeed = 15.0f * PI;
-	static constexpr float knockback = 10;
-	static constexpr int damage = 1;
-	static constexpr float minDot = 0.6f;
-	static constexpr float cooldown = 0.5f;
+	static constexpr int MAX_HEALTH = 3;
+	static constexpr float INVINCIBILITY_TIME = 0.9f;
+	static constexpr float HIT_TINT_SPEED = 2.5f * PI;
+	static constexpr float INVINCIBILITY_ALPHA_SPEED = 15.0f * PI;
+	static constexpr float KNOCKBACK = 10;
+	static constexpr int DAMAGE = 1;
+	static constexpr float MIN_ATTACK_DOT = 0.6f;
+	static constexpr float ATTACK_COOLDOWN = 0.5f;
 	
-	void init(Scene* scene);
+	void init(Room* scene);
 	void update();
+	void generateAdditional(Room* scene);
 	void fixedUpdate();
 	void onTriggerEnter(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
 	void onTriggerExit(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
 	void attack();
 	void hit(int damage, float knockback, const Vector2& position);
+	inline bool hasMaskOn() { return inStealth; }
+
 private:
 
-	int spritePause = attackMiddle;
-	static void spriteCallback(void* pointer)
+	int spritePause = ATTACK_HIT;
+	static void dieCallback(void* pointer)
 	{
 		((PlayerComponent*)pointer)->armSprite->pauseAt(((PlayerComponent*)pointer)->spritePause);
 		((PlayerComponent*)pointer)->pending = false;
@@ -79,17 +84,17 @@ private:
 	bool hitFlashing = false;
 	PlayerState armState = ST_WALKING;
 	
-	float speed = maxSpeed;
-	float acceleration = maxAcceleration;
+	float speed = MAX_SPEED;
+	float acceleration = MAX_ACCELERATION;
 	int health = 3;
+	PlayerUIComponent* UI;
 	RigidBodyComponent* rigidBody;
-	
+
 	Vector2 direction;
 	AnimatedSprite* armSprite;
 	GameObject* armObject;
 	bool flipped = false;
 	SwipeComponent* swipeEffect;
 	Shader* additiveShader;
-	int shaderTintLocation;
 };
 

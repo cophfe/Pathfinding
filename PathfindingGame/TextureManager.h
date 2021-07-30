@@ -42,7 +42,7 @@ private:
 	// I inherited from Texture2D (the texture class from raylib.h) for an animated texture class
 	// however since typeid doesn't work on polymorphic classes with no virtual functions,
 	// and adding a virtual function to raylib's texture class is off the table (partly because it seeems a bad idea, mostly because I tried and it broke everything)
-	// I am stuck with no way to tell the difference between an AnimatedTexture and a Texture2D
+	// I am stuck with no way to tell the difference heartBetween an AnimatedTexture and a Texture2D
 	// except, of course, a wrapper (and some other things but this was easiest).
 	struct CursedTextureWrapper
 	{

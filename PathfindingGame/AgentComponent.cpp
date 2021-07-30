@@ -12,12 +12,44 @@
 #include "AgentBehaviours.h"
 #include "Behaviours.h"
 
+//~~~~~~~~~~~~~~~~~~~~~~~~
 //	Question functions
+//~~~~~~~~~~~~~~~~~~~~~~~~
 
 static BehaviourResult checkIfAlerted(AgentComponent* agent)
 {
 	return (BehaviourResult)(agent->getDataComponent()->targetIsFound() && !agent->checkTargettingPlayer());
 }
+
+static BehaviourResult shouldTurn(AgentComponent* agent)
+{
+	return (BehaviourResult)agent->checkShouldTurn();
+}
+
+static BehaviourResult checkGenPath(AgentComponent* agent)
+{
+	return (BehaviourResult)!agent->checkShouldGeneratePath();
+}
+
+static BehaviourResult checkDistToPlayer(AgentComponent* agent)
+{
+	return (BehaviourResult)((agent->getTransform()->getPosition() - *agent->getDataComponent()->getTargetPosition()).magnitudeSquared() < AgentComponent::MIN_FINAL_DIST * AgentComponent::MIN_FINAL_DIST);
+}
+
+static BehaviourResult checkWithinDist(AgentComponent* agent)
+{
+	if (agent->checkTargettingPlayer())
+	{
+		return checkDistToPlayer(agent);
+	}
+	else
+	{
+		return (BehaviourResult)((agent->getTransform()->getPosition() - agent->getEndPosition()).magnitudeSquared() < AgentComponent::MIN_FINAL_DIST * AgentComponent::MIN_FINAL_DIST);
+	}
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~
+//	Action functions
+//~~~~~~~~~~~~~~~~~~~~~~~~
 
 static BehaviourResult targetPlayer(AgentComponent* agent)
 {
@@ -31,41 +63,15 @@ static BehaviourResult alertPlayers(AgentComponent* agent)
 	return BehaviourResult::SUCCESS;
 }
 
-static BehaviourResult shouldTurn(AgentComponent* agent)
-{
-	return (BehaviourResult)agent->checkShouldTurn();
-}
-
-static BehaviourResult checkGenPath(AgentComponent* agent)
-{
-	return (BehaviourResult)!agent->checkShouldGeneratePath();
-}
-
-
-static BehaviourResult checkDistToPlayer(AgentComponent* agent)
-{
-	return (BehaviourResult)((agent->getTransform()->getPosition() - *agent->getDataComponent()->getTargetPosition()).magnitudeSquared() < AgentComponent::minDistanceToFinalNode * AgentComponent::minDistanceToFinalNode);
-}
-
-static BehaviourResult checkWithinDist(AgentComponent* agent)
-{
-	if (agent->checkTargettingPlayer())
-	{
-		return checkDistToPlayer(agent);
-	}
-	else
-	{
-		return (BehaviourResult)((agent->getTransform()->getPosition() - agent->getEndPosition()).magnitudeSquared() < AgentComponent::minDistanceToFinalNode * AgentComponent::minDistanceToFinalNode);
-	}
-}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 AgentComponent::~AgentComponent()
 {
 	delete behaviourTree;
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 void AgentComponent::init(AgentDataComponent* blackboard, CollisionManager* manager)
 {
 	((AnimatedSprite*)gameObject->getSprite())->setSettings(0, 5, 0);
@@ -78,18 +84,19 @@ void AgentComponent::init(AgentDataComponent* blackboard, CollisionManager* mana
 	b2BodyDef actorbDef = RigidBodyComponent::genBodyDef(b2_dynamicBody, true);
 	b2FixtureDef actorfDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::ENEMY);
 	b2CircleShape actorShape = b2CircleShape();
-	actorShape.m_radius = AgentComponent::colliderRadius;
+	actorShape.m_radius = AgentComponent::COLLIDER_RAD;
 	actorfDef.shape = &actorShape;
 	auto actorRb = gameObject->addComponent<RigidBodyComponent>();
 	actorRb->init(manager, actorbDef, actorfDef);
 	//add trigger
 	b2FixtureDef actorTriggerfDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::ENEMY, RigidBodyComponent::PLAYER, nullptr, true);
 	b2CircleShape actorTriggerShape = b2CircleShape();
-	actorTriggerShape.m_radius = AgentComponent::triggerRadius;
+	actorTriggerShape.m_radius = AgentComponent::TRIGGER_RAD;
 	actorTriggerfDef.shape = &actorTriggerShape;
 	actorRb->addFixture(actorTriggerfDef);
 
 	this->blackboard = blackboard;
+	blackboard->addAgent();
 	pathfinder = blackboard->getPathfinder();
 	destination = transform->getPosition();
 	sprite = (AnimatedSprite*)gameObject->getSprite();
@@ -120,7 +127,7 @@ void AgentComponent::init(AgentDataComponent* blackboard, CollisionManager* mana
 				//Player found but not targeted?
 				new QuestionBehaviour(checkIfAlerted),
 				//Play alert animation!
-				new AnimationBehaviour((AnimatedSprite*)child->getSprite(), faceAlertStartFrame, faceAlertEndFrame),
+				new AnimationBehaviour((AnimatedSprite*)child->getSprite(), FACE_ALERT_START, FACE_ALERT_END),
 				//Target player!
 				new QuestionBehaviour(targetPlayer)
 			),
@@ -166,8 +173,8 @@ void AgentComponent::init(AgentDataComponent* blackboard, CollisionManager* mana
 			//start attack animation!
 			(new ParallelBehaviour())->addMultiple(
 				2,
-				new AnimationBehaviour((AnimatedSprite*)gameObject->getSprite(), beeAttackStart, beeAttackHitPoint),
-				new AnimationBehaviour((AnimatedSprite*)child->getSprite(), faceAttackStart, faceAttackHitPoint)
+				new AnimationBehaviour((AnimatedSprite*)gameObject->getSprite(), ATTACK_START, ATTACK_HIT),
+				new AnimationBehaviour((AnimatedSprite*)child->getSprite(), FACE_ATTACK_START, FACE_ATTACK_HIT)
 			),
 			//Hit player (OR)
 			(new SelectorBehaviour())->addMultiple(
@@ -180,8 +187,8 @@ void AgentComponent::init(AgentDataComponent* blackboard, CollisionManager* mana
 			//End attack animation!
 			(new ParallelBehaviour())->addMultiple(
 				2,
-				new AnimationBehaviour((AnimatedSprite*)gameObject->getSprite(), beeAttackHitPoint+1, beeAttackEnd),
-				new AnimationBehaviour((AnimatedSprite*)child->getSprite(), faceAttackHitPoint+1, faceAttackEnd)
+				new AnimationBehaviour((AnimatedSprite*)gameObject->getSprite(), ATTACK_HIT+1, ATTACK_END),
+				new AnimationBehaviour((AnimatedSprite*)child->getSprite(), FACE_ATTACK_HIT+1, FACE_ATTACK_END)
 			)
 		)
 	);
@@ -191,6 +198,7 @@ void AgentComponent::init(AgentDataComponent* blackboard, CollisionManager* mana
 void AgentComponent::start()
 {
 	rigidBody = gameObject->getComponentOfType<RigidBodyComponent>();
+	additiveShader = Game::getInstance().getTextureManager()->getShader("additiveTint");
 }
 
 void AgentComponent::fixedUpdate()
@@ -201,7 +209,7 @@ void AgentComponent::fixedUpdate()
 	if (movingToNode)
 	{
 		//check if at destination
-		if ((transform->getPosition() - destination).magnitudeSquared() < minDistanceToNode * minDistanceToNode)
+		if ((transform->getPosition() - destination).magnitudeSquared() < MIN_NODE_DIST * MIN_NODE_DIST)
 		{
 			movingToNode = false;
 		}
@@ -209,27 +217,90 @@ void AgentComponent::fixedUpdate()
 		//move toward destination
 		movementDirection = (destination - transform->getPosition()).normalised();
 		movementDirection.y *= -1;
-		Vector2 velocity = (movementDirection *  (maxVelocity + chaseVelocityMultiplier * targettingPlayer) - rigidBody->getVelocity());
-		if (velocity.magnitudeSquared() > ((maxAcceleration  + chaseAccelerationMultiplier *targettingPlayer )* (maxAcceleration + chaseAccelerationMultiplier * targettingPlayer)) * PHYSICS_TIME_STEP * PHYSICS_TIME_STEP)
-			velocity = velocity.normalised() * (maxAcceleration + chaseAccelerationMultiplier * targettingPlayer) * PHYSICS_TIME_STEP;
+		Vector2 velocity = (movementDirection *  (MAX_VELOCITY + CHASE_VEL_MULTIPLIER * targettingPlayer) - rigidBody->getVelocity());
+		if (velocity.magnitudeSquared() > ((MAX_ACCELERATION  + CHASE_ACCEL_MULTIPLIER *targettingPlayer )* (MAX_ACCELERATION + CHASE_ACCEL_MULTIPLIER * targettingPlayer)) * PHYSICS_TIME_STEP * PHYSICS_TIME_STEP)
+			velocity = velocity.normalised() * (MAX_ACCELERATION + CHASE_ACCEL_MULTIPLIER * targettingPlayer) * PHYSICS_TIME_STEP;
 		rigidBody->addVelocity(velocity);
 	}
 }
 
 void AgentComponent::update()
 {
-	static float timer = 0;
-	timer += Game::getDeltaTime();
-	gameObject->getSprite()->setDrawOffset(spriteHover + sin(timer * floatSpeed) * floatMagnitude);
-	child->getSprite()->setDrawOffset(spriteHover + sin(timer * floatSpeed) * floatMagnitude);
+	if (health <= 0)
+	{
+		if (!dead)
+		{
+			Vector2 v = { 0 };
+			rigidBody->setVelocity(v);
+			((AnimatedSprite*)gameObject->getSprite())->setCallback(deadCallback, this);
+			((AnimatedSprite*)gameObject->getSprite())->setSettings(DEATH_START, DEATH_END, DEATH_START);
+			((AnimatedSprite*)gameObject->getSprite())->play();
+			//child->deleteSelf();
+			child->setIsDrawn(false);
+			//child = nullptr;
+			dead = true;
+		}
+	}
+	else
+	{
+		timer += Game::getDeltaTime();
+		gameObject->getSprite()->setDrawOffset(spriteHover + sin(timer * HOVER_SPEED) * HOVER_MAG);
+		child->getSprite()->setDrawOffset(spriteHover + sin(timer * HOVER_SPEED) * HOVER_MAG);
+		behaviourTree->execute(this);
 
-	behaviourTree->execute(this);
+		//for hit flash effect
+		if (hitFlashing)
+		{
+			hitTimer += Game::getDeltaTime();
+
+			if (hitTimer <= PI / (2 * HIT_TINT_SPEED))
+			{
+				float invincibilityTintAmount = cosf(hitTimer * HIT_TINT_SPEED);
+				unsigned char invincibilityTint = cosf(hitTimer * HIT_TINT_SPEED) * 0xFF;
+				//SetShaderValue(*shader, shaderTintLocation, &invincibilityTintAmount, SHADER_UNIFORM_FLOAT);
+				sprite->setTint({ invincibilityTint,invincibilityTint,invincibilityTint,0xFF });
+				if (child)
+				{
+					child->getSprite()->setTint({ invincibilityTint,invincibilityTint,invincibilityTint,0xFF });
+
+				}
+
+			}
+			else
+			{
+				sprite->setTint({ 0xFF, 0xFF, 0xFF, 0xFF });
+				child->getSprite()->setTint({ 0xFF, 0xFF, 0xFF, 0xFF });
+				sprite->clearShader();
+				if (child)
+				{
+					child->getSprite()->clearShader();
+				}
+				hitFlashing = false;
+			}
+
+		}
+	}
 }
 
 void AgentComponent::hit(int damage, float knockback, const Vector2& position)
 {
 	health -= damage;
-	rigidBody->addVelocity((position - transform->getPosition()).normalised() * Vector2 { -knockback, knockback });
+	if (health <= 0)
+	{
+		sprite->clearShader();
+		sprite->setTint(WHITE);
+		return;
+	}
+	hitFlashing = true;
+	hitTimer = 0;
+	sprite->setShader(additiveShader);
+	if (child)
+	{
+		child->getSprite()->setShader(additiveShader);
+	}
+	Vector2 knockbackVector = (position - transform->getPosition()).normalised() * knockback;
+	knockbackVector.x *= -1;
+	rigidBody->addVelocity(knockbackVector);
 }
 
 void AgentComponent::onTriggerEnter(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
@@ -257,6 +328,7 @@ void AgentComponent::debugDraw()
 	}
 	DrawCircle(blackboard->getTargetPosition()->x, blackboard->getTargetPosition()->y, 10, RED);
 }
+#endif
 
 bool AgentComponent::checkShouldGeneratePath()
 {
@@ -294,4 +366,3 @@ bool AgentComponent::checkShouldGeneratePath()
 	}
 	return true;
 }
-#endif // DRAW_DEBUG

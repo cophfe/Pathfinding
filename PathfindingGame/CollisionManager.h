@@ -29,7 +29,6 @@ public:
 
 private:
 	b2World world;
-	b2Body* body;
 	int32 velocityIterations = 6;
 	int32 positionIterations = 2;
 #ifdef DRAW_DEBUG

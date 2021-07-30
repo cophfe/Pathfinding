@@ -26,8 +26,8 @@ public:
 	void addVelocity(float x, float y);
 	void setVelocity(const Vector2& velocity);
 	void setVelocity(float x, float y);
-	void setPosition(Vector2 position, float angle);
-	void setPosition(float x, float y, float angle);
+	void setPosition(Vector2 position, float angle = 0);
+	void setPosition(float x, float y, float angle = 0);
 	void addImpulse(Vector2 impulse, Vector2 position);
 	inline const Vector2& getVelocity() { return reinterpret_cast<const Vector2&>(body->GetLinearVelocity()); }
 

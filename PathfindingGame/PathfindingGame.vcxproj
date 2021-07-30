@@ -171,15 +171,19 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="CompositeBehaviour.cpp" />
     <ClCompile Include="ContactListener.cpp" />
+    <ClCompile Include="DoorComponent.cpp" />
     <ClCompile Include="Heap.cpp" />
     <ClCompile Include="Matrix3.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
     <ClCompile Include="ParallelBehaviour.cpp" />
+    <ClCompile Include="PathfinderComponent.cpp" />
     <ClCompile Include="PathfindingNode.cpp" />
     <ClCompile Include="PhysicsDebugDraw.cpp" />
     <ClCompile Include="PlayerComponent.cpp" />
+    <ClCompile Include="PlayerUIComponent.cpp" />
     <ClCompile Include="RigidBodyComponent.cpp" />
+    <ClCompile Include="Room.cpp" />
     <ClCompile Include="RoomManager.cpp" />
     <ClCompile Include="SelectorBehaviour.cpp" />
     <ClCompile Include="SequenceBehaviour.cpp" />
@@ -209,6 +213,7 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="CompositeBehaviour.h" />
     <ClInclude Include="ContactListener.h" />
+    <ClInclude Include="DoorComponent.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Heap.h" />
@@ -217,10 +222,13 @@
     <ClInclude Include="NecessaryHeaders.h" />
     <ClInclude Include="ParallelBehaviour.h" />
     <ClInclude Include="Pathfinder.h" />
+    <ClInclude Include="PathfinderComponent.h" />
     <ClInclude Include="PathfindingNode.h" />
     <ClInclude Include="PhysicsDebugDraw.h" />
     <ClInclude Include="PlayerComponent.h" />
+    <ClInclude Include="PlayerUIComponent.h" />
     <ClInclude Include="RigidBodyComponent.h" />
+    <ClInclude Include="Room.h" />
     <ClInclude Include="RoomManager.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SelectorBehaviour.h" />

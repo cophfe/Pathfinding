@@ -11,7 +11,7 @@
 class FlipAgentBehaviour : public Behaviour
 {
 public:
-	FlipAgentBehaviour(AnimatedSprite* sprite, GameObject* child) : sprite(sprite), child(child), status(BehaviourResult::FAILURE), staticFaceFrame(AgentComponent::faceStaticCalm)
+	FlipAgentBehaviour(AnimatedSprite* sprite, GameObject* child) : sprite(sprite), child(child), status(BehaviourResult::FAILURE), staticFaceFrame(AgentComponent::FACE_STATIC_CALM)
 	{
 		
 	}
@@ -23,14 +23,14 @@ public:
 		case BehaviourResult::FAILURE: //this only happens once
 			{
 				//set body settings
-				sprite->setSettings(AgentComponent::beeTurnStart , AgentComponent::beeTurnEnd, AgentComponent::beeTurnStart);
-				sprite->playAt(AgentComponent::beeTurnStart);
+				sprite->setSettings(AgentComponent::TURN_START , AgentComponent::TURN_END, AgentComponent::TURN_START);
+				sprite->playAt(AgentComponent::TURN_START);
 				//set callback (runs at end of sprite loop)
 				sprite->setCallback(endOfAnimationCallback, this);
 				//set face settings
-				staticFaceFrame = agent->checkTargettingPlayer() ? AgentComponent::faceStaticAngry : AgentComponent::faceStaticCalm;
-				((AnimatedSprite*)child->getSprite())->setSettings(AgentComponent::faceTurnStart, AgentComponent::faceTurnEnd, AgentComponent::faceTurnStart);
-				((AnimatedSprite*)child->getSprite())->playAt(AgentComponent::faceTurnStart);
+				staticFaceFrame = agent->checkTargettingPlayer() ? AgentComponent::FACE_STATIC_ANGRY : AgentComponent::FACE_STATIC_CALM;
+				((AnimatedSprite*)child->getSprite())->setSettings(AgentComponent::FACE_TURN_START, AgentComponent::FACE_TURN_END, AgentComponent::FACE_TURN_START);
+				((AnimatedSprite*)child->getSprite())->playAt(AgentComponent::FACE_TURN_START);
 
 				status = BehaviourResult::RUNNING;
 			}
@@ -52,7 +52,7 @@ public:
 		
 		//flip sprite
 		self->sprite->flip();
-		self->sprite->setSettings(AgentComponent::beeFlyingStart, AgentComponent::beeFlyingEnd, AgentComponent::beeFlyingStart);
+		self->sprite->setSettings(AgentComponent::FLYING_START, AgentComponent::FLYING_END, AgentComponent::FLYING_START);
 		//flip child sprite
 		AnimatedSprite* childSprite = (AnimatedSprite *)self->child->getSprite();
 		childSprite->pauseAt(self->staticFaceFrame);
@@ -142,7 +142,7 @@ public:
 				{
 					return BehaviourResult::FAILURE;
 				}
-				if (agent->movingToNode == false || ((agent->getTransform()->getPosition() - *agent->getDataComponent()->getTargetPosition()).magnitudeSquared() < AgentComponent::minDistanceToFinalNode * AgentComponent::minDistanceToFinalNode))
+				if (agent->movingToNode == false || ((agent->getTransform()->getPosition() - *agent->getDataComponent()->getTargetPosition()).magnitudeSquared() < AgentComponent::MIN_FINAL_DIST * AgentComponent::MIN_FINAL_DIST))
 				{
 					status = BehaviourResult::FAILURE;
 					return BehaviourResult::SUCCESS;
@@ -167,7 +167,7 @@ public:
 
 	virtual BehaviourResult execute(AgentComponent* agent)
 	{
-		player->hit(AgentComponent::damage, AgentComponent::knockback, agent->getTransform()->getPosition());
+		player->hit(AgentComponent::DAMAGE, AgentComponent::KNOCKBACK, agent->getTransform()->getPosition());
 		return BehaviourResult::SUCCESS;
 	};
 

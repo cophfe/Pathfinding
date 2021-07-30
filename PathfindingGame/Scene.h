@@ -2,22 +2,14 @@
 #include "NecessaryHeaders.h"
 
 class GameObject;
-#include "Pathfinder.h"
 #include "SmoothCamera.h"
 #include "CollisionManager.h"
+#include "Pathfinder.h"
 class Transform;
 
 struct SceneProperties
 {
-	const char* backgroundTiling = nullptr;
-	float backgroundScale = 1;
-	const char* wall = "wall";
-	Color backgroundColor = Color{0x96,0x6C,0x23,0xFF};
-	int pathWidth = 11;
-	int pathHeight = 11;
-	float hexOffset = 250;
-	int randomSeed = 9999999;
-	bool generateWalls = true;
+	int randomSeed = 0;
 };
 
 //scenes can be loaded in and out of memory to switch with a new scene
@@ -36,6 +28,7 @@ enum class SORTING
 {
 	BACKGROUND,
 	MIDGROUND,
+	FOREGROUND,
 	UI,
 	COUNT
 };
@@ -43,11 +36,11 @@ enum class SORTING
 class Scene
 {
 public:
-	void load(SceneProperties& properties, int sceneID);
-	void draw();
-	void update();
-	void unload(); 
-	void start();
+	virtual void load(SceneProperties* properties);
+	virtual void draw();
+	virtual void update();
+	virtual void unload(); 
+	virtual void start();
 
 	CollisionManager* getCollisionManager();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -58,27 +51,29 @@ public:
 	//move
 	Scene(Scene&&) = delete;
 	Scene& operator=(Scene&&) = delete;
-	~Scene();
+	//destructor
+	virtual ~Scene();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	inline SmoothCamera* getCamera() { return camera; }
 	void setCameraTarget(Transform* transform);
 	GameObject* addGameObject(GameObject* object, SORTING layer = SORTING::MIDGROUND);
-	inline Pathfinder* getPathfinder() { return pathfinder; }
+	void removeGameObjectFromChildren(GameObject* object);
+	virtual void beforeDelete(Scene* nextScene) {}
 
-private:
+protected:
 	//to keep things simple there is a fixed amount of sorting layers: 3
-	std::vector<GameObject*> sortingLayers[(int)SORTING::COUNT];
+	std::forward_list<GameObject*> sortingLayers[(int)SORTING::COUNT];
 	//camera for rendering obviously
 	SmoothCamera* camera;
+	//holds box2d world
+	CollisionManager* collisionManager;
 	
+	bool isDeleting = false;
+	bool shouldChangeScene = false;
 	//used for fixed update
 	float collisionTimer = 0;
 
-	Pathfinder* pathfinder;
-	CollisionManager* collisionManager;
-	//bounds is the only physics body that isn't attached to a rigidbody component
-	b2Body* bounds;
 
 	Color backgroundColor;
 };

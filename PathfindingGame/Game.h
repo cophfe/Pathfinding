@@ -16,8 +16,8 @@ struct GameProperties
 	std::string windowName = "Game";
 	std::string spriteLocation;
 	std::string shaderLocation;
-	int windowWidth = 800;
-	int windowHeight = 600;
+	int windowWidth = 1000;
+	int windowHeight = 750;
 	int targetFPS = 0;
 	bool enableAntiAliasing = true;
 };
@@ -29,12 +29,11 @@ public:
 	void init(GameProperties* properties);
 	void gameLoop();
 	void shutdown();
+	void switchScene(Scene* newScene);
 	static float getDeltaTime();
 	TextureManager* getTextureManager();
-
-	void changeScene(int sceneIndex);
-
-	void GenerateScene(int sceneIndex);
+	inline RoomManager* getRoomManager() { return roomManager; };
+	inline Scene* getScene() { return scene; }
 
 	static Game& getInstance();
 
@@ -48,10 +47,9 @@ private:
 	static Game* instance;
 
 	float deltaTime;
-
-	char currentScene;
 	
-	std::vector<Scene*> scenes;
+	Scene* scene;
+	Scene* nextScene = nullptr;
 	//std::map<int, SceneData*> savedData;
 	int timeAtStart;
 

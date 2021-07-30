@@ -47,12 +47,12 @@ void RigidBodyComponent::fixedUpdate()
 
 void RigidBodyComponent::onDisable()
 {
-	body->SetAwake(false);
+	body->SetEnabled(false);
 }
 
 void RigidBodyComponent::onEnable()
 {
-	body->SetAwake(true);
+	body->SetEnabled(true);
 }
 
 void RigidBodyComponent::unload()
@@ -60,7 +60,6 @@ void RigidBodyComponent::unload()
 	if (world != nullptr)
 	{
 		body->GetUserData().pointer = 0;
-		world->DestroyBody(body);
 		body = nullptr;
 	}
 }

@@ -5,8 +5,7 @@
 #include "GameObject.h"
 #include "Game.h"
 
-#define HEX_RAD_TO_APOTHEM 0.86602540378f //approx 6/7, exact sqrt(3)/2
-#define HEX_APOTHEM_TO_RAD 1.15470053838f //approx 7/6, exact 2/sqrt(3)
+
 
 Pathfinder::Pathfinder(int amountX, int amountY, float nodeOffset, Vector2 startPosition)
 {
@@ -30,7 +29,7 @@ Pathfinder::Pathfinder(int amountX, int amountY, float nodeOffset, Vector2 start
 		{
 			nodes[x][y] = new PathfindingNode();
 			nodes[x][y]->type = PathfindingNode::Type::REGULAR;
-			if (y == 0 || y == amountY - 1 || x == 0 || x == amountX - 1 || rand() < RAND_MAX/6)
+			if (y == 0 || y == amountY - 1 || x == 0 || x == amountX - 1)
 			{
 				nodes[x][y]->type = PathfindingNode::Type::BLOCKED;
 			}
@@ -223,7 +222,7 @@ PathfindingNode* Pathfinder::getRandomUnblockedNode()
 	} while (true);
 }
 
-void Pathfinder::initDraw(const char* tilingTexture, float textureScale)
+void Pathfinder::initDraw(const char* tilingTexture, float textureScale, Color wallColor)
 {
 	if (tilingTexture == nullptr)
 	{
@@ -232,14 +231,52 @@ void Pathfinder::initDraw(const char* tilingTexture, float textureScale)
 	}
 	backgroundTexture = Game::getInstance().getTextureManager()->getTextureInfo(tilingTexture);
 	srcRect = Rectangle{ 0,0, (float)backgroundTexture->width, (float)backgroundTexture->height };
-	destRect = Rectangle{ startPosition.x , startPosition.y, (sizeX * nodeOffset - nodeOffset/2), (sizeY * nodeOffset * HEX_RAD_TO_APOTHEM - nodeOffset / 2) };
+	destRect = Rectangle{ startPosition.x, startPosition.y, ((sizeX -1)* nodeOffset), (sizeY -1)* HEX_RAD_TO_APOTHEM * nodeOffset };
 	texScale = textureScale;
+	this->wallColor = wallColor;
 }
 
-void Pathfinder::draw()
+void Pathfinder::drawBack()
 {
 	if (backgroundTexture != nullptr)
+	{
 		DrawTextureTiled(*backgroundTexture, srcRect, destRect, { 0,0 }, 0, texScale, WHITE);
+	}
+}
+
+void Pathfinder::drawWalls()
+{
+	if (backgroundTexture != nullptr)
+	{
+		unsigned char c = 30;
+		
+		static Color darkerColor = Color{ (unsigned char)(wallColor.r - c), (unsigned char)(wallColor.g - c), (unsigned char)(wallColor.b - c), wallColor.a };
+		static Vector2 edgeAddition = Vector2(nodeOffset / 2 * 1.03f, nodeOffset / 2 * HEX_APOTHEM_TO_RAD * 1.03f);
+
+		//top
+		DrawRectangle(destRect.x - WALL_HEIGHT + edgeAddition.x * 2, destRect.y - WALL_HEIGHT + edgeAddition.y, destRect.width + WALL_HEIGHT * 2 - edgeAddition.x * 3, WALL_HEIGHT, wallColor);
+		//left
+		DrawRectangle(destRect.x - WALL_HEIGHT + edgeAddition.x * 2, destRect.y + edgeAddition.y, WALL_HEIGHT, destRect.height - edgeAddition.y * 2, wallColor);
+		//right
+		DrawRectangle(destRect.x + destRect.width - edgeAddition.x, destRect.y + edgeAddition.y, WALL_HEIGHT, destRect.height - edgeAddition.y * 2, wallColor);
+		//down
+		DrawRectangle(destRect.x - WALL_HEIGHT + edgeAddition.x * 2, destRect.y + destRect.height - edgeAddition.y, destRect.width + WALL_HEIGHT * 2 - edgeAddition.x * 3, WALL_HEIGHT, wallColor);
+		//lines
+		DrawLineEx({ destRect.x + edgeAddition.x * 2, destRect.y + edgeAddition.y}, { destRect.x - WALL_HEIGHT + edgeAddition.x * 2, destRect.y - WALL_HEIGHT + edgeAddition.y}, LINE_THICKNESS, darkerColor);
+		DrawLineEx({ destRect.x + destRect.width - edgeAddition.x, destRect.y + edgeAddition.y }, { destRect.x + destRect.width + WALL_HEIGHT - edgeAddition.x, destRect.y - WALL_HEIGHT + edgeAddition.y }, LINE_THICKNESS, darkerColor);
+		DrawLineEx({ destRect.x + edgeAddition.x * 2, destRect.y + destRect.height - edgeAddition.y}, { destRect.x - WALL_HEIGHT + edgeAddition.x * 2, destRect.y + destRect.height + WALL_HEIGHT - edgeAddition.y }, LINE_THICKNESS, darkerColor);
+		DrawLineEx({ destRect.x + destRect.width - edgeAddition.x, destRect.y + destRect.height - edgeAddition.y }, { destRect.x + destRect.width + WALL_HEIGHT - edgeAddition.x, destRect.y + destRect.height + WALL_HEIGHT - edgeAddition.y }, LINE_THICKNESS, darkerColor);
+
+		//wall top rectangles
+		DrawRectangle(destRect.x - WALL_HEIGHT - WALL_THICKNESS + edgeAddition.x * 2, destRect.y - WALL_HEIGHT + edgeAddition.y, WALL_THICKNESS, destRect.height + WALL_HEIGHT * 2 - edgeAddition.y, darkerColor);
+		DrawRectangle(destRect.x + WALL_HEIGHT + destRect.width - edgeAddition.x, destRect.y - WALL_HEIGHT - WALL_THICKNESS + edgeAddition.y, WALL_THICKNESS, destRect.height + WALL_THICKNESS * 2 + WALL_HEIGHT * 2 - edgeAddition.y * 2, darkerColor);
+		DrawRectangle(destRect.x - WALL_HEIGHT - WALL_THICKNESS + edgeAddition.x * 2, destRect.y - WALL_HEIGHT - WALL_THICKNESS + edgeAddition.y, destRect.width + WALL_THICKNESS * 2 + WALL_HEIGHT * 2 - edgeAddition.x * 3, WALL_THICKNESS, darkerColor);
+		DrawRectangle(destRect.x - WALL_HEIGHT - WALL_THICKNESS + edgeAddition.x * 2, destRect.y + destRect.height + WALL_HEIGHT - edgeAddition.y, destRect.width + WALL_THICKNESS * 2 + WALL_HEIGHT * 2 - edgeAddition.x * 3, WALL_THICKNESS, darkerColor);
+		/*DrawRectangle(destRect.x + destRect.width + WALL_HEIGHT, destRect.y - WALL_HEIGHT, );
+		DrawRectangle(destRect.x - WALL_HEIGHT, destRect.y + destRect.height + WALL_HEIGHT, );
+		DrawRectangle(destRect.x + destRect.width + WALL_HEIGHT, destRect.y + destRect.height + WALL_HEIGHT, );*/
+		DrawRectanglePro(getBounds(), { 0 }, 0, { 0xFF,0,0,0x80 });
+	}
 }
 
 #ifdef DRAW_DEBUG
@@ -369,13 +406,13 @@ void Pathfinder::generateBoundsFromGraph(CollisionManager* collision, b2Body** b
 	fDef.filter.categoryBits = RigidBodyComponent::BOUNDS;
 	fDef.filter.maskBits = RigidBodyComponent::ALL;
 	b2ChainShape bounds;
-	/*
-	*/
-	Vector2* vertices = new Vector2[4];
-	vertices[0] = { (nodes[0][0]->position.x) / PHYSICS_UNIT_SCALE, -(nodes[0][0]->position.y) / PHYSICS_UNIT_SCALE };
-	vertices[1] = { (nodes[sizeX - 1][0]->position.x) / PHYSICS_UNIT_SCALE, -(nodes[0][0]->position.y) / PHYSICS_UNIT_SCALE };
-	vertices[2] = { (nodes[sizeX - 1][0]->position.x) / PHYSICS_UNIT_SCALE, (nodes[0][sizeY - 1]->position.y) / -PHYSICS_UNIT_SCALE };
-	vertices[3] = { (nodes[0][0]->position.x) / PHYSICS_UNIT_SCALE, (nodes[0][sizeY - 1]->position.y) / -PHYSICS_UNIT_SCALE };
+
+	Vector2 vertices[4];
+	vertices[0] = { (nodes[0][1]->position.x + nodeOffset) / PHYSICS_UNIT_SCALE, -(nodes[0][0]->position.y + nodeOffset / 2 * HEX_APOTHEM_TO_RAD) / PHYSICS_UNIT_SCALE };
+	vertices[1] = { (nodes[sizeX - 1][1]->position.x -nodeOffset / 2) / PHYSICS_UNIT_SCALE, -(nodes[0][0]->position.y + nodeOffset / 2 * HEX_APOTHEM_TO_RAD) / PHYSICS_UNIT_SCALE };
+	vertices[2] = { (nodes[sizeX - 1][1]->position.x - nodeOffset / 2) / PHYSICS_UNIT_SCALE, (nodes[0][sizeY - 1]->position.y - nodeOffset / 2 * HEX_APOTHEM_TO_RAD) / -PHYSICS_UNIT_SCALE };
+	vertices[3] = { (nodes[0][1]->position.x + nodeOffset) / PHYSICS_UNIT_SCALE, (nodes[0][sizeY - 1]->position.y - nodeOffset / 2 * HEX_APOTHEM_TO_RAD) / -PHYSICS_UNIT_SCALE };
+	this->bounds = Rectangle{ vertices[0].x, vertices[0].y, vertices[2].x - vertices[0].x, vertices[2].y - vertices[0].y };
 	bounds.CreateLoop((b2Vec2*)vertices, 4);
 	////hexagon bounds
 	//float apothem = sizeX * nodeOffset/2/PHYSICS_UNIT_SCALE;
@@ -398,6 +435,13 @@ void Pathfinder::generateBoundsFromGraph(CollisionManager* collision, b2Body** b
 	boundsBody->CreateFixture(&fDef);
 }
 
+Rectangle Pathfinder::getBounds()
+{
+	static Vector2 edgeAddition = Vector2(nodeOffset / 2 * 1.03f, nodeOffset / 2 * HEX_APOTHEM_TO_RAD * 1.03f);
+	Vector2 topLeft = Vector2(destRect.x - WALL_HEIGHT - WALL_THICKNESS + edgeAddition.x * 2, destRect.y - WALL_HEIGHT - WALL_THICKNESS + edgeAddition.y);
+	return { topLeft.x, topLeft.y, destRect.width + WALL_THICKNESS * 2 + WALL_HEIGHT * 2 - edgeAddition.x * 3, destRect.height + WALL_THICKNESS * 2 + WALL_HEIGHT * 2 - edgeAddition.y * 2 };
+}
+
 void Pathfinder::generateWalls(CollisionManager* collision, const char* textureName, Scene* scene)
 {
 	
@@ -408,7 +452,7 @@ void Pathfinder::generateWalls(CollisionManager* collision, const char* textureN
 	GameObject* wall;
 	RigidBodyComponent* rigidBody;
 	b2BodyDef bDef = RigidBodyComponent::genBodyDef(b2_staticBody);
-	b2FixtureDef fDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::BOUNDS, RigidBodyComponent::ALL);
+	b2FixtureDef fDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::WALL, RigidBodyComponent::ALL);
 	b2PolygonShape shape;
 	b2Vec2 polygonVertices[6] = {	{0, radius},
 									{-apothem, radius/2},		{apothem, radius/2},
@@ -425,7 +469,7 @@ void Pathfinder::generateWalls(CollisionManager* collision, const char* textureN
 			{
 			case PathfindingNode::Type::BLOCKED:
 			{
-				wall = new GameObject(scene, texture, nodes[x][y]->position, 0, textureScale);
+				wall = new GameObject(scene, texture, nodes[x][y]->position, 0, textureScale, SORTING::BACKGROUND);
 				bDef.position = wall->getTransform()->getPosition();
 				rigidBody = wall->addComponent<RigidBodyComponent>();
 				rigidBody->init(collision, bDef, fDef);
