@@ -14,7 +14,6 @@ void Scene::load(SceneProperties* properties)
 
 void Scene::draw()
 {
-    BeginDrawing();
     ClearBackground(backgroundColor);
 
 	camera->StartCamera();
@@ -49,8 +48,6 @@ void Scene::draw()
 		gameObject->draw();
 	}
 	DrawFPS(0, 0);
-
-    EndDrawing();
 }
 
 void Scene::update()
@@ -65,10 +62,10 @@ void Scene::update()
 			gameObject->updateComponents();
 		}
 	}
+}
 
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 	   FIXED UPDATE
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void Scene::fixedUpdate()
+{
 	collisionTimer += Game::getDeltaTime();
 	while (collisionTimer >= PHYSICS_TIME_STEP)
 	{

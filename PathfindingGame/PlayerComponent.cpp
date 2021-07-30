@@ -13,14 +13,13 @@ void PlayerComponent::init(Room* scene)
 	// 	   Initialization
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//child settings
-	armObject = new GameObject(gameObject, "beearAttack", true, { 3,24 });
+	armObject = new GameObject(gameObject, "beearAttack", true, { 2.5f,26 });
 	armSprite = (AnimatedSprite*)armObject->getSprite();
 	armSprite->setSettings(WALK_START, WALK_END, 0);
 	//sprite settings
 	gameObject->getSprite()->setDrawOffset(gameObject->getSprite()->getDestinationRectangle()->height / 2 - DRAW_OFFSET);
 	armSprite->setDrawOffset(gameObject->getSprite()->getDrawOffset());
 	armSprite->setTimePerFrame(1.0f/30);
-
 	generateAdditional(scene);
 }
 
@@ -28,9 +27,31 @@ void PlayerComponent::update()
 {
 	float dT = Game::getDeltaTime();
 
+	if (health <= 0)
+	{
+		deathTimer += Game::getUnscaledDeltaTime();
+		if (!dead)
+		{
+			dead = true;
+			Game::getInstance().setTimeScale(0.0f);
+		}
+		if (deathTimer > 0.5f)
+		{
+			if (transform->getRotation() >= PI / 2)
+			{
+				
+			}
+			else
+			{
+				transform->addRotation(dT);
+			}
+		}
+		return;
+	}
+
 	direction = { 0 };
 
-	//
+	//input
 	if (IsKeyDown(KEY_D))
 	{
 		direction.x = 1;
@@ -213,7 +234,7 @@ void PlayerComponent::generateAdditional(Room* scene)
 	additiveShader = Game::getInstance().getTextureManager()->getShader("additiveTint");
 	//create UI object
 	UI = (new GameObject(scene, nullptr, false, { 0 }, 1, SORTING::UI))->addComponent<PlayerUIComponent>();
-	UI->init(MAX_HEALTH, health, scene);
+	UI->init(MAX_HEALTH, health, scene, this);
 }
 
 void PlayerComponent::fixedUpdate()
@@ -274,12 +295,11 @@ void PlayerComponent::attack()
 			}
 		}
 	}
-	
 }
 
 void PlayerComponent::hit(int damage, float knockback, const Vector2& position)
 {
-	if (invincible)
+	if (invincible && health > 0)
 	{
 		return;
 	}

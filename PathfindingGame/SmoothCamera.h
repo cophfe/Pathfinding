@@ -10,14 +10,17 @@ public:
 	void StartCamera();
 	void EndCamera();
 	void setBounds(Rectangle rect);
+	void restrictToBounds();
 	void Target(Transform* transform);
 	void setPosition(Vector2 position);
-	inline int getScale() { return camera.zoom; }
+	inline float getScale() { return camera.zoom; }
 	Vector2 GetCameraMousePosition();
 
+	void setCanSee(bool value) { canSee = value; }
 	void setOffset(Vector2 offset);
 	Vector2 getOffset() { return offset; }
 	inline void setEnabled(bool value) { on = value; }
+	inline Camera2D* getCamera() { return &camera; }
 	float smoothMultiplier;
 private:
 	bool hasBoundsX = false;
@@ -31,5 +34,6 @@ private:
 
 	float rotation;
 	bool on;
+	bool canSee;
 };
 

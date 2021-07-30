@@ -9,7 +9,7 @@ class RoomManager
 {
 public:
 	RoomManager(int randomSeed);
-
+	~RoomManager();
 	static constexpr float doorChance = 0.5f;
 	static constexpr int maxRegularRooms = 10;
 	void generateMap();
@@ -31,6 +31,8 @@ public:
 
 	inline RoomCoord getCurrentRoomCoord() { return currentRoom; }
 	inline RenderTexture2D* getMiniMap() { return &miniMapTexture; }
+	inline RenderTexture2D* getTransitionTexture1() { return &transitionBuffer[0]; }
+	inline RenderTexture2D* getTransitionTexture2() { return &transitionBuffer[1]; }
 	
 private:
 	bool generateRoom(RoomCoord coord);
@@ -43,6 +45,7 @@ private:
 
 
 	RenderTexture2D miniMapTexture;
+	RenderTexture2D transitionBuffer[2];
 	RoomCoord currentRoom;
 	RoomCoord startRoom;
 	RoomCoord bossRoom;

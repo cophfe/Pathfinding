@@ -57,7 +57,7 @@ public:
 	static constexpr int TURN_START = 6;
 	static constexpr int TURN_END = 14;
 	static constexpr int DEATH_START = 40;
-	static constexpr int DEATH_END = 51;
+	static constexpr int DEATH_END = 45;
 
 	AgentComponent() = default;
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

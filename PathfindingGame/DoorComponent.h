@@ -6,6 +6,7 @@
 #include "Sprite.h"
 
 class Room;
+class RigidBodyComponent;
 
 class DoorComponent :
     public Component
@@ -23,6 +24,7 @@ public:
 	void start();
 	//has trigger collider
 	virtual void onTriggerEnter(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
+	virtual void onTriggerExit(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
 
 private:
 	static void shutCallback(void* pointer)	{	((AnimatedSprite*)(pointer))->pauseAt(SHUT_STATIC);   }
@@ -33,7 +35,9 @@ private:
 	char playerEnteredFrom;
 	float timer = 0.5f;
 	Room* currentRoom;
+	Vector2 direction;
 	AgentDataComponent* blackboard;
+	RigidBodyComponent* rb;
 	bool open = false;
 	bool shouldSwitchScene = false;
 };

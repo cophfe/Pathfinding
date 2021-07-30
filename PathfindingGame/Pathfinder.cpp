@@ -272,10 +272,7 @@ void Pathfinder::drawWalls()
 		DrawRectangle(destRect.x + WALL_HEIGHT + destRect.width - edgeAddition.x, destRect.y - WALL_HEIGHT - WALL_THICKNESS + edgeAddition.y, WALL_THICKNESS, destRect.height + WALL_THICKNESS * 2 + WALL_HEIGHT * 2 - edgeAddition.y * 2, darkerColor);
 		DrawRectangle(destRect.x - WALL_HEIGHT - WALL_THICKNESS + edgeAddition.x * 2, destRect.y - WALL_HEIGHT - WALL_THICKNESS + edgeAddition.y, destRect.width + WALL_THICKNESS * 2 + WALL_HEIGHT * 2 - edgeAddition.x * 3, WALL_THICKNESS, darkerColor);
 		DrawRectangle(destRect.x - WALL_HEIGHT - WALL_THICKNESS + edgeAddition.x * 2, destRect.y + destRect.height + WALL_HEIGHT - edgeAddition.y, destRect.width + WALL_THICKNESS * 2 + WALL_HEIGHT * 2 - edgeAddition.x * 3, WALL_THICKNESS, darkerColor);
-		/*DrawRectangle(destRect.x + destRect.width + WALL_HEIGHT, destRect.y - WALL_HEIGHT, );
-		DrawRectangle(destRect.x - WALL_HEIGHT, destRect.y + destRect.height + WALL_HEIGHT, );
-		DrawRectangle(destRect.x + destRect.width + WALL_HEIGHT, destRect.y + destRect.height + WALL_HEIGHT, );*/
-		DrawRectanglePro(getBounds(), { 0 }, 0, { 0xFF,0,0,0x80 });
+		
 	}
 }
 

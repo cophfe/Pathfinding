@@ -41,7 +41,7 @@ void RigidBodyComponent::init(CollisionManager* collisionManager, b2BodyDef& bod
 void RigidBodyComponent::fixedUpdate()
 {
 	b2Vec2 pos = body->GetPosition();
-	transform->setRotation(-body->GetAngle());
+	transform->setRotation(body->GetAngle());
 	transform->setPosition({ pos.x * PHYSICS_UNIT_SCALE, pos.y * -PHYSICS_UNIT_SCALE });
 }
 
@@ -102,11 +102,15 @@ void RigidBodyComponent::setVelocity(float x, float y)
 void RigidBodyComponent::setPosition(Vector2 position, float angle)
 {
 	body->SetTransform(position, angle);
+	transform->setPosition({ position.x * PHYSICS_UNIT_SCALE, position.y * -PHYSICS_UNIT_SCALE });
+	transform->setRotation(angle);
 }
 
 void RigidBodyComponent::setPosition(float x, float y, float angle)
 {
 	body->SetTransform({ x,y }, angle);
+	transform->setPosition({ x * PHYSICS_UNIT_SCALE, y * -PHYSICS_UNIT_SCALE });
+	transform->setRotation(angle);
 }
 
 void RigidBodyComponent::addImpulse(Vector2 impulse, Vector2 position)

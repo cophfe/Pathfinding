@@ -31,26 +31,9 @@ void SmoothCamera::UpdateCamera()
 		camera.target.y += (pos.y - camera.target.y) * PHYSICS_TIME_STEP * smoothMultiplier;
 		
 		//clamp to inside bounds
-		if (hasBoundsX)
-		{
-			if (camera.target.x > boundsBottomRight.x)
-				camera.target.x = boundsBottomRight.x;
-			if (camera.target.x < boundsTopLeft.x)
-				camera.target.x = boundsTopLeft.x;
-		}
-		if (hasBoundsX)
-		{
-			
-			if (camera.target.y > boundsBottomRight.y)
-				camera.target.y = boundsBottomRight.y;
-			if (camera.target.y < boundsTopLeft.y)
-				camera.target.y = boundsTopLeft.y;
-		}
+		restrictToBounds();
 		
-		//camera.target = pos;
 	}
-
-	//camera.rotation = target->getGlobalRotation() * -rad2Deg;
 }
 
 void SmoothCamera::StartCamera()
@@ -65,10 +48,29 @@ void SmoothCamera::EndCamera()
 
 void SmoothCamera::setBounds(Rectangle rect)
 {
-	boundsTopLeft = Vector2(rect.x, rect.y) / camera.zoom;
-	boundsBottomRight = Vector2(rect.x + rect.width, rect.y + rect.height) / camera.zoom;;
+	boundsTopLeft = Vector2(rect.x, rect.y);
+	boundsBottomRight = Vector2(rect.x + rect.width, rect.y + rect.height);;
 	hasBoundsX = rect.width >= 0;
 	hasBoundsY = rect.height >= 0;
+}
+
+void SmoothCamera::restrictToBounds()
+{
+	if (hasBoundsX)
+	{
+		if (camera.target.x > boundsBottomRight.x)
+			camera.target.x = boundsBottomRight.x;
+		if (camera.target.x < boundsTopLeft.x)
+			camera.target.x = boundsTopLeft.x;
+	}
+	if (hasBoundsY)
+	{
+
+		if (camera.target.y > boundsBottomRight.y)
+			camera.target.y = boundsBottomRight.y;
+		if (camera.target.y < boundsTopLeft.y)
+			camera.target.y = boundsTopLeft.y;
+	}
 }
 
 void SmoothCamera::Target(Transform* transform)

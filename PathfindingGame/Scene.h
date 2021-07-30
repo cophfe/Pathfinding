@@ -39,6 +39,7 @@ public:
 	virtual void load(SceneProperties* properties);
 	virtual void draw();
 	virtual void update();
+	virtual void fixedUpdate();
 	virtual void unload(); 
 	virtual void start();
 

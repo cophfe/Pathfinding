@@ -35,6 +35,7 @@ void DoorComponent::init(Room* scene, char doorType, bool openByDefault, AgentDa
 		linkedDoor = EAST;
 		break;
 	}
+	direction = { (float)(linkedDoor == EAST) - (linkedDoor == WEST), (float)(linkedDoor == NORTH) - (linkedDoor == SOUTH) };
 	gameObject->getSprite()->setTint(PathfinderComponent::BACKGROUND_COLOR);
 	b2FixtureDef fDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::BOUNDS, RigidBodyComponent::PLAYER, nullptr, true);
 	b2BodyDef bDef = RigidBodyComponent::genBodyDef(b2_staticBody, true);
@@ -53,7 +54,7 @@ void DoorComponent::update()
 		open = true;
 	}
 
-	if (shouldSwitchScene)
+	if (shouldSwitchScene && Vector2(-rb->getVelocity().x, -rb->getVelocity().y).normalised().dot(direction) > 0)
 	{
 		shouldSwitchScene = false;
 		Game::getInstance().getRoomManager()->moveToNextRoom(currentRoom, linkedDoor);
@@ -64,22 +65,32 @@ void DoorComponent::start()
 {
 	if (playerEnteredFrom == getDoorType())
 	{
-		static int moveAmount = 150;
+		Vector2 position = Vector2((transform->getPosition().x + 190 * ((playerEnteredFrom == WEST) - (playerEnteredFrom == EAST))),
+			-(transform->getPosition().y + 210 * (playerEnteredFrom == NORTH) - 150 * (playerEnteredFrom == SOUTH)));
 
-		Vector2 position = Vector2((transform->getPosition().x + moveAmount * ((playerEnteredFrom == WEST) - (playerEnteredFrom == EAST))),
-			-(transform->getPosition().y + moveAmount * ((playerEnteredFrom == NORTH) - (playerEnteredFrom == SOUTH))));
 		currentRoom->getPlayerComponent()->getGameObject()->getComponentOfType<RigidBodyComponent>()
 			->setPosition(position / PHYSICS_UNIT_SCALE);
-		currentRoom->getCamera()->setPosition({ position.x - 900 * ((playerEnteredFrom == WEST) - (playerEnteredFrom == EAST)), position.y - 900 * ((playerEnteredFrom == NORTH) - (playerEnteredFrom == SOUTH)) });
+
+		currentRoom->getCamera()->setPosition({ position.x, -position.y });
 	}
 }
 
 void DoorComponent::onTriggerEnter(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
 {
-	if (open && timer <= 0 && !collisionFixture->IsSensor() && collisionFixture->GetFilterData().categoryBits == RigidBodyComponent::PLAYER)
+	if (open && !collisionFixture->IsSensor() && collisionFixture->GetFilterData().categoryBits == RigidBodyComponent::PLAYER)
 	{
-		//schedules move for end of game loop
 		shouldSwitchScene = true;
+		rb = collisionBody;
+		//schedules move for end of game loop
+	}
+}
+
+void DoorComponent::onTriggerExit(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
+{
+	if (open && !collisionFixture->IsSensor() && collisionFixture->GetFilterData().categoryBits == RigidBodyComponent::PLAYER)
+	{
+		shouldSwitchScene = false;
+		//schedules move for end of game loop
 	}
 }
 

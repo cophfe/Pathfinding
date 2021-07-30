@@ -9,11 +9,11 @@ void PathfinderComponent::init(Scene* scene, int pathWidth, int pathHeight, bool
 		{ -pathWidth * HEX_OFFSET * 0.5f, -pathHeight * HEX_OFFSET * 0.5f });
 
 	pathfinder->generateBoundsFromGraph(scene->getCollisionManager(), &bounds);
+	pathfinder->initDraw(BACKGROUND_TILING, BACKGROUND_SCALE, BACKGROUND_COLOR);
 }
 
 void PathfinderComponent::start()
 {
-	pathfinder->initDraw(BACKGROUND_TILING, BACKGROUND_SCALE, BACKGROUND_COLOR);
 }
 
 void PathfinderComponent::unload()

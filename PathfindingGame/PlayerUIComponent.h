@@ -3,14 +3,16 @@
 #include "Component.h"
 #include "Sprite.h"
 class Room;
+class PlayerComponent;
 
 //generates all player UI
 class PlayerUIComponent :
     public Component
 {
 public:
-	void init(int heartAmount, int currentAmount, Room* scene);
+	void init(int heartAmount, int currentAmount, Room* scene, PlayerComponent* player);
 	void unload();
+	void update();
 	int getHealth() { return heartsLeft; }
 	void hit(int number);
 	void heal(int number);
@@ -48,6 +50,9 @@ private:
 	GameObject* miniMap;
 	int heartsTotal;
 	int heartsLeft;
+	RenderTexture2D deathTexture;
+	PlayerComponent* player;
+	Room* room;
 };
 
 

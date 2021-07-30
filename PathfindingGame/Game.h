@@ -31,10 +31,12 @@ public:
 	void shutdown();
 	void switchScene(Scene* newScene);
 	static float getDeltaTime();
+	static float getUnscaledDeltaTime();
 	TextureManager* getTextureManager();
 	inline RoomManager* getRoomManager() { return roomManager; };
 	inline Scene* getScene() { return scene; }
-
+	inline void setTimeScale(float scale) { timeScale = scale; }
+	inline float getTimeScale() { return timeScale; }
 	static Game& getInstance();
 
 	Game(Game const&) = delete;
@@ -47,6 +49,7 @@ private:
 	static Game* instance;
 
 	float deltaTime;
+	float timeScale;
 	
 	Scene* scene;
 	Scene* nextScene = nullptr;

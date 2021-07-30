@@ -53,6 +53,8 @@ public:
 	void attack();
 	void hit(int damage, float knockback, const Vector2& position);
 	inline bool hasMaskOn() { return inStealth; }
+	inline bool isDying() { return dead; }
+	inline float getDyingTimer() { return deathTimer; }
 
 private:
 
@@ -81,6 +83,8 @@ private:
 	float cooldownTimer = 0;
 	float invincibilityTimer = 0;
 	bool invincible = false;
+	bool dead = false;
+	float deathTimer = 0;
 	bool hitFlashing = false;
 	PlayerState armState = ST_WALKING;
 	

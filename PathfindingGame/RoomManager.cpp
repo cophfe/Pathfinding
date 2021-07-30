@@ -8,7 +8,17 @@ RoomManager::RoomManager(int randomSeed) : randomSeed(randomSeed)
 {
 	srand(randomSeed);
 	miniMapTexture = LoadRenderTexture(mapSize, mapSize);
+	//transition is done using these buffers
+	transitionBuffer[0] = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
+	transitionBuffer[1] = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
 	generateMap();
+}
+
+RoomManager::~RoomManager()
+{
+	UnloadRenderTexture(miniMapTexture);
+	UnloadRenderTexture(transitionBuffer[0]);
+	UnloadRenderTexture(transitionBuffer[1]);
 }
 
 void RoomManager::generateMap()

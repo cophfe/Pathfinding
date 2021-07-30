@@ -42,8 +42,10 @@ class Room :
     public Scene
 {
 public:
+
 	void load(RoomData* properties, RoomManager* manager, PlayerComponent* player = nullptr, char enteredFrom = 0);
 	void draw();
+	void start();
 	void unload();
 	void beforeDelete(Scene* nextScene);
 

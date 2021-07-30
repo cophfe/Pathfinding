@@ -25,6 +25,7 @@ void Game::init(GameProperties* properties )
 		SetTargetFPS(properties->targetFPS);
 
 	timeAtStart = time(0);
+	timeScale = 1;
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   draw Loading Screen
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -60,13 +61,20 @@ void Game::gameLoop()
 
         // update Scene
 		scene->update();
+	
+		// do fixedUpdate (only happens every PHYSICS_TIME_STEP)
+		scene->fixedUpdate();
+
         
         // draw Scene
+		BeginDrawing();
 		scene->draw();
+		EndDrawing();
 
 		std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 		deltaTime = (float)std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count();
 
+		//this happens independant of deltaTime
 		//have to wait until end of gameLoop to delete scene
 		if (nextScene != nullptr)
 		{
@@ -95,6 +103,11 @@ void Game::switchScene(Scene* newScene)
 }
 
 float Game::getDeltaTime()
+{
+	return getInstance().deltaTime * getInstance().timeScale;
+}
+
+float Game::getUnscaledDeltaTime()
 {
 	return getInstance().deltaTime;
 }
