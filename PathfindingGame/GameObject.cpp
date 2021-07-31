@@ -79,17 +79,17 @@ GameObject::GameObject(GameObject* parent, const char* spriteName, bool isDrawn,
 	++idCounter;
 }
 
-GameObject::GameObject(Texture2D* texture, Vector2 position, float rotation, float scale)
+GameObject::GameObject(Sprite* sprite, Vector2 position, float rotation, float scale)
 {
 	isDrawn = true;
 
 	TextureManager* tM = Game::getInstance().getTextureManager();
 	transform = new Transform(position, scale, rotation, nullptr, this);
 
-	if (texture == nullptr)
-		sprite = new NullSprite();
+	if (sprite == nullptr)
+		this->sprite = new NullSprite();
 	else
-		sprite = new Sprite(texture, this);
+		this->sprite = sprite;
 
 	id = idCounter;
 	++idCounter;
@@ -200,6 +200,35 @@ void GameObject::startComponents()
 	}
 }
 
+void GameObject::disableAndHide()
+{
+	isDrawn = false;
+	for (auto& component : components)
+	{
+		if (component->isEnabled())
+			component->disableComponent();
+	}
+
+	for (auto& child : transform->getChildArray())
+	{
+		child->getGameObject()->disableAndHide();
+	}
+}
+
+void GameObject::enableAndShow()
+{
+	isDrawn = true;
+	for (auto& component : components)
+	{
+		if (!component->isEnabled())
+			component->enableComponent();
+	}
+
+	for (auto& child : transform->getChildArray())
+	{
+		child->getGameObject()->enableAndShow();
+	}
+}
 void GameObject::onCollisionEnterComponents(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
 {
 	for (auto& child : transform->getChildArray())
@@ -237,6 +266,12 @@ void GameObject::onTriggerEnterComponents(RigidBodyComponent* collisionBody, b2F
 		if (component->isEnabled())
 			component->onTriggerEnter(collisionBody, collisionFixture);
 	}
+}
+
+void GameObject::resetId()
+{
+	id = idCounter;
+	++idCounter;
 }
 
 void GameObject::onTriggerExitComponents(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)

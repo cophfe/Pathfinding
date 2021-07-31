@@ -54,10 +54,12 @@ public:
 	inline PlayerComponent* getPlayerComponent() { return player; }
 	inline RoomCoord getCoord() { return roomCoordinates; }
 
+	inline void setDropTransition(bool value) { roomDropTransition = value; }
 private:
 	friend RoomManager;
 
 	char enteredFrom;
+	bool roomDropTransition = false;
 	RoomCoord roomCoordinates;
 	PlayerComponent* player;
 	PathfinderComponent* pathfinderObject;

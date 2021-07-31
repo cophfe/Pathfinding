@@ -19,7 +19,7 @@ Sprite::Sprite(Texture2D* textureComplex, GameObject* attached)
 	tint = { 0xFF,0xFF,0xFF,0xFF };
 
 	srcRect = { 0, 0, (float)texture->width, (float)texture->height};
-	UpdateSpriteRectangle();
+	updateSpriteRectangle();
 }
 
 void Sprite::draw()
@@ -52,7 +52,7 @@ void Sprite::setShader(const char* name)
 }
 
 //the destination rectangle needs to be updated every time position or scale changes
-void Sprite::UpdateSpriteRectangle()
+void Sprite::updateSpriteRectangle()
 {
 	Vector2& pos = transform->getGlobalPosition();
 	float scale = transform->getGlobalScale();
@@ -77,7 +77,7 @@ AnimatedSprite::AnimatedSprite(AnimatedTexture* textureComplex, GameObject* atta
 	secondsPerFrame = 0.03333f;
 
 	srcRect = { 0, 0, (float)((AnimatedTexture*)texture)->spriteWidth, (float)((AnimatedTexture*)texture)->spriteHeight };
-	UpdateSpriteRectangle();
+	updateSpriteRectangle();
 
 	endCallback = nullptr;
 	callbackPointer = nullptr;
@@ -153,7 +153,7 @@ void AnimatedSprite::draw()
 	}
 }
 
-void AnimatedSprite::UpdateSpriteRectangle()
+void AnimatedSprite::updateSpriteRectangle()
 {
 	Vector2& pos = transform->getGlobalPosition();
 	float scale = transform->getGlobalScale();
@@ -165,4 +165,9 @@ void AnimatedSprite::UpdateSpriteRectangle()
 void AnimatedSprite::setFlipped(bool flippedValue)
 {
 	srcRect.width = flippedValue ? (float)-((AnimatedTexture*)texture)->spriteWidth : (float)((AnimatedTexture*)texture)->spriteWidth;
+}
+
+void CustomRenderSprite::draw()
+{
+	callback(pointer);
 }

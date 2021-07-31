@@ -20,14 +20,21 @@ void PlayerComponent::init(Room* scene)
 	gameObject->getSprite()->setDrawOffset(gameObject->getSprite()->getDestinationRectangle()->height / 2 - DRAW_OFFSET);
 	armSprite->setDrawOffset(gameObject->getSprite()->getDrawOffset());
 	armSprite->setTimePerFrame(1.0f/30);
+	//load death circle
+	deathTexture = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
 	generateAdditional(scene);
+	//disable exit key
+	SetExitKey(0);
+
 }
 
 void PlayerComponent::update()
 {
+	if (paused)
+		return;
 	float dT = Game::getDeltaTime();
 
-	if (health <= 0)
+	if (health <= 0) 
 	{
 		deathTimer += Game::getUnscaledDeltaTime();
 		if (!dead)
@@ -120,6 +127,33 @@ void PlayerComponent::update()
 			armSprite->setTint({ 0xFF,0xFF,0xFF,0xFF });
 		}
 	}
+	//if the mask protected you from damage, do this logic
+	else if (maskProtected)
+	{
+		invincibilityTimer += Game::getDeltaTime();
+
+		if (invincibilityTimer <= PI / (2 * HIT_TINT_SPEED))
+		{
+			float invincibilityTintAmount = cosf(invincibilityTimer * HIT_TINT_SPEED);
+			unsigned char invincibilityTint = cosf(invincibilityTimer * HIT_TINT_SPEED) * 0xFF;
+			unsigned char invincibilityTintLower = (unsigned char)(invincibilityTint * 0.2f);
+			//SetShaderValue(*shader, shaderTintLocation, &invincibilityTintAmount, SHADER_UNIFORM_FLOAT);
+			armSprite->setTint({ invincibilityTintLower,invincibilityTintLower,invincibilityTint,0xFF });
+			gameObject->getSprite()->setTint({ invincibilityTintLower,invincibilityTintLower,invincibilityTint,0xFF });
+		}
+		else
+		{
+			maskProtected = false;
+			invincibilityTimer = 0;
+		}
+	}
+	else
+	{
+		armSprite->clearShader();
+		gameObject->getSprite()->clearShader();
+		gameObject->getSprite()->setTint({ 0xFF,0xFF,0xFF,0xFF });
+		armSprite->setTint({ 0xFF,0xFF,0xFF,0xFF });
+	}
 	
 	//state machine here
 	cooldownTimer -= Game::getDeltaTime();
@@ -160,6 +194,7 @@ void PlayerComponent::update()
 			break;
 		case ST_STEALTH_LEAVE:
 			speed = MAX_SPEED;
+			inStealth = false;
 			acceleration = MAX_ACCELERATION;
 			armSprite->setCallback(nullptr, nullptr);
 			armSprite->setSettings(WALK_START, WALK_END, WALK_START);
@@ -201,6 +236,11 @@ void PlayerComponent::update()
 	}
 }
 
+void PlayerComponent::unload()
+{
+	UnloadRenderTexture(deathTexture);
+}
+
 void PlayerComponent::generateAdditional(Room* scene)
 {
 	//generate additional data
@@ -234,7 +274,7 @@ void PlayerComponent::generateAdditional(Room* scene)
 	additiveShader = Game::getInstance().getTextureManager()->getShader("additiveTint");
 	//create UI object
 	UI = (new GameObject(scene, nullptr, false, { 0 }, 1, SORTING::UI))->addComponent<PlayerUIComponent>();
-	UI->init(MAX_HEALTH, health, scene, this);
+	UI->init(maxHealth, health, scene, this);
 }
 
 void PlayerComponent::fixedUpdate()
@@ -299,12 +339,23 @@ void PlayerComponent::attack()
 
 void PlayerComponent::hit(int damage, float knockback, const Vector2& position)
 {
-	if (invincible && health > 0)
+	if (invincible || health <= 0)
 	{
 		return;
 	}
-	armSprite->setShader(additiveShader);
-	gameObject->getSprite()->setShader(additiveShader);
+	if (health != 1)
+	{
+		armSprite->setShader(additiveShader);
+		gameObject->getSprite()->setShader(additiveShader);
+	}
+
+	// if wearing mask you have a 50% chance of not getting damaged
+	if (inStealth && rand() * 2 / RAND_MAX)
+	{
+		maskProtected = true;
+		invincibilityTimer = 0;
+		return;
+	}
 	health -= damage;
 	UI->hit(damage);
 	Vector2 knockbackVector = (position - transform->getPosition()).normalised() * knockback;
@@ -314,3 +365,29 @@ void PlayerComponent::hit(int damage, float knockback, const Vector2& position)
 	invincible = true;
 	hitFlashing = true;
 }
+
+void PlayerComponent::setHealth(int health)
+{
+	this->health = health;
+}
+
+int PlayerComponent::getHealth()
+{
+	return health;
+}
+
+void PlayerComponent::setMaxHealth(int health)
+{
+	maxHealth = health;
+}
+
+int PlayerComponent::getMaxHealth()
+{
+	return maxHealth;
+}
+
+void PlayerComponent::pause()
+{	paused = true; Game::getInstance().setTimeScale(0);		}
+
+void PlayerComponent::resume()
+{	paused = false; Game::getInstance().setTimeScale(1);	}

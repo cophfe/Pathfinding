@@ -11,13 +11,13 @@ public:
 	RoomManager(int randomSeed);
 	~RoomManager();
 	static constexpr float doorChance = 0.5f;
-	static constexpr int maxRegularRooms = 10;
+	static constexpr int maxRegularRooms = 5;
 	void generateMap();
 	void generateMiniMap();
 	Room* createFirstRoom();
 	void moveToNextRoom(Room* currentRoom, char enteredFrom);
 	//mini map stuff
-	static constexpr float mapSize = 150;
+	static constexpr float mapSize = 220;
 	static constexpr float roomSize = 18;
 	static constexpr float sizeRatio = 1.6f;
 	static constexpr Color mapColor = { 0,0,0, 0x90 };
@@ -33,7 +33,12 @@ public:
 	inline RenderTexture2D* getMiniMap() { return &miniMapTexture; }
 	inline RenderTexture2D* getTransitionTexture1() { return &transitionBuffer[0]; }
 	inline RenderTexture2D* getTransitionTexture2() { return &transitionBuffer[1]; }
-	
+	inline RoomData* getCurrentRoom() { return &rooms[currentRoom]; }
+	inline bool checkMapHasBeenGenerated() { return mapCreatedBefore; }
+	void generateNewMap(int newSeed, bool newFloor = true);
+	bool checkPickupPickedUp() { return pickUpPickedUp; }
+	void setPickupPickedUp(bool value) { pickUpPickedUp = value; }
+
 private:
 	bool generateRoom(RoomCoord coord);
 	int getCoordNeighborCount(RoomCoord coord, char* neighborDoorsInfo);
@@ -53,5 +58,8 @@ private:
 
 	int randomSeed;
 	int roomCounter = 0;
+	int maxRooms = maxRegularRooms;
+	bool mapCreatedBefore = false;
+	bool pickUpPickedUp = false;
 };
 

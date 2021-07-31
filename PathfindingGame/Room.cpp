@@ -8,6 +8,8 @@
 #include "AgentDataComponent.h"
 #include "PlayerComponent.h"
 #include "DoorComponent.h"
+#include "TrapDoorComponent.h"
+#include "PickupComponent.h"
 
 void Room::load(RoomData* properties, RoomManager* manager, PlayerComponent* player, char enteredFrom)
 {
@@ -51,10 +53,18 @@ void Room::load(RoomData* properties, RoomManager* manager, PlayerComponent* pla
 	switch (properties->type)
 	{
 	case RoomType::SPECIAL:
-		pathfinderObject->init(this, 7, 6);
+		{
+			pathfinderObject->init(this, 7, 6);
+			Rectangle rect = pathfinderObject->getPathfinder()->getBounds();
+			(new GameObject(this, "heart", true, {rect.x + rect.width / 2, rect.y + rect.height / 2}, 0, 3.0f))->addComponent<PickupComponent>()->init(this);
+		}
 		break;
 	case RoomType::BOSS:
-		pathfinderObject->init(this, 7, 6);
+		{
+			pathfinderObject->init(this, 7, 6);
+			Rectangle rect = pathfinderObject->getPathfinder()->getBounds();
+			(new GameObject(this, "trapDoor", true, { rect.x + rect.width / 2, rect.y + rect.height / 2 }, 0, 0.5f))->addComponent<TrapDoorComponent>()->init(this);
+		}
 		break;
 	case RoomType::START:
 		pathfinderObject->init(this, 7, 6);
@@ -198,90 +208,171 @@ void Room::draw()
 	{
 		gameObject->draw();
 	}
+
+#ifdef DRAW_DEBUG
 	DrawFPS(0, 0);
+#endif // DRAW_DEBUG
 }
 
 void Room::start()
 {
 	Scene::start();
 	camera->restrictToBounds();
-	
-	//transition
-	if (enteredFrom == 0)
-		return;
 
-	//simulate a game loop (update) (deltaTime will be the same as it was for the last frame, the time this takes will not impact deltaTime)
-	fixedUpdate();
-	update();
-	//then capture a frame to the 2nd render texture
-	BeginTextureMode(*roomManager->getTransitionTexture2());
-	//unfortunately we can't just call the draw function because the UI have to be drawn seperately
-	//MINI DRAW CALL
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//TRANSITION EFFECT
+	//if should use the drop transition
+	if (enteredFrom == 0 && !roomDropTransition)
+	{
+		return;
+	}
+	if (roomDropTransition)
+	{
+		update();
+
+		camera->getCamera()->target = player->getTransform()->getPosition();
+		camera->restrictToBounds();
+		//then capture a frame to the 2nd render texture
+		BeginTextureMode(*roomManager->getTransitionTexture2());
+		//unfortunately we can't just call the draw function because the UI have to be drawn seperately
+		//MINI DRAW CALL
 		ClearBackground(backgroundColor);
 
-		camera->StartCamera();
+			camera->StartCamera();
+			pathfinderObject->drawBackground();
+			for (int i = 0; i < (int)SORTING::COUNT - 2; ++i)
+			{
+				if (i == (int)SORTING::MIDGROUND)
+				{
+					pathfinderObject->drawBoundWalls();
+				}
 
-		pathfinderObject->drawBackground();
-		for (int i = 0; i < (int)SORTING::COUNT - 1; ++i)
+				for (auto gameObject : sortingLayers[i])
+				{
+					gameObject->draw();
+				}
+			}
+
+			camera->EndCamera();
+		EndTextureMode();
+
+		float transitionTime = 0;
+		Rectangle srcRect = { 0,0, (float)GetScreenWidth() , -(float)GetScreenHeight() };
+		Game::getInstance().setTimeScale(0);
+
+		while (transitionTime < 1)
 		{
-			if (i == (int)SORTING::MIDGROUND)
+			std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
+			if (transitionTime > 0)
 			{
-				pathfinderObject->drawBoundWalls();
+				float x = transitionTime * transitionTime * transitionTime;
+				BeginDrawing();
+				ClearBackground(BLACK);
+				float scale = x;
+				Rectangle destRect = { 0,0, GetScreenWidth() * scale, GetScreenHeight() * scale };
+				destRect.x += GetScreenWidth()  - destRect.width  /2;
+				destRect.y += GetScreenHeight()  - destRect.height / 2;
+				DrawTexturePro(roomManager->getTransitionTexture2()->texture, srcRect, destRect, { GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f }, 0, { 0xFF,0xFF,0xFF,(unsigned char)(0xFF * (x)) });
+				scale = 1 + x * 5;
+				destRect = { 0,0, GetScreenWidth() * scale, GetScreenHeight() * scale };
+				destRect.x += GetScreenWidth() - destRect.width / 2;
+				destRect.y += GetScreenHeight() - destRect.height / 2;
+				DrawTexturePro(roomManager->getTransitionTexture1()->texture, srcRect, destRect, { GetScreenWidth() / 2.0f, GetScreenHeight()/2.0f }, 0, { 0xFF,0xFF,0xFF, (unsigned char)(std::fmax(0, 0xFF * (1 - transitionTime * 4))) });
+				
+				camera->StartCamera();
+				for (auto gameObject : sortingLayers[(int)SORTING::FOREGROUND])
+				{
+					gameObject->draw();
+				}
+				camera->EndCamera();
+				EndDrawing();
 			}
 
-			for (auto gameObject : sortingLayers[i])
-			{
-				gameObject->draw();
-			}
+			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+			transitionTime += (float)std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count() / 0.5f;
 		}
-	
-		camera->EndCamera();
-	EndTextureMode();
+		Game::getInstance().setTimeScale(1);
+		roomDropTransition = false;
 
-	//temporarily pause time (for UI rendering)
-	Game::getInstance().setTimeScale(0);
-
-	// now can transition between captured frames
-	//negative represents time before transitioning, which makes it less confusing what is happening
-	float transitionTime = -0.2f;
-	
-	Vector2i direction = { (EAST == enteredFrom) - (WEST == enteredFrom), (SOUTH == enteredFrom) - (NORTH == enteredFrom) };
-	Color c = { PathfinderComponent::BACKGROUND_COLOR.r - 30, PathfinderComponent::BACKGROUND_COLOR.g - 30 , PathfinderComponent::BACKGROUND_COLOR.b - 30 , 0xFF};
-	
-	Rectangle srcRect = { 0,0, (float)GetScreenWidth() , -(float)GetScreenHeight() };
-	Rectangle destRect = { 0,0, (float)GetScreenWidth() , (float)GetScreenHeight() };
-	while (transitionTime < 1)
-	{
-		std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
-
-		if (transitionTime > 0)
-		{
-			Vector2 movement = { direction.x * transitionTime, direction.y * transitionTime };
-
-			BeginDrawing();
-
-			ClearBackground(c);
-			//first draw the 2 transition frames
-			destRect.x = movement.x * (GetScreenWidth() + 100);
-			destRect.y = movement.y * (GetScreenHeight() + 100);
-			DrawTexturePro(roomManager->getTransitionTexture1()->texture, srcRect, destRect, { 0,0 }, 0, WHITE);
-			destRect.x = movement.x * (GetScreenWidth() + 100) - (GetScreenWidth() + 100) * direction.x;
-			destRect.y = movement.y * (GetScreenHeight() + 100) - (GetScreenHeight() + 100) * direction.y;
-			DrawTexturePro(roomManager->getTransitionTexture2()->texture, srcRect, destRect, { 0,0 }, 0, WHITE);
-
-			//then draw UI on top
-			for (auto gameObject : sortingLayers[(int)SORTING::UI])
-			{
-				gameObject->draw();
-			}
-			EndDrawing();
-		}
-
-		std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-		transitionTime += (float)std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count() / 0.2f;
 	}
+	else
+	{
+		//do room switch transition
+		//simulate a game loop (update) (deltaTime will be the same as it was for the last frame, the time this takes will not impact deltaTime)
+		fixedUpdate();
+		update();
+		//then capture a frame to the 2nd render texture
+		BeginTextureMode(*roomManager->getTransitionTexture2());
+		//unfortunately we can't just call the draw function because the UI have to be drawn seperately
+		//MINI DRAW CALL
+			ClearBackground(backgroundColor);
 
-	Game::getInstance().setTimeScale(1);
+			camera->StartCamera();
+
+			pathfinderObject->drawBackground();
+			for (int i = 0; i < (int)SORTING::COUNT - 1; ++i)
+			{
+				if (i == (int)SORTING::MIDGROUND)
+				{
+					pathfinderObject->drawBoundWalls();
+				}
+
+				for (auto gameObject : sortingLayers[i])
+				{
+					gameObject->draw();
+				}
+			}
+
+			camera->EndCamera();
+		EndTextureMode();
+
+		//temporarily pause time (for UI rendering)
+		Game::getInstance().setTimeScale(0);
+
+		// now can transition between captured frames
+		//negative represents time before transitioning, which makes it less confusing what is happening
+		float transitionTime = -0.05f;
+
+		Vector2i direction = { (EAST == enteredFrom) - (WEST == enteredFrom), (SOUTH == enteredFrom) - (NORTH == enteredFrom) };
+		Color c = { PathfinderComponent::BACKGROUND_COLOR.r - 30, PathfinderComponent::BACKGROUND_COLOR.g - 30 , PathfinderComponent::BACKGROUND_COLOR.b - 30 , 0xFF };
+
+		Rectangle srcRect = { 0,0, (float)GetScreenWidth() , -(float)GetScreenHeight() };
+		Rectangle destRect = { 0,0, (float)GetScreenWidth() , (float)GetScreenHeight() };
+		while (transitionTime < 1)
+		{
+			std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+
+			if (transitionTime > 0)
+			{
+				Vector2 movement = { direction.x * (1 - (1 - transitionTime) * (1 - transitionTime)), direction.y * (1 - (1 - transitionTime) * (1 - transitionTime)) };
+
+				BeginDrawing();
+
+				ClearBackground(c);
+				//first draw the 2 transition frames
+				destRect.x = movement.x * (GetScreenWidth() + 100);
+				destRect.y = movement.y * (GetScreenHeight() + 100);
+				DrawTexturePro(roomManager->getTransitionTexture1()->texture, srcRect, destRect, { 0,0 }, 0, WHITE);
+				destRect.x = movement.x * (GetScreenWidth() + 100) - (GetScreenWidth() + 100) * direction.x;
+				destRect.y = movement.y * (GetScreenHeight() + 100) - (GetScreenHeight() + 100) * direction.y;
+				DrawTexturePro(roomManager->getTransitionTexture2()->texture, srcRect, destRect, { 0,0 }, 0, WHITE);
+
+				//then draw UI on top
+				for (auto gameObject : sortingLayers[(int)SORTING::UI])
+				{
+					gameObject->draw();
+				}
+				EndDrawing();
+			}
+
+			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+			transitionTime += (float)std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count() / 0.2f;
+		}
+
+		Game::getInstance().setTimeScale(1);
+	}
+	
 }
 
 void Room::unload()
@@ -303,7 +394,7 @@ void Room::beforeDelete(Scene* nextScene)
 				camera->StartCamera();
 
 				pathfinderObject->drawBackground();
-				for (int i = 0; i < (int)SORTING::COUNT - 1; ++i)
+				for (int i = 0; i < (int)SORTING::COUNT - 1 - roomDropTransition; ++i)
 				{
 					if (i == (int)SORTING::MIDGROUND)
 					{
@@ -318,7 +409,8 @@ void Room::beforeDelete(Scene* nextScene)
 
 				camera->EndCamera();
 			EndTextureMode();
-
+			
+			
 			removeGameObjectFromChildren(player->getGameObject());
 		}
 	}

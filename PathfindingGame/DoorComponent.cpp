@@ -38,8 +38,11 @@ void DoorComponent::init(Room* scene, char doorType, bool openByDefault, AgentDa
 	direction = { (float)(linkedDoor == EAST) - (linkedDoor == WEST), (float)(linkedDoor == NORTH) - (linkedDoor == SOUTH) };
 	gameObject->getSprite()->setTint(PathfinderComponent::BACKGROUND_COLOR);
 	b2FixtureDef fDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::BOUNDS, RigidBodyComponent::PLAYER, nullptr, true);
+	b2PolygonShape shape;
+	shape.SetAsBox(1.2f, 1.05f);
+	fDef.shape = &shape;
 	b2BodyDef bDef = RigidBodyComponent::genBodyDef(b2_staticBody, true);
-	gameObject->addComponent<RigidBodyComponent>()->init(scene->getCollisionManager(), bDef, fDef, true);
+	gameObject->addComponent<RigidBodyComponent>()->init(scene->getCollisionManager(), bDef, fDef);
 	playerEnteredFrom = enteredFrom;
 }
 

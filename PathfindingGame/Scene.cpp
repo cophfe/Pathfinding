@@ -47,7 +47,9 @@ void Scene::draw()
 	{
 		gameObject->draw();
 	}
+#ifdef DRAW_DEBUG
 	DrawFPS(0, 0);
+#endif // DRAW_DEBUG
 }
 
 void Scene::update()

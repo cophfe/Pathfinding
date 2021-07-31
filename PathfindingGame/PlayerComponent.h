@@ -46,16 +46,26 @@ public:
 	
 	void init(Room* scene);
 	void update();
+	void unload();
 	void generateAdditional(Room* scene);
 	void fixedUpdate();
 	void onTriggerEnter(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
 	void onTriggerExit(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
 	void attack();
 	void hit(int damage, float knockback, const Vector2& position);
+	void setHealth(int health);
+	int getHealth();
+	void setMaxHealth(int health);
+	int getMaxHealth();
+	inline void addFloor() { floorNumber++; }
+	inline int getFloor() { return floorNumber; }
 	inline bool hasMaskOn() { return inStealth; }
 	inline bool isDying() { return dead; }
 	inline float getDyingTimer() { return deathTimer; }
-
+	inline RenderTexture2D* getDeathTexture() { return &deathTexture;  }
+	inline PlayerUIComponent* getUI() { return UI; }
+	void pause() ;
+	void resume();
 private:
 
 	int spritePause = ATTACK_HIT;
@@ -77,20 +87,25 @@ private:
 	};
 
 	bool inStealth = false;
+	bool paused = false;
 	bool pending = false;
 	std::vector<RigidBodyComponent*> attackableBees;
 	SmoothCamera* camera;
 	float cooldownTimer = 0;
 	float invincibilityTimer = 0;
 	bool invincible = false;
+	bool maskProtected = false;
 	bool dead = false;
 	float deathTimer = 0;
 	bool hitFlashing = false;
 	PlayerState armState = ST_WALKING;
+	RenderTexture2D deathTexture;
 	
 	float speed = MAX_SPEED;
 	float acceleration = MAX_ACCELERATION;
-	int health = 3;
+	int health = MAX_HEALTH;
+	int maxHealth = MAX_HEALTH;
+	int floorNumber = 1;
 	PlayerUIComponent* UI;
 	RigidBodyComponent* rigidBody;
 

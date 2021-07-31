@@ -40,7 +40,7 @@ public:
 	virtual void draw();
 	virtual void update();
 	virtual void fixedUpdate();
-	virtual void unload(); 
+	virtual void unload();
 	virtual void start();
 
 	CollisionManager* getCollisionManager();
@@ -62,6 +62,7 @@ public:
 	void removeGameObjectFromChildren(GameObject* object);
 	virtual void beforeDelete(Scene* nextScene) {}
 
+	void setBackground(Color backgroundColor) { this->backgroundColor = backgroundColor; }
 protected:
 	//to keep things simple there is a fixed amount of sorting layers: 3
 	std::forward_list<GameObject*> sortingLayers[(int)SORTING::COUNT];

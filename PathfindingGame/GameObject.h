@@ -22,7 +22,7 @@ public:
 	GameObject( GameObject* parent, const char* spriteName = "missing", bool isDrawn = true, Vector2 position = {0,0}, float rotation = 0, float scale = 1);
 	GameObject(Scene* parent, Texture2D* texture, Vector2 position = { 0,0 }, float rotation = 0, float scale = 1, SORTING layer = SORTING::MIDGROUND);
 	//no parent (NEEDS PARENT SET MANUALLY!!!)
-	GameObject(Texture2D* texture, Vector2 position = { 0,0 }, float rotation = 0, float scale = 1);
+	GameObject(Sprite* sprite, Vector2 position = { 0,0 }, float rotation = 0, float scale = 1);
 	~GameObject();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//		Copy and Move constructors and assigners 
@@ -61,12 +61,16 @@ public:
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//		Other
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	void disableAndHide();
+	void enableAndShow();
 	void deleteSelf();
 	inline int getId() { return id; }
 	inline void setIsDrawn(bool value) { isDrawn = value; }
 	inline bool getIsDrawn() { return isDrawn; }
 
 	inline static void resetIdCounter() { idCounter = 0; }
+	void resetId();
+
 protected:
 	//id system used to identify gameObjects
 	//using an id counter ensures each gameObject has a unique id

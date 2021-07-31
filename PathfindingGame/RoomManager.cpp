@@ -23,6 +23,7 @@ RoomManager::~RoomManager()
 
 void RoomManager::generateMap()
 {
+	mapCreatedBefore = true;
 	currentRoom = GET_COORD(0, 0);
 	generateRoom(currentRoom);
 	rooms[currentRoom].type = RoomType::START;
@@ -36,17 +37,16 @@ void RoomManager::generateMap()
 	{
 		//this is guaranteed to return true a bunch of times
 		RoomCoord coord = GET_COORD(room.first.first + 1, room.first.second);
-		if (getCoordNeighborCount(coord, &neighborDoors) == 1)
+		if (rooms.find(coord) == rooms.end() && getCoordNeighborCount(coord, &neighborDoors) == 1)
 			specialRoomOptions.push_back(std::make_pair(coord, neighborDoors));
-		coord.second -= 2;
-		if (getCoordNeighborCount(coord, &neighborDoors) == 1)
+		coord = GET_COORD(room.first.first - 1, room.first.second);
+		if (rooms.find(coord) == rooms.end() && getCoordNeighborCount(coord, &neighborDoors) == 1)
 			specialRoomOptions.push_back(std::make_pair(coord, neighborDoors));
-		coord.second += 1;
-		coord.first += 1;
-		if (getCoordNeighborCount(coord, &neighborDoors) == 1)
+		coord = GET_COORD(room.first.first, room.first.second + 1);
+		if (rooms.find(coord) == rooms.end() && getCoordNeighborCount(coord, &neighborDoors) == 1)
 			specialRoomOptions.push_back(std::make_pair(coord, neighborDoors));
-		coord.first -= 2;
-		if (getCoordNeighborCount(coord, &neighborDoors) == 1)
+		coord = GET_COORD(room.first.first, room.first.second - 1);
+		if (rooms.find(coord) == rooms.end() && getCoordNeighborCount(coord, &neighborDoors) == 1)
 			specialRoomOptions.push_back(std::make_pair(coord, neighborDoors));
 	}
 
@@ -74,7 +74,7 @@ void RoomManager::generateMap()
 		specialRoomIndex = rand() * ((float)specialRoomOptions.size() / RAND_MAX);
 
 		//since we just modified the rooms we should recheck if it is acceptable
-		if (getCoordNeighborCount(specialRoomOptions[specialRoomIndex].first, nullptr) == 1)
+		if (getCoordNeighborCount(specialRoomOptions[specialRoomIndex].first, nullptr) == 1 && rooms.find(specialRoomOptions[specialRoomIndex].first) == rooms.end())
 		{
 			//if so, accept it and generate the special room
 			rooms[specialRoomOptions[specialRoomIndex].first] = RoomData(specialRoomOptions[specialRoomIndex].second, RoomType::SPECIAL, specialRoomOptions[specialRoomIndex].first, randomSeed + rooms.size() * 277);
@@ -167,6 +167,18 @@ void RoomManager::moveToNextRoom(Room* currentRoom, char enteredFrom)
 	}
 }
 
+void RoomManager::generateNewMap(int newSeed, bool newFloor)
+{
+	rooms.clear();
+	pickUpPickedUp = false;
+	randomSeed = newSeed;
+	srand(randomSeed);
+	roomCounter = 0;
+	if (newFloor)
+		maxRooms += maxRegularRooms / 2;
+	generateMap();
+}
+
 bool RoomManager::generateRoom(RoomCoord coord)
 {
 	//cancel if a room already exists here
@@ -198,7 +210,7 @@ bool RoomManager::generateRoom(RoomCoord coord)
 	//randomly generate rooms
 	for (char i = 0; i < 4; i++)
 	{
-		if (roomCounter < maxRegularRooms - 1 && (rand() < (RAND_MAX * doorChance)))
+		if (roomCounter < maxRooms - 1 && (rand() < (RAND_MAX * doorChance)))
 		{
 			roomCounter++;
 			if (!generateRoom(coordinates[i]))
@@ -217,7 +229,7 @@ int RoomManager::getCoordNeighborCount(RoomCoord coord, char* neighborDoorsInfo)
 	char neighborDoors = 0;
 	if (rooms.find(GET_COORD(coord.first + 1, coord.second)) != rooms.end())
 	{
-		neighbourCount = 1;
+		neighbourCount++;
 		neighborDoors = EAST;
 	}
 	if (rooms.find(GET_COORD(coord.first - 1, coord.second)) != rooms.end())

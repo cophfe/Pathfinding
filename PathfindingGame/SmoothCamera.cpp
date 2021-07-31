@@ -32,7 +32,6 @@ void SmoothCamera::UpdateCamera()
 		
 		//clamp to inside bounds
 		restrictToBounds();
-		
 	}
 }
 

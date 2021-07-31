@@ -11,6 +11,7 @@ void SwipeComponent::update()
 {
 	if (doingEffect)
 	{
+		gameObject->setIsDrawn(true);
 		float percentLeft = (effectTimer / effectTime);
 		//quint easing
 		transform->setPosition(Vector2::lerp(startGoal, endGoal, 1 - (percentLeft* percentLeft* percentLeft)));
@@ -18,10 +19,10 @@ void SwipeComponent::update()
 		effectTimer -= Game::getDeltaTime();
 		if (effectTimer <= 0)
 		{
-			gameObject->setIsDrawn(false);
 			sprite->setTint({ 0xFF,0xFF,0xFF, 0 });
-			disableComponent();
 			doingEffect = false;
+			gameObject->setIsDrawn(false);
+			disableComponent();
 		}
 	}
 }
@@ -34,6 +35,6 @@ void SwipeComponent::startEffect(Vector2 startPos, Vector2 direction, Vector2 ve
 	transform->setRotation(direction.getAngle(Vector2{ 1,0 }));
 	effectTimer = effectTime;
 	doingEffect = true;
-	gameObject->setIsDrawn(true);
+	sprite->setTint({ 0xFF,0xFF,0xFF, 0 });
 	enableComponent();
 }

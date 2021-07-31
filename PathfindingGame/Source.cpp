@@ -40,7 +40,12 @@ int main(int argc, char* argv[])
 	//it will use default values if this is not passed in
 	GameProperties gP;
 	//sprite directory found using filesystem
+#ifdef DEBUG
 	auto sprDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path().parent_path().parent_path().string();
+#else
+	auto sprDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path().string();
+#endif // DEBUG
+
 	gP.spriteLocation = sprDirectory + "\\Images";
 	gP.shaderLocation = sprDirectory + "\\Shaders";
 	game.init(&gP);

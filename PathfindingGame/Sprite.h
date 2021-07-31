@@ -15,8 +15,6 @@ struct AnimatedTexture : public Texture2D
 	int textureNumber;
 	int spriteWidth, spriteHeight;
 	Vector2i* coordinates;
-
-	bool isAnimated() { return true; }
 };
 
 class Sprite
@@ -26,7 +24,7 @@ public:
 	Sprite(Texture2D* textureComplex, GameObject* attached);
 
 	virtual void draw();
-	virtual void UpdateSpriteRectangle();
+	virtual void updateSpriteRectangle();
 	virtual bool isNull() { return false; }
 	void flip();
 	virtual void setFlipped(bool flippedValue);
@@ -43,6 +41,7 @@ public:
 	void setShader(Shader* shader) { this->shader = shader; }
 	void clearShader() { this->shader = nullptr; }
 	Shader* getShader() { return shader; }
+	Texture* getTexture() { return texture; }
 protected:
 	Transform* transform;
 	Texture2D* texture;
@@ -72,7 +71,7 @@ public:
 	void setFlipped(bool flippedValue);
 
 	inline void setTimePerFrame(float seconds) { secondsPerFrame = seconds; }
-	void UpdateSpriteRectangle();
+	void updateSpriteRectangle();
 
 	inline void setCurrentFrame(int currentFrame) { this->currentFrame = currentFrame; updateSrcCoordinates(); }
 	inline int getEndFrame() { return startFrame; }
@@ -110,6 +109,22 @@ public:
 		destRect = { 0 };
 	}
 	void draw() {}
-	void UpdateSpriteRectangle() {}
+	void updateSpriteRectangle() {}
 	bool isNull() { return true; }
+};
+
+typedef void(*RenderCallback)(void*);
+
+class CustomRenderSprite : public Sprite
+{
+public:
+	CustomRenderSprite(RenderCallback callback, void* pointer) : callback(callback), pointer(pointer) {}
+	void draw();
+
+	inline void setCallback(RenderCallback callback) { this->callback = callback; }
+	inline void setPointer(void* pointer) { this->pointer = pointer; }
+	void updateSpriteRectangle() {}
+private:
+	RenderCallback callback;
+	void* pointer;
 };

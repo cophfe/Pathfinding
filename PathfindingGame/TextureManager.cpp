@@ -15,6 +15,22 @@ static bool checkExtensionShader(const std::filesystem::path& path)
 
 TextureManager::TextureManager()
 {
+	missingTexture = LoadRenderTexture(200, 200);
+	BeginTextureMode(missingTexture);
+	ClearBackground(BLACK);
+	DrawRectangle(0, 0, 100, 100, PURPLE);
+	DrawRectangle(100, 100, 100, 100, PURPLE);
+	EndTextureMode();
+
+	AnimatedTexture* animatedTexture = new AnimatedTexture();
+	animatedTexture->coordinates = new Vector2i[1];
+	animatedTexture->textureNumber = 1;
+	animatedTexture->spriteWidth = 200;
+	animatedTexture->spriteHeight = 200;
+
+	memcpy(animatedTexture, &missingTexture.texture, sizeof(Texture2D));
+	SetTextureFilter(*animatedTexture, FILTER_BILINEAR);
+	textureMap["missing"] = CursedTextureWrapper{ animatedTexture, true };
 }
 
 TextureManager::~TextureManager()
@@ -24,6 +40,11 @@ TextureManager::~TextureManager()
 
 void TextureManager::loadTexturesFromFolder(std::string folder)
 {
+	if (!std::filesystem::exists(folder) || !std::filesystem::is_directory(folder))
+	{
+		return;
+	}
+
 	//This whole thing isn't very performant but it only happens once at the start so whatever
 	//should textures be loaded in and out depending on when they're needed? HAHA no of course not, just load them all in at once thats completely reasonable
 
@@ -32,6 +53,7 @@ void TextureManager::loadTexturesFromFolder(std::string folder)
 
 	//sprite sheets will be generated with json arrays through adobe animate
 	std::filesystem::path jsonDirectory;
+	bool hasJson = false;
 
 	for (auto& entry : std::filesystem::directory_iterator(folder))
 	{
@@ -44,6 +66,7 @@ void TextureManager::loadTexturesFromFolder(std::string folder)
 			if (std::filesystem::is_directory(entry.status()) && entry.path().stem().string() == std::string("_json"))
 			{
 				jsonDirectory = entry.path();
+				hasJson = true;
 			}
 			//if it's not a subdirectory we check if it has the correct extensions
 			//if so it will be loaded onto the gpu
@@ -60,10 +83,13 @@ void TextureManager::loadTexturesFromFolder(std::string folder)
 				}
 				textureMap.insert(std::pair<std::string, CursedTextureWrapper>(path.stem().string(), { tex, false }));
 			}
-
 		}
 	}
 
+	if (!hasJson)
+	{
+		return;
+	}
 	//after loading all we check which one's names match with files in the json subdirectory
 	for (auto& entry : std::filesystem::directory_iterator(jsonDirectory))
 	{
@@ -114,6 +140,10 @@ void TextureManager::loadTexturesFromFolder(std::string folder)
 void TextureManager::loadShadersFromFolder(std::string folder)
 {
 	//load fragment shaders
+	if (!std::filesystem::exists(folder) || !std::filesystem::is_directory(folder))
+	{
+		return;
+	}
 	for (auto& entry : std::filesystem::directory_iterator(folder))
 	{
 		if (checkExtensionShader(entry.path()))
@@ -142,7 +172,7 @@ Sprite* TextureManager::genSprite(std::string name, GameObject* gameObject)
 	}
 	else
 	{
-		return new Sprite(textureMap["missing"].texture, gameObject);
+		return new AnimatedSprite((AnimatedTexture*)textureMap["missing"].texture, gameObject);
 	}
 	
 }
@@ -169,13 +199,17 @@ Shader* TextureManager::getShader(std::string name)
 
 void TextureManager::unload()
 {
+	UnloadRenderTexture(missingTexture);
+	delete[] ((AnimatedTexture*)textureMap["missing"].texture)->coordinates;
+	textureMap.erase("missing");
+
 	for (auto& textureComplex : textureMap)
 	{
 		UnloadTexture(*textureComplex.second.texture);
 
 		if (textureComplex.second.isAnimated)
 		{
-			delete[]((AnimatedTexture*)textureComplex.second.texture)->coordinates;
+			delete[] ((AnimatedTexture*)textureComplex.second.texture)->coordinates;
 		}
 		delete textureComplex.second.texture;
 	}

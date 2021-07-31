@@ -40,6 +40,9 @@ namespace mlib
 		Vector2 operator/ (float f) const;
 		Vector2 operator/ (const Vector2& v) const;
 
+		static Vector2 fromRL(const RLVector2& vec);
+		static Vector2 fromB2(const b2Vec2& vec);
+
 		operator RLVector2() const;
 		
 		operator b2Vec2() const;

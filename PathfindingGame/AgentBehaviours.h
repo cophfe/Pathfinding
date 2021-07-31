@@ -134,12 +134,21 @@ public:
 				//movement happens through fixedUpdate(), this just notifies the agent it to start and waits until it reaches the end
 				agent->movingToNode = true;
 				status = BehaviourResult::RUNNING;
+				hasCollidedWithPlayer = agent->collidedWithPlayer;
+				timer = 0;
 			}
 			break;
 		case BehaviourResult::RUNNING:
 			{
-				if (agent->targettingPlayer != agent->collidedWithPlayer)
+				timer += Game::getDeltaTime();
+				if (hasCollidedWithPlayer != agent->collidedWithPlayer)
 				{
+					status = BehaviourResult::FAILURE;
+					return BehaviourResult::FAILURE;
+				}
+				if (timer >= TIME_OUT)
+				{
+					status = BehaviourResult::FAILURE;
 					return BehaviourResult::FAILURE;
 				}
 				if (agent->movingToNode == false || ((agent->getTransform()->getPosition() - *agent->getDataComponent()->getTargetPosition()).magnitudeSquared() < AgentComponent::MIN_FINAL_DIST * AgentComponent::MIN_FINAL_DIST))
@@ -155,6 +164,9 @@ public:
 
 protected:
 	BehaviourResult status;
+	float timer;
+	bool hasCollidedWithPlayer;
+	static constexpr float TIME_OUT = 5;
 };
 
 //used to hit the player

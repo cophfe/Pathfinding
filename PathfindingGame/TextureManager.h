@@ -52,5 +52,6 @@ private:
 	
 	std::map<std::string, CursedTextureWrapper> textureMap;
 	std::map<std::string, Shader> shaderMap;
+	RenderTexture2D missingTexture;
 };
 

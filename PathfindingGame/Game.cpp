@@ -9,6 +9,8 @@
 #include "AgentDataComponent.h"
 #include "PlayerComponent.h"
 #include "PathfinderComponent.h"
+#include "ButtonComponent.h"
+#include "DeathUIComponent.h"
 
 void Game::init(GameProperties* properties )
 {
@@ -26,6 +28,7 @@ void Game::init(GameProperties* properties )
 
 	timeAtStart = time(0);
 	timeScale = 1;
+	
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   draw Loading Screen
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,18 +47,18 @@ void Game::init(GameProperties* properties )
 	//	   Generate Rooms
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	roomManager = new RoomManager(time(0));
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 	   Create Room
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	Room* firstRoom = roomManager->createFirstRoom();	
-	scene = firstRoom;
 	
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// 	   Create Menu Scene
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	scene = createMenuScene();
+
 	scene->start();
 }
 
 void Game::gameLoop()
 {
-    while (!WindowShouldClose())    // Detect window close button or ESC key
+    while (!checkWindowShouldClose())    // Detect window close button or ESC key
     {
 		std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
@@ -64,7 +67,6 @@ void Game::gameLoop()
 	
 		// do fixedUpdate (only happens every PHYSICS_TIME_STEP)
 		scene->fixedUpdate();
-
         
         // draw Scene
 		BeginDrawing();
@@ -90,7 +92,6 @@ void Game::gameLoop()
 void Game::shutdown()
 {
     CloseWindow();
-
 	delete scene;
 
 	delete roomManager;
@@ -121,4 +122,65 @@ Game& Game::getInstance()
 {
 	static Game instance = Game(); 
 	return instance;
+}
+
+Scene* Game::createMenuScene()
+{
+	Scene* menuScene = new Scene();
+	SceneProperties sceneProperties;
+	sceneProperties.randomSeed = time(0);
+	menuScene->load(&sceneProperties);
+	menuScene->setBackground(RAYWHITE);
+	SetExitKey(KEY_ESCAPE);
+
+	//Create buttons
+	int buttonWidth = textureManager->getTextureInfo("sideButton")->width;
+	auto enter = (new GameObject(menuScene, "sideButton", true, { (buttonWidth / 2 - 10) * 0.6f , (float)GetScreenHeight() / 2 + 50 }, 0, 0.6f, SORTING::UI))->addComponent<ButtonComponent>();
+	enter->init("PLAY", WHITE, 100, 50);
+	enter->onRelease = [](ButtonComponent* comp, void* ptr)
+	{
+		Game& game = Game::getInstance();
+		auto rM = game.getRoomManager();
+		if (rM->checkMapHasBeenGenerated())
+		{
+			rM->generateNewMap(rand(), false);
+			game.switchScene(rM->createFirstRoom());
+		}
+		else
+			game.switchScene(rM->createFirstRoom());
+
+	};
+	auto exit = (new GameObject(menuScene, "sideButton", true, { (buttonWidth / 2 - 10) * 0.6f , (float)GetScreenHeight() / 2 + 200 }, 0, 0.6f, SORTING::UI))->addComponent<ButtonComponent>();
+	exit->init("EXIT", WHITE, 100, 50);
+	exit->onRelease = [](ButtonComponent* comp, void* ptr)
+	{
+		Game::getInstance().endGameLoop();
+	};
+
+	menuScene->addGameObject(new GameObject(new CustomRenderSprite([](void* ptr)
+		{
+			static Texture2D* backgroundTexture = Game::getInstance().getTextureManager()->getTextureInfo("background");
+			static Rectangle srcRect = Rectangle{ 0,0, (float)backgroundTexture->width, (float)backgroundTexture->height };
+			static float timer = 0;
+			timer += Game::getDeltaTime() * 10;
+			float timerX = fmodf(timer, srcRect.width);
+			float timerY = fmodf(timer / 2, srcRect.height);
+			DrawTextureTiled(*backgroundTexture, srcRect, Rectangle{ -srcRect.width, -srcRect.height, (float)GetScreenWidth() + srcRect.width * 2, (float)GetScreenHeight() + srcRect.height * 2 }, { -timerX, -timerY }, 0, 1, { 0xD0,0xD0,0xD0,0xFF });
+
+		}, nullptr)), SORTING::UI);
+
+	return menuScene;
+}
+
+Scene* Game::createDeathScene(int floorCount)
+{
+	Scene* deathScene = new Scene();
+
+	SceneProperties sceneProperties;
+	sceneProperties.randomSeed = time(0);
+	deathScene->load(&sceneProperties);
+
+	(new GameObject(deathScene, "pauseMenu", true, { GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f }, 0, 1, SORTING::UI))->addComponent<DeathUIComponent>()->init(floorCount, deathScene);
+
+	return deathScene;
 }

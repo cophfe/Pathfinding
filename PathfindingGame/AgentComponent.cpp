@@ -203,7 +203,6 @@ void AgentComponent::start()
 
 void AgentComponent::fixedUpdate()
 {
-
 	//path following code
 	//if Behaviour Tree says to move to next node:
 	if (movingToNode)

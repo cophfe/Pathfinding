@@ -38,11 +38,14 @@ public:
 	inline void setTimeScale(float scale) { timeScale = scale; }
 	inline float getTimeScale() { return timeScale; }
 	static Game& getInstance();
+	void endGameLoop() { shouldClose = true; }
 
+	Scene* createMenuScene();
+	Scene* createDeathScene(int floorCount);
+	
 	Game(Game const&) = delete;
 	void operator=(Game const&) = delete;
 private:
-#pragma warning(disable : 4244) //initialization warning can begone
 
 	Game() { memset(this, 0, sizeof(Game)); };
 
@@ -50,13 +53,14 @@ private:
 
 	float deltaTime;
 	float timeScale;
-	
+	inline bool checkWindowShouldClose() { return WindowShouldClose() || shouldClose; }
 	Scene* scene;
 	Scene* nextScene = nullptr;
 	//std::map<int, SceneData*> savedData;
 	int timeAtStart;
+	bool shouldClose = false;
 
-	TextureManager* textureManager;
-	RoomManager* roomManager;
+	TextureManager* textureManager = nullptr;
+	RoomManager* roomManager = nullptr;
 };
 
