@@ -12,18 +12,6 @@ struct SceneProperties
 	int randomSeed = 0;
 };
 
-//scenes can be loaded in and out of memory to switch with a new scene
-//when the current scene is unloaded, it asks every gameObject if it wants to save any data
-//then the gameObject asks every component
-//if a component says yes, and returns a ComponentData* value, the GameObject will say yes, and return a GameObjectData* value
-//then the scene will return it's scene data to Game
-//this only saves changes. If no data is saved, the scene will load just like it did initially
-//struct SceneData
-//{
-//	//tied to the id's of gameObjects
-//	//std::map<int, GameObjectData*> gameObjectData;
-//};
-
 enum class SORTING
 {
 	BACKGROUND,
@@ -36,14 +24,22 @@ enum class SORTING
 class Scene
 {
 public:
+	//loads everything
 	virtual void load(SceneProperties* properties);
+	//draws everything 
+	//note:	(does not call BeginDrawing() or EndDrawing() itself)
 	virtual void draw();
+	//called every frame
 	virtual void update();
+	//called every frame, only updates components every PHYSICS_TIME_STEP
 	virtual void fixedUpdate();
+	//called at deletion
 	virtual void unload();
+	//note: the time it takes to start does not contribute to deltaTime
 	virtual void start();
+	//called before scene is deleted
+	virtual void beforeDelete(Scene* nextScene) {}
 
-	CollisionManager* getCollisionManager();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Scene() = default;
 	//copy
@@ -56,26 +52,28 @@ public:
 	virtual ~Scene();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+	//getters
+	CollisionManager* getCollisionManager();
 	inline SmoothCamera* getCamera() { return camera; }
-	void setCameraTarget(Transform* transform);
+	
+	//game object stuff
 	GameObject* addGameObject(GameObject* object, SORTING layer = SORTING::MIDGROUND);
 	void removeGameObjectFromChildren(GameObject* object);
-	virtual void beforeDelete(Scene* nextScene) {}
-
+	
+	void setCameraTarget(Transform* transform);
 	void setBackground(Color backgroundColor) { this->backgroundColor = backgroundColor; }
+
 protected:
-	//to keep things simple there is a fixed amount of sorting layers: 3
+	//to keep things simple there is a fixed amount of sorting layers
 	std::forward_list<GameObject*> sortingLayers[(int)SORTING::COUNT];
 	//camera for rendering obviously
 	SmoothCamera* camera;
 	//holds box2d world
 	CollisionManager* collisionManager;
-	
-	bool isDeleting = false;
-	bool shouldChangeScene = false;
+	//the clear color
+	Color backgroundColor;
 	//used for fixed update
 	float collisionTimer = 0;
-
-
-	Color backgroundColor;
+	//checks if the scene is currently deleting itself
+	bool isDeleting = false;
 };

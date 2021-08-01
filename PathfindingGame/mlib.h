@@ -7,10 +7,12 @@
 
 namespace mlib
 {
-	const float pi = 3.14159265f;
-	const float rad2Deg = 180 / pi;
-	const float deg2Rad = pi / 180;
+	//useful consts
+	constexpr float pi = 3.14159265f;
+	constexpr float rad2Deg = 180 / pi;
+	constexpr float deg2Rad = pi / 180;
 
+	//custom lerp function
 	static float lerp(float a, float b, float t)
 	{
 		return a + (b - a) * t;

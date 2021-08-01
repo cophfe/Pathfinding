@@ -48,7 +48,7 @@ void DoorComponent::init(Room* scene, char doorType, bool openByDefault, AgentDa
 
 void DoorComponent::update()
 {
-	timer -= Game::getDeltaTime();
+	//if all agents were killed open the door
 	if (!open && blackboard->noAgentsLeft())
 	{
 		((AnimatedSprite*)gameObject->getSprite())->play();
@@ -57,6 +57,7 @@ void DoorComponent::update()
 		open = true;
 	}
 
+	//if should switch scene and player is moving towards the door switch the scene
 	if (shouldSwitchScene && Vector2(-rb->getVelocity().x, -rb->getVelocity().y).normalised().dot(direction) > 0)
 	{
 		shouldSwitchScene = false;
@@ -66,6 +67,7 @@ void DoorComponent::update()
 
 void DoorComponent::start()
 {
+	//teleport player to this position if this is the right door
 	if (playerEnteredFrom == getDoorType())
 	{
 		Vector2 position = Vector2((transform->getPosition().x + 190 * ((playerEnteredFrom == WEST) - (playerEnteredFrom == EAST))),
@@ -82,9 +84,9 @@ void DoorComponent::onTriggerEnter(RigidBodyComponent* collisionBody, b2Fixture*
 {
 	if (open && !collisionFixture->IsSensor() && collisionFixture->GetFilterData().categoryBits == RigidBodyComponent::PLAYER)
 	{
+		//schedules move for end of game loop
 		shouldSwitchScene = true;
 		rb = collisionBody;
-		//schedules move for end of game loop
 	}
 }
 
@@ -92,8 +94,8 @@ void DoorComponent::onTriggerExit(RigidBodyComponent* collisionBody, b2Fixture* 
 {
 	if (open && !collisionFixture->IsSensor() && collisionFixture->GetFilterData().categoryBits == RigidBodyComponent::PLAYER)
 	{
+		//cancel move
 		shouldSwitchScene = false;
-		//schedules move for end of game loop
 	}
 }
 
@@ -110,4 +112,5 @@ char DoorComponent::getDoorType()
 	case WEST:
 		return EAST;
 	}
+	return 0;
 }

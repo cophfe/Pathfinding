@@ -36,8 +36,7 @@ void RigidBodyComponent::init(CollisionManager* collisionManager, b2BodyDef& bod
 	body->CreateFixture(&fixtureDef);
 }
 
-//as long as this is always called before sprites it will render fine
-//anything using position should access it through rigidBodyComponent
+//anything changind transforms should do so through the rigidbody otherwise the effect will be temporary
 void RigidBodyComponent::fixedUpdate()
 {
 	b2Vec2 pos = body->GetPosition();
@@ -148,6 +147,8 @@ b2FixtureDef RigidBodyComponent::genFixtureDef(uint16 collisionCategory, uint16 
 	def.filter = filter;
 	return def;
 }
+
+//these just notify all the components of the collision/trigger event
 
 void RigidBodyComponent::OnCollisionEnter(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
 {

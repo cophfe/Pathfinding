@@ -6,9 +6,7 @@
 class GameObject;
 class CollisionManager;
 
-//PHYSICS OBJECT
-//UNDEFINED BEHAVIOUR WHEN ON A CHILDED OBJECT
-//ALSO MIGHT BREAK WHEN NOT THE FIRST COMPONENT IN THE COMPONENT LIST (add it last)
+//Used for physics. has a b2body 'attached'
 class RigidBodyComponent : public Component
 {
 public:
@@ -31,11 +29,15 @@ public:
 	void addImpulse(Vector2 impulse, Vector2 position);
 	inline const Vector2& getVelocity() { return reinterpret_cast<const Vector2&>(body->GetLinearVelocity()); }
 
+	//add another fixture to body
 	b2Fixture* addFixture(b2FixtureDef& fixtureDef);
 	inline b2Body* getBody() { return body; }
+	//generate a body definition (needed to make a body)
 	static b2BodyDef genBodyDef(b2BodyType type, bool fixedRotation = false, float angularDamping = 0, float linearDamping = 0);
+	//generate a fixture definition (needed to make a fixture)
 	static b2FixtureDef genFixtureDef(uint16 collisionCategory, uint16 collisionMask = ALL, b2Shape* shape = nullptr, bool isSensor = false, float friction = 0.0f, float restitution = 0.0f, float density = 1.0f, float restitutionThreshold = 0);
-	enum CollisionCategories : uint16 //16 total
+	
+	enum CollisionCategories : uint16 //16 possible categories
 	{
 		PLAYER = 0b1,
 		ENEMY = 0b10,
@@ -56,7 +58,9 @@ private:
 	friend ContactListener;
 };
 
-/// The body type.
-/// static: zero mass, zero velocity, may be manually moved
-/// kinematic: zero mass, non-zero velocity set by user, moved by solver
-/// dynamic: positive mass, non-zero velocity determined by forces, moved by solver
+// Body type meaning:
+// static: zero mass, zero velocity, may be manually moved
+// kinematic: zero mass, non-zero velocity set by user, moved by solver
+// dynamic: positive mass, non-zero velocity determined by forces, moved by solver
+
+// note: dynamic-static collisions are continuous 

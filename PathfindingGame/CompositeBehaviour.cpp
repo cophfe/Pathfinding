@@ -8,6 +8,7 @@ CompositeBehaviour* CompositeBehaviour::add(Behaviour* childBehaviour)
 
 CompositeBehaviour* CompositeBehaviour::addMultiple(int count, ...)
 {
+	//goes through va_list for the extra arguments
 	va_list arguments;
 	va_start(arguments, count);
 	children.reserve(count);

@@ -23,10 +23,6 @@ public:
 	//hover settings
 	static constexpr float HOVER_MAG = 15.0f;
 	static constexpr float HOVER_SPEED = 10.0f;
-	////idle settings
-	//static constexpr float idleChance = 0.9f;
-	//static constexpr float idleTime = 2.0f;
-	//static constexpr float idleVarience = 0.5f;
 	//collider size settings
 	static constexpr float COLLIDER_RAD = 0.5f;
 	static constexpr float TRIGGER_RAD = 3.0f;
@@ -84,6 +80,7 @@ public:
 #endif // DRAW_DEBUG
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+	//various functions for getting info for the Behaviour tree
 	inline AgentDataComponent* getDataComponent() { return blackboard; }
 	inline const bool& checkTargettingPlayer() { return targettingPlayer; }
 	inline void setTargettingPlayer(bool value)
@@ -96,7 +93,6 @@ public:
 		//collided with player is set on collision with player (obviously)
 		return collidedWithPlayer;
 	}
-
 	inline bool checkShouldTurn()
 	{
 		return (destination - transform->getPosition()).x < 0 != gameObject->getSprite()->getFlipped();
@@ -110,7 +106,7 @@ private:
 
 	inline PathfindingNode* getTargetNode() { return blackboard->getTargetPathfinderNode(); }
 
-	//for behaviour node
+	//for behaviour tree
 	inline bool checkTargetMoved()
 	{
 		PathfindingNode* node = blackboard->getTargetPathfinderNode();
@@ -125,7 +121,7 @@ private:
 			return true;
 		}
 	}
-	//plays at end of death animation
+	//sprite callback that runs at end of death animation
 	static void deadCallback(void* ptr)
 	{
 		AgentComponent* c = (AgentComponent*)ptr;
@@ -134,34 +130,34 @@ private:
 		c->blackboard->removeAgent();
 	}
 	
-	//	Health
-	int health = MAX_HEALTH;
-	bool dead = false;
-
-	//	Pathfinding
+	std::vector<Vector2> path;
+	//behaviour tree root node
+	SequenceBehaviour* behaviourTree;
+	//face child
+	GameObject* child;
+	//shader
+	Shader* additiveShader = nullptr;
+	//bee sprite
+	AnimatedSprite* sprite;
+	RigidBodyComponent* rigidBody;
+	//Pathfinding
 	Pathfinder* pathfinder;
 	AgentDataComponent* blackboard;
-	RigidBodyComponent* rigidBody;
-	std::vector<Vector2> path;
 	PathfindingNode* playerNode = nullptr;
 	Vector2 destination;
-	bool shouldReconstructPath = true;
 	Vector2 movementDirection;
-	int pathIndex = 0;
-	bool movingToNode = false;
-	float timer = 0;
 
-	//	Behaviour tree
-	SequenceBehaviour* behaviourTree;
+	int health = MAX_HEALTH;
+	int pathIndex = 0;
+	float timer = 0;
+	float hitTimer = 0;
+	float spriteHover;
+	
+	bool shouldReconstructPath = true;
+	bool movingToNode = false;
 	bool targettingPlayer = false;
 	bool collidedWithPlayer = false;
-
-	//	Rendering
-	float spriteHover;
-	AnimatedSprite* sprite;
-	GameObject* child;
-	Shader* additiveShader = nullptr;
-	float hitTimer = 0;
+	bool dead = false;
 	bool hitFlashing = false;
 };
 

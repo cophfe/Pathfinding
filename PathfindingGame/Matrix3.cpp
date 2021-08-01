@@ -20,15 +20,18 @@ namespace mlib
 
 	Matrix3 Matrix3::inverse()
 	{
+		//calculate determinant
 		float d0 = m[4] * m[8] - m[5] * m[7];
 		float d3 = m[1] * m[8] - m[7] * m[2];
 		float d6 = m[1] * m[5] - m[4] * m[2];
 		float det = m[0] * d0 - m[3] * d3 + m[6] * d6;
 
+		//if det is 0 there is no inverse
 		Matrix3 i = Matrix3();
 		if (det == 0)
 			return i;
 
+		//from determinant calculate inverse values
 		float iDet = 1 / det;
 		i.m[0] = d0 * iDet;
 		i.m[1] = -d3 * iDet;

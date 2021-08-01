@@ -7,11 +7,10 @@
 RoomManager::RoomManager(int randomSeed) : randomSeed(randomSeed)
 {
 	srand(randomSeed);
-	miniMapTexture = LoadRenderTexture(mapSize, mapSize);
+	miniMapTexture = LoadRenderTexture(MAP_SIZE, MAP_SIZE);
 	//transition is done using these buffers
 	transitionBuffer[0] = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
 	transitionBuffer[1] = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
-	generateMap();
 }
 
 RoomManager::~RoomManager()
@@ -50,22 +49,24 @@ void RoomManager::generateMap()
 			specialRoomOptions.push_back(std::make_pair(coord, neighborDoors));
 	}
 
-	//boss room is the one furthest away from the middle
-	int bossIndex = 0;
+	//exit room is the one furthest away from the middle
+	int exitIndex = 0;
 	float maxDist = 0;
+	//get the one furthest away
 	for (int i = 0; i < specialRoomOptions.size(); i++)
 	{
-		//square distance
 		float dist = specialRoomOptions[i].first.first * specialRoomOptions[i].first.first + specialRoomOptions[i].first.second * specialRoomOptions[i].first.second;
 		if (dist > maxDist)
 		{
 			maxDist = dist;
-			bossIndex = i;
+			exitIndex = i;
 		}
 	}
-	bossRoom = specialRoomOptions[bossIndex].first;
-	rooms[bossRoom] = RoomData(specialRoomOptions[bossIndex].second, RoomType::BOSS, bossRoom, randomSeed + rooms.size() * 277);
-	specialRoomOptions.erase(specialRoomOptions.begin() + bossIndex);
+	//generate exit room there
+	bossRoom = specialRoomOptions[exitIndex].first;
+	rooms[bossRoom] = RoomData(specialRoomOptions[exitIndex].second, RoomType::EXIT, bossRoom, randomSeed + rooms.size() * 277);
+	//delete it from special room options array
+	specialRoomOptions.erase(specialRoomOptions.begin() + exitIndex);
 	
 	//special room is a random one of these coordinates
 	int specialRoomIndex = -1;
@@ -73,7 +74,7 @@ void RoomManager::generateMap()
 	{
 		specialRoomIndex = rand() * ((float)specialRoomOptions.size() / RAND_MAX);
 
-		//since we just modified the rooms we should recheck if it is acceptable
+		//since we just modified the rooms when we added the exit room we should recheck if it is acceptable
 		if (getCoordNeighborCount(specialRoomOptions[specialRoomIndex].first, nullptr) == 1 && rooms.find(specialRoomOptions[specialRoomIndex].first) == rooms.end())
 		{
 			//if so, accept it and generate the special room
@@ -96,34 +97,37 @@ void RoomManager::generateMap()
 
 void RoomManager::generateMiniMap()
 {
-	float height = roomSize;
-	float width = height * sizeRatio;
-	Vector2 centrePosition = { mapSize / 2 - width/2, mapSize / 2 - height /2};
+	float height = ROOM_SIZE;
+	float width = height * SIZE_RATIO;
+	Vector2 centrePosition = { MAP_SIZE / 2 - width/2, MAP_SIZE / 2 - height /2};
 
+	//draw a mini map to the render texture
 	BeginTextureMode(miniMapTexture);
 	ClearBackground({ 0,0,0,0 });
-	DrawRectangle(0, 0, mapSize, mapSize, mapColor);
+	//draw the background
+	DrawRectangle(0, 0, MAP_SIZE, MAP_SIZE, MAP_COLOR);
 	Color color;
 
 	for (auto& room : rooms)
 	{
-		DrawRectangle(centrePosition.x + (width + offset * (sizeRatio)) * (room.first.first - currentRoom.first) - roomPadding, centrePosition.y + (height + offset) * (room.first.second - currentRoom.second) - roomPadding, width + roomPadding * 2, height + roomPadding * 2, BLACK);
+		//draw the outline rectangle for all the rooms
+		DrawRectangle(centrePosition.x + (width + MAP_ROOM_OFFSET * (SIZE_RATIO)) * (room.first.first - currentRoom.first) - MAP_ROOM_PADDING, centrePosition.y + (height + MAP_ROOM_OFFSET) * (room.first.second - currentRoom.second) - MAP_ROOM_PADDING, width + MAP_ROOM_PADDING * 2, height + MAP_ROOM_PADDING * 2, BLACK);
 	}
 	for (auto& room : rooms)
 	{
 		switch (room.second.type)
 		{
 		case RoomType::REGULAR:
-			color = roomColor;
+			color = ROOM_COLOR;
 			break;
-		case RoomType::BOSS:
-			color = bossRoomColor;
+		case RoomType::EXIT:
+			color = EXIT_ROOM_COLOR;
 			break;
 		case RoomType::SPECIAL:
-			color = specialRoomColor;
+			color = ITEM_ROOM_COLOR;
 			break;
 		case RoomType::START:
-			color = startRoomColor;
+			color = START_ROOM_COLOR;
 			break;
 		}
 		if (!room.second.explored)
@@ -132,15 +136,19 @@ void RoomManager::generateMiniMap()
 			color.g -= 0x40;
 			color.b -= 0x40;
 		}
-		DrawRectangle(centrePosition.x + (width + offset * sizeRatio) * (room.first.first - currentRoom.first), centrePosition.y + (height + offset) * (room.first.second - currentRoom.second), width, height, color);
+		//draw the room
+		DrawRectangle(centrePosition.x + (width + MAP_ROOM_OFFSET * SIZE_RATIO) * (room.first.first - currentRoom.first), centrePosition.y + (height + MAP_ROOM_OFFSET) * (room.first.second - currentRoom.second), width, height, color);
 	}
+	//draw current room as white
 	DrawRectangle(centrePosition.x, centrePosition.y, width, height, { 0xFF,0xFF,0xFF, 0xFF });
-	DrawRectangleLinesEx({0,0, mapSize, mapSize }, LINE_THICKNESS, BLACK);
+	//draw border
+	DrawRectangleLinesEx({0,0, MAP_SIZE, MAP_SIZE }, LINE_THICKNESS, BLACK);
 	EndTextureMode();
 }
 
 Room* RoomManager::createFirstRoom()
 {
+	//only difference is that the player pointer is set to nullptr
 	Room* room = new Room();
 	room->load(&rooms[currentRoom], this, nullptr);
 	return room;
@@ -148,10 +156,11 @@ Room* RoomManager::createFirstRoom()
 
 void RoomManager::moveToNextRoom(Room* currentRoom, char enteredFrom)
 {
+	//get the coordinate of the next room
 	RoomCoord newCoord = GET_COORD(this->currentRoom.first - ((enteredFrom & EAST) == EAST) + ((enteredFrom & WEST) == WEST),
 		this->currentRoom.second - ((enteredFrom & NORTH) == NORTH) + ((enteredFrom & SOUTH) == SOUTH));
 
-	//check if coord has roomData
+	//check if coord is valid
 	auto iter = rooms.find(newCoord);
 	if (iter != rooms.end())
 	{
@@ -169,13 +178,15 @@ void RoomManager::moveToNextRoom(Room* currentRoom, char enteredFrom)
 
 void RoomManager::generateNewMap(int newSeed, bool newFloor)
 {
+	//just resets all variables before generating map
 	rooms.clear();
 	pickUpPickedUp = false;
 	randomSeed = newSeed;
 	srand(randomSeed);
 	roomCounter = 0;
+	//if moved to the next floor, add to the max number of rooms
 	if (newFloor)
-		maxRooms += maxRegularRooms / 2;
+		maxRooms += MAX_ROOMS_START / 2;
 	generateMap();
 }
 
@@ -196,7 +207,7 @@ bool RoomManager::generateRoom(RoomCoord coord)
 	rooms[coord] = data;
 
 	//rooms should be generated in a random order, not north, south, east, west
-	//since there is a limited amount of rooms, this should stop it from generating a room toward a specific direction
+	//this should stop it from generating a room toward a specific direction
 	
 	RoomCoord coordinates[4] = {
 		GET_COORD(coord.first, coord.second + 1),
@@ -210,7 +221,7 @@ bool RoomManager::generateRoom(RoomCoord coord)
 	//randomly generate rooms
 	for (char i = 0; i < 4; i++)
 	{
-		if (roomCounter < maxRooms - 1 && (rand() < (RAND_MAX * doorChance)))
+		if (roomCounter < maxRooms - 1 && (rand() < (RAND_MAX * DOOR_CHANCE)))
 		{
 			roomCounter++;
 			if (!generateRoom(coordinates[i]))
@@ -225,6 +236,7 @@ bool RoomManager::generateRoom(RoomCoord coord)
 
 int RoomManager::getCoordNeighborCount(RoomCoord coord, char* neighborDoorsInfo)
 {
+	//check all coords around this coordinate to find which rooms are next to it
 	char neighbourCount = 0;
 	char neighborDoors = 0;
 	if (rooms.find(GET_COORD(coord.first + 1, coord.second)) != rooms.end())

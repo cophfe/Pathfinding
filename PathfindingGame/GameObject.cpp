@@ -5,25 +5,9 @@
 
 int GameObject::idCounter = 0;
 
-void GameObject::init(const char* spriteName, GameObject* parent, bool isDrawn, Vector2 position, float rotation, float scale)
-{
-	this->isDrawn = isDrawn;
-
-	TextureManager* tM = Game::getInstance().getTextureManager();
-	if (parent == nullptr)
-		transform = new Transform(position, scale, rotation, nullptr, this);
-	else	
-		transform = new Transform(position, scale, rotation, parent->getTransform(), this);
-	
-	if (spriteName != nullptr)
-		sprite = tM->genSprite(std::string(spriteName), this);
-	else
-		sprite = new NullSprite();
-	
-
-	id = idCounter;
-	++idCounter;
-}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//	CONSTRUCTORS
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 GameObject::GameObject(Scene* parent, const char* spriteName, bool isDrawn, Vector2 position, float rotation, float scale, SORTING layer)
 {
@@ -95,6 +79,9 @@ GameObject::GameObject(Sprite* sprite, Vector2 position, float rotation, float s
 	++idCounter;
 }
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 GameObject::~GameObject()
 {
 	deleteSelf();
@@ -102,6 +89,7 @@ GameObject::~GameObject()
 
 void GameObject::deleteSelf()
 {
+	//if no parent that means parent is scene (unless something has gone wrong). delete self from parent
 	if (transform->getParent() == nullptr)
 	{
 		Game::getInstance().getScene()->removeGameObjectFromChildren(this);
@@ -111,6 +99,7 @@ void GameObject::deleteSelf()
 		transform->getParent()->removeChild(transform);
 	}
 	
+	//unload all components then delete them
 	for (auto& component : components)
 	{
 		component->unload();
@@ -118,6 +107,7 @@ void GameObject::deleteSelf()
 		component = nullptr;
 	}
 
+	//delete all children now too
 	int count = std::distance(std::begin(transform->getChildArray()), std::end(transform->getChildArray()));
 	for (int i = 0; i < count; ++i)
 	{
@@ -164,6 +154,7 @@ void GameObject::setSprite(Sprite* sprite)
 
 void GameObject::updateComponents()
 {
+	//update children and self
 	for (auto& child : transform->getChildArray())
 	{
 		child->getGameObject()->updateComponents();
@@ -177,6 +168,7 @@ void GameObject::updateComponents()
 
 void GameObject::fixedUpdateComponents()
 {
+	//update children and self
 	for (auto& child : transform->getChildArray())
 	{
 		child->getGameObject()->fixedUpdateComponents();
@@ -190,6 +182,7 @@ void GameObject::fixedUpdateComponents()
 
 void GameObject::startComponents()
 {
+	//start children and self
 	for (auto& child : transform->getChildArray())
 	{
 		child->getGameObject()->updateComponents();
@@ -229,8 +222,10 @@ void GameObject::enableAndShow()
 		child->getGameObject()->enableAndShow();
 	}
 }
+
 void GameObject::onCollisionEnterComponents(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
 {
+	//call all collision enter functions
 	for (auto& child : transform->getChildArray())
 	{
 		child->getGameObject()->onCollisionEnterComponents(collisionBody, collisionFixture);
@@ -244,6 +239,7 @@ void GameObject::onCollisionEnterComponents(RigidBodyComponent* collisionBody, b
 
 void GameObject::onCollisionExitComponents(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
 {
+	//call all collision exit functions
 	for (auto& child : transform->getChildArray())
 	{
 		child->getGameObject()->onCollisionExitComponents(collisionBody, collisionFixture);
@@ -257,6 +253,7 @@ void GameObject::onCollisionExitComponents(RigidBodyComponent* collisionBody, b2
 
 void GameObject::onTriggerEnterComponents(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
 {
+	//call all trigger exit functions
 	for (auto& child : transform->getChildArray())
 	{
 		child->getGameObject()->onTriggerEnterComponents(collisionBody, collisionFixture);
@@ -268,14 +265,9 @@ void GameObject::onTriggerEnterComponents(RigidBodyComponent* collisionBody, b2F
 	}
 }
 
-void GameObject::resetId()
-{
-	id = idCounter;
-	++idCounter;
-}
-
 void GameObject::onTriggerExitComponents(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture)
 {
+	//call all trigger exit functions
 	for (auto& child : transform->getChildArray())
 	{
 		child->getGameObject()->onTriggerExitComponents(collisionBody, collisionFixture);

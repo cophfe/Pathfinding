@@ -17,12 +17,13 @@ class GameObject
 public:
 	//		Constructors
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	//you cannot initialize a gameobject with nullptr parent, which is a good thing because doing so would just cause bugs (it doesn't get rendered in that case)
+	//you cannot initialize a gameobject with nullptr parent except through specific constructor
 	GameObject(Scene* parent, const char* spriteName = "missing", bool isDrawn = true, Vector2 position = {0,0}, float rotation = 0, float scale = 1, SORTING layer = SORTING::MIDGROUND);
 	GameObject( GameObject* parent, const char* spriteName = "missing", bool isDrawn = true, Vector2 position = {0,0}, float rotation = 0, float scale = 1);
 	GameObject(Scene* parent, Texture2D* texture, Vector2 position = { 0,0 }, float rotation = 0, float scale = 1, SORTING layer = SORTING::MIDGROUND);
 	//no parent (NEEDS PARENT SET MANUALLY!!!)
 	GameObject(Sprite* sprite, Vector2 position = { 0,0 }, float rotation = 0, float scale = 1);
+	//destructor
 	~GameObject();
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//		Copy and Move constructors and assigners 
@@ -38,6 +39,7 @@ public:
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	void draw();
 #ifdef DRAW_DEBUG
+	//calls debug draw on all components
 	void debugDraw();
 #endif
 	inline Sprite* getSprite() { return sprite; };
@@ -61,33 +63,34 @@ public:
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	//		Other
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//disables all components and hides self
 	void disableAndHide();
+	//enables all components and shows self
 	void enableAndShow();
+	//deletes self
 	void deleteSelf();
+	//get the value
 	inline int getId() { return id; }
 	inline void setIsDrawn(bool value) { isDrawn = value; }
 	inline bool getIsDrawn() { return isDrawn; }
 
-	inline static void resetIdCounter() { idCounter = 0; }
-	void resetId();
-
 protected:
-	//id system used to identify gameObjects
+
+	//holds all components
+	std::forward_list<Component*> components;
+	//controls position and children
+	Transform* transform;
+	//to avoid object slicing these will need to be a pointers \/
+	//holds all sprites
+	Sprite* sprite; 
+	//id system could be used to identify gameObjects
 	//using an id counter ensures each gameObject has a unique id
 	static int idCounter;
 	int id;
-
-	//constructors call this
-	virtual void init(const char* spriteName, GameObject* parent, bool isDrawn, Vector2 position, float rotation, float scale);
-	
-	Transform* transform;
-	//to avoid object slicing these will need to be a pointers \/
-	Sprite* sprite; 
-	std::forward_list<Component*> components;
-
 	//drawing
 	bool isDrawn = true;
 
+	//these are called by the rigidbody component on specific events. These call their respective functions in all components of the gameObject
 	friend RigidBodyComponent;
 	void onCollisionExitComponents(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
 	void onCollisionEnterComponents(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);

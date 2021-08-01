@@ -5,6 +5,7 @@
 
 void TrapDoorComponent::init(Room* scene)
 {
+	//add sensor
 	b2FixtureDef fDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::BOUNDS, RigidBodyComponent::PLAYER, nullptr, true);
 	b2CircleShape shape;
 	shape.m_radius = 0.6f;
@@ -18,6 +19,7 @@ void TrapDoorComponent::update()
 {
 	if (playerEntered)
 	{
+		//if player entered trap door switch to room on new floor
 		scene->setDropTransition(true);
 		playerEntered = false;
 		auto player = scene->getPlayerComponent();

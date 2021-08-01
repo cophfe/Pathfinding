@@ -8,7 +8,6 @@ Transform::Transform(Vector2 position, float scale, float rotation, Transform* p
 	this->gameObject = attachedGameObject;
 	this->parent = nullptr;
 
-	localTransform = { 7, 3, 2, 1, 0, 9, 12, 15,69 };
 	if (parent != nullptr)
 		parent->addChild(this);
 
@@ -104,6 +103,7 @@ void Transform::updateGlobalTransform()
 		globalTransform.getAllTransformations(&globalPosition, &globalScale, &globalRotation);
 	}
 
+	//update children
 	for (auto& child : children)
 	{
 		child->updateGlobalTransform();
@@ -113,6 +113,7 @@ void Transform::updateGlobalTransform()
 
 void Transform::flipPositionX()
 {
+	//flip position across the Y axis. useful for flipping sprites
 	position.x *= -1;
 	updateLocalTransform();
 }

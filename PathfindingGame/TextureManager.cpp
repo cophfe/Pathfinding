@@ -3,18 +3,20 @@
 
 static bool checkExtensionTexture(const std::filesystem::path& path)
 {	
+	//check if extension is valid for a texture (also if it is a regular file)
 	return (std::filesystem::is_regular_file(path) && (path.extension().string() == std::string(".png") || path.extension().string() == std::string(".gif")));
 }
 
 static bool checkExtensionShader(const std::filesystem::path& path)
 {
-	//not sure if I should check the extension here, as it is just a text file
-	return (std::filesystem::is_regular_file(path));// && (path.extension().string() == std::string(".fs")));
+	//check if is a regular file (not a folder)
+	return (std::filesystem::is_regular_file(path));
 }
 
 
 TextureManager::TextureManager()
 {
+	//generate missing texture
 	missingTexture = LoadRenderTexture(200, 200);
 	BeginTextureMode(missingTexture);
 	ClearBackground(BLACK);
@@ -22,6 +24,7 @@ TextureManager::TextureManager()
 	DrawRectangle(100, 100, 100, 100, PURPLE);
 	EndTextureMode();
 
+	//convert missing texture into an animated texture (so that any animated texture - specific funtions will not crash the game)
 	AnimatedTexture* animatedTexture = new AnimatedTexture();
 	animatedTexture->coordinates = new Vector2i[1];
 	animatedTexture->textureNumber = 1;
@@ -40,19 +43,20 @@ TextureManager::~TextureManager()
 
 void TextureManager::loadTexturesFromFolder(std::string folder)
 {
+	//check if folder is valid
 	if (!std::filesystem::exists(folder) || !std::filesystem::is_directory(folder))
 	{
 		return;
 	}
 
 	//This whole thing isn't very performant but it only happens once at the start so whatever
-	//should textures be loaded in and out depending on when they're needed? HAHA no of course not, just load them all in at once thats completely reasonable
-
 	//check the folder for texture to add to the array
-	//texture will be saved into AnimatedTexture'es
+	//texture will be saved into the textureMap
 
-	//sprite sheets will be generated with json arrays through adobe animate
+	//sprite sheets are generated with json arrays through adobe animate
+	//any textures with a corrosponding json array are considered to be sprite sheets
 	std::filesystem::path jsonDirectory;
+	//used to confirm if it has a json folder at all or not
 	bool hasJson = false;
 
 	for (auto& entry : std::filesystem::directory_iterator(folder))
@@ -61,13 +65,16 @@ void TextureManager::loadTexturesFromFolder(std::string folder)
 		if (entry.exists())
 		{
 			auto& path = entry.path();
+
 			//we try to find the json subdirectory
 			//it holds all the information about the spritesheets
 			if (std::filesystem::is_directory(entry.status()) && entry.path().stem().string() == std::string("_json"))
 			{
+				//if found, set the directory path
 				jsonDirectory = entry.path();
 				hasJson = true;
 			}
+
 			//if it's not a subdirectory we check if it has the correct extensions
 			//if so it will be loaded onto the gpu
 			else if (checkExtensionTexture(path))
@@ -81,6 +88,7 @@ void TextureManager::loadTexturesFromFolder(std::string folder)
 					delete tex;
 					continue;
 				}
+				//texture name is the stem of the path (for "C:/users/texture.png" the name will be "texture")
 				textureMap.insert(std::pair<std::string, CursedTextureWrapper>(path.stem().string(), { tex, false }));
 			}
 		}
@@ -110,8 +118,6 @@ void TextureManager::loadTexturesFromFolder(std::string folder)
 			(*iterator).second.isAnimated = true;
 			//goodbye old pal
 			delete oldTexture;
-			
-			/*std::ifstream stream = std::ifstream(entry);*/
 
 			std::ifstream ifs(entry.path());
 			json document = json::parse(ifs);
@@ -139,11 +145,11 @@ void TextureManager::loadTexturesFromFolder(std::string folder)
 
 void TextureManager::loadShadersFromFolder(std::string folder)
 {
-	//load fragment shaders
+	// return if invalid directory
 	if (!std::filesystem::exists(folder) || !std::filesystem::is_directory(folder))
-	{
 		return;
-	}
+
+	//load fragment shaders
 	for (auto& entry : std::filesystem::directory_iterator(folder))
 	{
 		if (checkExtensionShader(entry.path()))
@@ -161,9 +167,11 @@ void TextureManager::loadShadersFromFolder(std::string folder)
 
 Sprite* TextureManager::genSprite(std::string name, GameObject* gameObject)
 {
+	//check if name corrosponds to texture
 	auto iterator = textureMap.find(name);
 	if (iterator != textureMap.end())
 	{
+		//if so, generate a sprite from that texture and return it
 		CursedTextureWrapper& textureWrapper = (*iterator).second;
 		if (textureWrapper.isAnimated)
 			return new AnimatedSprite((AnimatedTexture*)textureWrapper.texture, gameObject);
@@ -172,6 +180,7 @@ Sprite* TextureManager::genSprite(std::string name, GameObject* gameObject)
 	}
 	else
 	{
+		//if not, generate a sprite from the missing texture
 		return new AnimatedSprite((AnimatedTexture*)textureMap["missing"].texture, gameObject);
 	}
 	
@@ -199,10 +208,15 @@ Shader* TextureManager::getShader(std::string name)
 
 void TextureManager::unload()
 {
+	//called in destructor
+
+	//since the missing texture is a special case it is deleted seperately
 	UnloadRenderTexture(missingTexture);
 	delete[] ((AnimatedTexture*)textureMap["missing"].texture)->coordinates;
+	delete textureMap["missing"].texture;
 	textureMap.erase("missing");
-
+	
+	//then all other textures are deleted
 	for (auto& textureComplex : textureMap)
 	{
 		UnloadTexture(*textureComplex.second.texture);
@@ -213,6 +227,8 @@ void TextureManager::unload()
 		}
 		delete textureComplex.second.texture;
 	}
+
+	//shaders are also unloaded
 	for (auto& shader : shaderMap)
 	{
 		UnloadShader(shader.second);

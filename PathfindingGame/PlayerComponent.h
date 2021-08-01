@@ -47,12 +47,18 @@ public:
 	void init(Room* scene);
 	void update();
 	void unload();
+	//generate UI, swipe effect and rigidbody
 	void generateAdditional(Room* scene);
 	void fixedUpdate();
 	void onTriggerEnter(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
 	void onTriggerExit(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
+	
+	//called to attack
 	void attack();
+	//called when hit
 	void hit(int damage, float knockback, const Vector2& position);
+
+	//getters and setters
 	void setHealth(int health);
 	int getHealth();
 	void setMaxHealth(int health);
@@ -64,10 +70,13 @@ public:
 	inline float getDyingTimer() { return deathTimer; }
 	inline RenderTexture2D* getDeathTexture() { return &deathTexture;  }
 	inline PlayerUIComponent* getUI() { return UI; }
+	
+	//timy whimy stuff
 	void pause() ;
 	void resume();
 private:
 
+	//Sprite callback stuff
 	int spritePause = ATTACK_HIT;
 	static void dieCallback(void* pointer)
 	{
@@ -76,7 +85,8 @@ private:
 		((PlayerComponent*)pointer)->armSprite->setCallback(nullptr, nullptr);
 	}
 
-	enum PlayerState
+	//Player state machine 
+	enum PlayerState : char
 	{
 		ST_WALKING,
 		ST_ATTACK_START,
@@ -86,34 +96,61 @@ private:
 		ST_STEALTH_LEAVE
 	};
 
-	bool inStealth = false;
-	bool paused = false;
-	bool pending = false;
-	std::vector<RigidBodyComponent*> attackableBees;
-	SmoothCamera* camera;
-	float cooldownTimer = 0;
-	float invincibilityTimer = 0;
-	bool invincible = false;
-	bool maskProtected = false;
-	bool dead = false;
-	float deathTimer = 0;
-	bool hitFlashing = false;
-	PlayerState armState = ST_WALKING;
+	//texture for death circle
 	RenderTexture2D deathTexture;
-	
+
+	//list of all bees in attack distance at any moment
+	std::vector<RigidBodyComponent*> attackableBees;
+
+	//pointer to camera
+	SmoothCamera* camera;
+	//pointer to UI component
+	PlayerUIComponent* UI;
+	//self's rigidbody
+	RigidBodyComponent* rigidBody;
+	//the arm's sprite
+	AnimatedSprite* armSprite;
+	//the arm's object
+	GameObject* armObject;
+	//the swipe effect component
+	SwipeComponent* swipeEffect;
+	//the shader used for flashing white when damaged
+	Shader* additiveShader;
+	//the direction of input
+	Vector2 direction;
+
+	//attack cooldown
+	float cooldownTimer = 0;
+	//used for death effects
+	float deathTimer = 0;
+	//invincibility time
+	float invincibilityTimer = 0;
+	//movement data
 	float speed = MAX_SPEED;
 	float acceleration = MAX_ACCELERATION;
+	//health data
 	int health = MAX_HEALTH;
 	int maxHealth = MAX_HEALTH;
+	//the current floor
 	int floorNumber = 1;
-	PlayerUIComponent* UI;
-	RigidBodyComponent* rigidBody;
 
-	Vector2 direction;
-	AnimatedSprite* armSprite;
-	GameObject* armObject;
+	//current state
+	PlayerState armState = ST_WALKING;
+	//if is invincible
+	bool invincible = false;
+	//if mask is protecting from damage
+	bool maskProtected = false;
+	//if is dead
+	bool dead = false;
+	//if mask is on
+	bool inStealth = false;
+	//if pause menu is open
+	bool paused = false;
+	//if waiting for arm animation
+	bool pending = false;
+	//if flashing from getting hit
+	bool hitFlashing = false;
+	//if sprites are flipped
 	bool flipped = false;
-	SwipeComponent* swipeEffect;
-	Shader* additiveShader;
 };
 

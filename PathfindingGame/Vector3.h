@@ -1,7 +1,7 @@
 #pragma once
 namespace mlib
 {
-
+	//simple vector3 class
 	struct Vector3
 	{
 		float x, y, z;

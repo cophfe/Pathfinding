@@ -50,7 +50,7 @@ void PlayerUIComponent::init(int heartAmount, int currentAmount, Room* scene, Pl
 		if (i > PlayerComponent::MAX_HEALTH - 1)
 		{
 			//extra hearts are coloured blue
-			hearts[i]->getSprite()->setTint({ extraHeartColorDifference ,extraHeartColorDifference , 0xFF, 0xFF });
+			hearts[i]->getSprite()->setTint({ extraHeartColorDifference ,extraHeartColorDifference * 2 , 0xFF, 0xFF });
 		}
 	}
 	//Generate minimap
@@ -64,6 +64,7 @@ void PlayerUIComponent::update()
 {
 	if (player->isDying())
 	{
+		//if is dying make a circle close around player
 		float timer = (player->getDyingTimer() - 0.5f) / 3;
 		
 		if (timer < 1 && timer > 0)
@@ -95,6 +96,7 @@ void PlayerUIComponent::update()
 	}
 	else if (IsKeyDown(KEY_ESCAPE))
 	{
+		//if pressed escape when not dying, set pause state
 		switch (menuState)
 		{
 		case OPEN:
@@ -110,19 +112,25 @@ void PlayerUIComponent::update()
 		}
 	}
 
+	//transition between open and close 
 	switch (menuState)
 	{
 	case OPENING:
 		{
+			//menu eases to position
 			menuTimer += Game::getUnscaledDeltaTime() / menuTime;
 			float x = 1 - (1- menuTimer) * (1 - menuTimer) * (1 - menuTimer);
 
 			menu->getTransform()->setPosition({ menu->getTransform()->getPosition().x, -GetScreenHeight() + x * GetScreenHeight() * 1.5f });
+
+			//death texture is reused to fade the background here
 			BeginTextureMode(*deathTexture);
 			ClearBackground({ 0,0,0, (unsigned char)(0x80 * x) });
 			EndTextureMode();
+
 			if (menuTimer >= 1)
 			{
+				//when ease has ended, set OPEN and reset variables
 				menu->getTransform()->setPosition({ menu->getTransform()->getPosition().x, GetScreenHeight() / 2.0f});
 				menuState = OPEN;
 				menuTimer = 0;
@@ -134,16 +142,19 @@ void PlayerUIComponent::update()
 		break;
 	case CLOSING:
 		{
+			//menu eases to position
 			menuTimer += Game::getUnscaledDeltaTime() / menuTime;
 			float x = menuTimer * menuTimer * menuTimer;
 			menu->getTransform()->setPosition({ menu->getTransform()->getPosition().x, GetScreenHeight() / 2 - x * GetScreenHeight() * 1.5f });
 			
+			//death texture is reused to fade the background 
 			BeginTextureMode(*deathTexture);
 			ClearBackground({ 0,0,0, (unsigned char)(0x80 * (1- x)) });
 			EndTextureMode();
 
 			if (menuTimer >= 1)
 			{
+				//when ease has ended, set CLOSED and reset variables
 				menu->getTransform()->setPosition({ (float)menu->getTransform()->getPosition().x, -(float)GetScreenHeight() });
 				menuState = CLOSED;
 				menu->disableAndHide();
@@ -165,6 +176,7 @@ void PlayerUIComponent::unload()
 
 void PlayerUIComponent::hit(int number)
 {
+	//make hearts do death animation
 	while (number > 0 && heartsLeft > 0)
 	{
 		auto sprite = (AnimatedSprite*)hearts[heartsLeft - 1]->getSprite();
@@ -178,6 +190,7 @@ void PlayerUIComponent::hit(int number)
 
 void PlayerUIComponent::heal(int number)
 {
+	//make hearts do heal animation
 	while (number > 0 && heartsLeft < heartsTotal)
 	{
 		auto sprite = (AnimatedSprite*)hearts[heartsLeft]->getSprite();
@@ -192,12 +205,13 @@ void PlayerUIComponent::heal(int number)
 
 void PlayerUIComponent::addHeart(int number)
 {
+	//add an extra heart (extra hearts are bluer)
 	Vector2 startPosition = { heartPadding, heartPadding };
 	int offset = ((AnimatedSprite*)hearts[0]->getSprite())->getDestinationRectangle()->width;
 	while (number > 0)
 	{
 		hearts.push_back(new GameObject(gameObject, "heart", true, { startPosition.x + (heartBetween + offset) * (hearts.size()), startPosition.y }, 0, heartScale));
-		hearts[hearts.size() - 1]->getSprite()->setTint({ extraHeartColorDifference ,extraHeartColorDifference , 0xFF, 0xFF });
+		hearts[hearts.size() - 1]->getSprite()->setTint({ extraHeartColorDifference ,extraHeartColorDifference*2 , 0xFF, 0xFF });
 		heartsTotal++;
 		number--;
 	}

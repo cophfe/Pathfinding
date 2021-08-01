@@ -3,6 +3,7 @@
 
 CollisionManager::CollisionManager() : world(b2World(b2Vec2(0,0)))
 {
+	//add a contact listener so contact events can be reacted to
 	contactListener = new ContactListener;
 	world.SetContactListener(contactListener);
 #ifdef DRAW_DEBUG

@@ -8,6 +8,7 @@
 class Room;
 class RigidBodyComponent;
 
+//the door between levels
 class DoorComponent :
     public Component
 {
@@ -22,22 +23,26 @@ public:
 	void init(Room* scene, char doorType, bool openByDefault, AgentDataComponent* agentComponent, char enteredFrom);
 	void update();
 	void start();
+
 	//has trigger collider
 	virtual void onTriggerEnter(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
 	virtual void onTriggerExit(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture);
 
 private:
+	//sprite callbacks
 	static void shutCallback(void* pointer)	{	((AnimatedSprite*)(pointer))->pauseAt(SHUT_STATIC);   }
 	static void openCallback(void* pointer)	{	((AnimatedSprite*)(pointer))->pauseAt(OPEN_STATIC);   }
+	
+	//get what door type this is
 	char getDoorType();
 
-	char linkedDoor;
-	char playerEnteredFrom;
-	float timer = 0.5f;
 	Room* currentRoom;
-	Vector2 direction;
 	AgentDataComponent* blackboard;
 	RigidBodyComponent* rb;
+	Vector2 direction;
+	
+	char linkedDoor;
+	char playerEnteredFrom;
 	bool open = false;
 	bool shouldSwitchScene = false;
 };

@@ -5,6 +5,11 @@
 #include "SequenceBehaviour.h"
 #include "Game.h"
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//		THIS HEADER INCLUDES SEMI-GENERIC BEHAVIOURS FOR ANY BEHAVIOUR TREE 
+//		(even though only one type of behaviour tree is ever used)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 //plays an animation and pauses at the end
 class AnimationBehaviour : public Behaviour
 {
@@ -15,9 +20,12 @@ public:
 
 	virtual BehaviourResult execute(AgentComponent* agent)
 	{
+		
 		switch (status)
 		{
-		case BehaviourResult::FAILURE: //this only happens once
+		//this only happens once
+		//sets up stuff for the animation to start playing and call the callback at the end of animation loop
+		case BehaviourResult::FAILURE: 
 			{
 				sprite->setSettings(startFrame, endFrame, startFrame);
 				sprite->play();
@@ -35,6 +43,7 @@ public:
 		return status;
 	};
 
+	//called at end of animation loop
 	static void endOfAnimationCallback(void* instancePointer)
 	{
 		//stop looping
@@ -45,6 +54,7 @@ public:
 		//delete callback
 		self->sprite->setCallback(nullptr, nullptr);
 	}
+
 protected:
 	BehaviourResult status;
 	AnimatedSprite* sprite; int startFrame; int endFrame;
@@ -88,11 +98,11 @@ public:
 	};
 
 protected:
-	float timer;
 	const float time;
+	float timer;
 };
 
-//always fails
+//always fails (can be used to scam behaviour tree logic)
 class FailBehaviour : public Behaviour
 {
 public:
@@ -102,7 +112,7 @@ public:
 	};
 };
 
-//always succeeds
+//always succeeds (can also be used to scam behaviour tree logic)
 class SucceedBehaviour : public Behaviour
 {
 public:
@@ -128,8 +138,8 @@ public:
 	};
 
 protected:
-	float dist;
 	const Vector2& pos;
+	float dist;
 };
 
 //inverts SUCCESS and FAILURE of it's child behaviour, keeps RUNNING as RUNNING
@@ -162,6 +172,7 @@ public:
 	{
 		delete behaviour;
 	}
+
 protected:
 	Behaviour* behaviour;
 };

@@ -1,8 +1,10 @@
 #pragma once
 #include "NecessaryHeaders.h"
 
+//info node containing pathfinding data
 struct PathfindingNode
 {
+	//type data is linked to cost
 	enum class Type : char
 	{
 		BLOCKED = 0,
@@ -11,14 +13,15 @@ struct PathfindingNode
 		HARD = 20
 	};
 
-	//the game does not support nodes with a type per direction
-	//each direction has the same type
-	Type type;
+	
+	//contains all the data necessary for astar
 	PathfindingNode* previous;
 	PathfindingNode* neighbors[6];
+	Vector2 position;
 	int fScore;
 	int gScore;
 	int indexX, indexY;
-	Vector2 position;
-
+	//the game does not support nodes with a cost per direction
+	//each direction has the same type
+	Type type;
 };

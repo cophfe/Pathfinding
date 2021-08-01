@@ -8,6 +8,7 @@ class Room;
 class PlayerComponent;
 
 //generates all player UI
+//including hearts,minimap and death circle
 class PlayerUIComponent :
     public Component
 {
@@ -36,8 +37,7 @@ public:
 	void addHeart(int number);
 private:
 	
-	
-
+	//button callbacks (called when button is released)
 	static void exitClick(ButtonComponent* component, void* ptr)
 	{
 		auto self = (PlayerUIComponent*)ptr;
@@ -51,6 +51,7 @@ private:
 		self->menuTimer = 0;
 	}
 
+	//Sprite callbacks (called at end of animation loop)
 	static void dieCallback(void* ptr)
 	{
 		auto spriteData = (AnimatedSprite*)ptr;
@@ -65,6 +66,7 @@ private:
 		spriteData->setCallback(nullptr, nullptr);
 	}
 
+	//state of menu
 	enum : char
 	{
 		OPENING,
@@ -72,18 +74,20 @@ private:
 		CLOSING,
 		CLOSED
 	};
-	char menuState = CLOSED;
-	float menuTimer = 0;
-	static constexpr float menuTime = 0.5f;
 
 	std::vector<GameObject*> hearts;
 	GameObject* miniMap;
 	GameObject* menu;
-	int heartsTotal;
-	int heartsLeft;
 	RenderTexture2D* deathTexture;
 	PlayerComponent* player;
 	Room* room;
+	
+	int heartsTotal;
+	int heartsLeft;
+
+	static constexpr float menuTime = 0.5f;
+	float menuTimer = 0;
+	char menuState = CLOSED;
 };
 
 

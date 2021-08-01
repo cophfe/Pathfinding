@@ -4,6 +4,7 @@
 void PathfinderComponent::init(Scene* scene, int pathWidth, int pathHeight, bool generateWalls)
 {
 	this->generateWalls = generateWalls;
+	//initiate pathfinder
 
 	pathfinder = new Pathfinder(pathWidth, pathHeight, HEX_OFFSET,
 		{ -pathWidth * HEX_OFFSET * 0.5f, -pathHeight * HEX_OFFSET * 0.5f });

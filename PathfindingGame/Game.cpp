@@ -37,6 +37,7 @@ void Game::init(GameProperties* properties )
 	ClearBackground(BLACK);
 	DrawText("Loading...", properties->windowWidth/2 - 170, properties->windowHeight / 2 - 40, 80, RAYWHITE);
 	EndDrawing();
+
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   Initialize TextureManager
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,18 +48,18 @@ void Game::init(GameProperties* properties )
 	//	   Generate Rooms
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	roomManager = new RoomManager(time(0));
-	
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// 	   Create Menu Scene
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	scene = createMenuScene();
-
+	
+	//	Start
 	scene->start();
 }
 
 void Game::gameLoop()
 {
-    while (!checkWindowShouldClose())    // Detect window close button or ESC key
+    while (!checkWindowShouldClose())    // Detect window close button or close key
     {
 		std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
@@ -76,8 +77,12 @@ void Game::gameLoop()
 		std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 		deltaTime = (float)std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count();
 
-		//this happens independant of deltaTime
+		if (deltaTime > maxDeltaTime)
+		{
+			deltaTime = maxDeltaTime;
+		}
 		//have to wait until end of gameLoop to delete scene
+		//this happens independant of deltaTime
 		if (nextScene != nullptr)
 		{
 			scene->beforeDelete(nextScene);
@@ -120,17 +125,20 @@ TextureManager* Game::getTextureManager()
 
 Game& Game::getInstance()
 {
+	//constructor is only called once
 	static Game instance = Game(); 
 	return instance;
 }
 
 Scene* Game::createMenuScene()
 {
+	//create scene
 	Scene* menuScene = new Scene();
 	SceneProperties sceneProperties;
 	sceneProperties.randomSeed = time(0);
 	menuScene->load(&sceneProperties);
 	menuScene->setBackground(RAYWHITE);
+	//make escape key exit game
 	SetExitKey(KEY_ESCAPE);
 
 	//Create buttons
@@ -147,7 +155,10 @@ Scene* Game::createMenuScene()
 			game.switchScene(rM->createFirstRoom());
 		}
 		else
+		{
+			rM->generateMap();
 			game.switchScene(rM->createFirstRoom());
+		}
 
 	};
 	auto exit = (new GameObject(menuScene, "sideButton", true, { (buttonWidth / 2 - 10) * 0.6f , (float)GetScreenHeight() / 2 + 200 }, 0, 0.6f, SORTING::UI))->addComponent<ButtonComponent>();
@@ -157,6 +168,7 @@ Scene* Game::createMenuScene()
 		Game::getInstance().endGameLoop();
 	};
 
+	//create moving tiled background
 	menuScene->addGameObject(new GameObject(new CustomRenderSprite([](void* ptr)
 		{
 			static Texture2D* backgroundTexture = Game::getInstance().getTextureManager()->getTextureInfo("background");
@@ -180,6 +192,8 @@ Scene* Game::createDeathScene(int floorCount)
 	sceneProperties.randomSeed = time(0);
 	deathScene->load(&sceneProperties);
 
+	//Create death ui object
+	//it takes care of all ui
 	(new GameObject(deathScene, "pauseMenu", true, { GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f }, 0, 1, SORTING::UI))->addComponent<DeathUIComponent>()->init(floorCount, deathScene);
 
 	return deathScene;

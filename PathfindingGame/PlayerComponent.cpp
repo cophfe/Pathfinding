@@ -30,10 +30,13 @@ void PlayerComponent::init(Room* scene)
 
 void PlayerComponent::update()
 {
+	//if pause menu is open do not attempt to do anything
 	if (paused)
 		return;
+
 	float dT = Game::getDeltaTime();
 
+	//if health is zero, do death effects (death timer used by UI component)
 	if (health <= 0) 
 	{
 		deathTimer += Game::getUnscaledDeltaTime();
@@ -42,20 +45,10 @@ void PlayerComponent::update()
 			dead = true;
 			Game::getInstance().setTimeScale(0.0f);
 		}
-		if (deathTimer > 0.5f)
-		{
-			if (transform->getRotation() >= PI / 2)
-			{
-				
-			}
-			else
-			{
-				transform->addRotation(dT);
-			}
-		}
 		return;
 	}
 
+	//clear the input direction every frame
 	direction = { 0 };
 
 	//input
@@ -75,9 +68,10 @@ void PlayerComponent::update()
 	{
 		direction.y -= 1;
 	}
-
+	//if direction is != 0
 	if (direction.x != 0 || direction.y != 0)
 	{
+		//if need to flip, flip
 		if (flipped == direction.x > 0 && direction.x != 0)
 		{
 			gameObject->getSprite()->flip();
@@ -85,11 +79,15 @@ void PlayerComponent::update()
 			armObject->getTransform()->flipPositionX();
 			flipped = !flipped;
 		}
+
+		//play walking animation
 		((AnimatedSprite*)gameObject->getSprite())->play();
+		//normalise direction
 		direction.normalize();
 	}
 	else
 	{
+		//if not moving, stop walk animation
 		((AnimatedSprite*)gameObject->getSprite())->pauseAt(0);
 	}
 
@@ -97,23 +95,25 @@ void PlayerComponent::update()
 	if (invincible)
 	{
 		invincibilityTimer += Game::getDeltaTime();
-				
+
+		//do white flash effect here
 		if (invincibilityTimer <= PI/(2 * HIT_TINT_SPEED))
 		{
 			float invincibilityTintAmount = cosf(invincibilityTimer * HIT_TINT_SPEED);
 			unsigned char invincibilityTint = cosf(invincibilityTimer * HIT_TINT_SPEED) * 0xFF;
-			//SetShaderValue(*shader, shaderTintLocation, &invincibilityTintAmount, SHADER_UNIFORM_FLOAT);
 			armSprite->setTint({ invincibilityTint,invincibilityTint,invincibilityTint,0xFF });
 			gameObject->getSprite()->setTint({ invincibilityTint,invincibilityTint,invincibilityTint,0xFF });
 		}
 		else
 		{
+			//stop white flash
 			if (hitFlashing)
 			{
 				hitFlashing = false;
 				armSprite->clearShader();
 				gameObject->getSprite()->clearShader();
 			}
+			//do invincibility alpha wobble here
 			unsigned char invincibilityAlpha = 0xCF + copysignf(1.0f, sinf(invincibilityTimer * INVINCIBILITY_ALPHA_SPEED)) * 0x30;
 			armSprite->setTint({ 0xFF,0xFF,0xFF,invincibilityAlpha });
 			gameObject->getSprite()->setTint({ 0xFF,0xFF,0xFF,invincibilityAlpha });
@@ -121,8 +121,11 @@ void PlayerComponent::update()
 
 		if (invincibilityTimer >= INVINCIBILITY_TIME)
 		{
+			//at the end, stop invincibility and clear variabales
 			invincible = false;
 			invincibilityTimer = 0;
+			armSprite->clearShader();
+			gameObject->getSprite()->clearShader();
 			gameObject->getSprite()->setTint({ 0xFF,0xFF,0xFF,0xFF });
 			armSprite->setTint({ 0xFF,0xFF,0xFF,0xFF });
 		}
@@ -132,6 +135,7 @@ void PlayerComponent::update()
 	{
 		invincibilityTimer += Game::getDeltaTime();
 
+		//do flashing
 		if (invincibilityTimer <= PI / (2 * HIT_TINT_SPEED))
 		{
 			float invincibilityTintAmount = cosf(invincibilityTimer * HIT_TINT_SPEED);
@@ -145,14 +149,11 @@ void PlayerComponent::update()
 		{
 			maskProtected = false;
 			invincibilityTimer = 0;
+			armSprite->clearShader();
+			gameObject->getSprite()->clearShader();
+			gameObject->getSprite()->setTint({ 0xFF,0xFF,0xFF,0xFF });
+			armSprite->setTint({ 0xFF,0xFF,0xFF,0xFF });
 		}
-	}
-	else
-	{
-		armSprite->clearShader();
-		gameObject->getSprite()->clearShader();
-		gameObject->getSprite()->setTint({ 0xFF,0xFF,0xFF,0xFF });
-		armSprite->setTint({ 0xFF,0xFF,0xFF,0xFF });
 	}
 	
 	//state machine here
@@ -162,11 +163,14 @@ void PlayerComponent::update()
 		switch (armState)
 		{
 		case ST_WALKING:
+			//if walking align arm sprite animation with walking animation
 			armSprite->setCurrentFrame(((AnimatedSprite*)gameObject->getSprite())->getCurrentFrame());
 			break;
 		case ST_ATTACK_START:
+			//is the case in the middle of attack animation.
 			if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT))
 			{
+				//if mouse button is not down in this state, attack
 				armState = ST_ATTACK_END;
 				pending = true;
 				armSprite->setSettings(ATTACK_HIT + 1, ATTACK_END, ATTACK_HIT + 1);
@@ -178,10 +182,12 @@ void PlayerComponent::update()
 			}
 			break;
 		case ST_ATTACK_END:
+			//set animation
 			armState = ST_WALKING;
 			armSprite->setSettings(WALK_START, WALK_END, WALK_START);
 			break;
 		case ST_STEALTH_ENTER:
+			//is the case at start of stealth, set variables to stealth
 			armState = ST_STEALTH;
 			armSprite->setSettings(STEALTH_WALK_START, STEALTH_WALK_END, STEALTH_WALK_START);
 			armSprite->play();
@@ -189,10 +195,12 @@ void PlayerComponent::update()
 			speed = MAX_SPEED * STEALTH_ACCELERATION_MULTIPLIER;
 			break;
 		case ST_STEALTH:
+			//if in stealth align arm sprite animation with walking animation
 			inStealth = true;
 			armSprite->setCurrentFrame(((AnimatedSprite*)gameObject->getSprite())->getCurrentFrame() + STEALTH_WALK_START - WALK_START);
 			break;
 		case ST_STEALTH_LEAVE:
+			//is the case at end of stealth leave, set variables to normal
 			speed = MAX_SPEED;
 			inStealth = false;
 			acceleration = MAX_ACCELERATION;
@@ -204,6 +212,7 @@ void PlayerComponent::update()
 
 		if (armState == ST_WALKING && cooldownTimer <= 0 && IsMouseButtonDown(MOUSE_BUTTON_LEFT))
 		{
+			//if can attack, initiate attack
 			pending = true;
 			armState = ST_ATTACK_START;
 			armSprite->setSettings(ATTACK_START, ATTACK_HIT, ATTACK_START);
@@ -215,6 +224,7 @@ void PlayerComponent::update()
 		{
 			if (armState == ST_WALKING)
 			{
+				//enter stealth
 				pending = true;
 				armState = ST_STEALTH_ENTER;
 				armSprite->setSettings(STEALTH_SWITCH_START, STEALTH_SWITCH_END, STEALTH_SWITCH_START);
@@ -224,6 +234,7 @@ void PlayerComponent::update()
 			}
 			else if (armState == ST_STEALTH)
 			{
+				//exit stealth
 				pending = true;
 				armState = ST_STEALTH_LEAVE;
 				armSprite->setSettings(UNSTEALTH_SWITCH_START, UNSTEALTH_SWITCH_END, UNSTEALTH_SWITCH_START);
@@ -231,7 +242,6 @@ void PlayerComponent::update()
 				armSprite->setCallback(dieCallback, this);
 				spritePause = UNSTEALTH_SWITCH_END;
 			}
-			
 		}
 	}
 }
@@ -265,7 +275,7 @@ void PlayerComponent::generateAdditional(Room* scene)
 	rigidBody->addFixture(fDef);
 	//target camera to player
 	camera = scene->getCamera();
-	camera->Target(transform);
+	camera->target(transform);
 	//create attack swipe object
 	swipeEffect = (new GameObject(scene, "swipe", false))->addComponent<SwipeComponent>();
 	swipeEffect->init();
@@ -279,6 +289,7 @@ void PlayerComponent::generateAdditional(Room* scene)
 
 void PlayerComponent::fixedUpdate()
 {
+	//move velocity toward direction
 	Vector2 velocity = (direction * speed - rigidBody->getVelocity());
 	if (velocity.magnitudeSquared() > acceleration * acceleration * PHYSICS_TIME_STEP * PHYSICS_TIME_STEP)
 		velocity = velocity.normalised() * acceleration * PHYSICS_TIME_STEP;
@@ -293,6 +304,7 @@ void PlayerComponent::onTriggerEnter(RigidBodyComponent* collisionBody, b2Fixtur
 {
 	if (!collisionFixture->IsSensor() && collisionFixture->GetFilterData().categoryBits == RigidBodyComponent::ENEMY)
 	{
+		//add any colliding bees to attack list
 		attackableBees.push_back(collisionBody);
 	}
 }
@@ -301,6 +313,7 @@ void PlayerComponent::onTriggerExit(RigidBodyComponent* collisionBody, b2Fixture
 {
 	if (!collisionFixture->IsSensor() && collisionFixture->GetFilterData().categoryBits == RigidBodyComponent::ENEMY)
 	{
+		//if in bee list, delete it from list
 		auto beeIter = std::find(attackableBees.begin(), attackableBees.end(), collisionBody);
 		if (beeIter != attackableBees.end())
 			attackableBees.erase(beeIter);
@@ -309,7 +322,7 @@ void PlayerComponent::onTriggerExit(RigidBodyComponent* collisionBody, b2Fixture
 
 void PlayerComponent::attack()
 {
-	Vector2 mousePos = camera->GetCameraMousePosition();
+	Vector2 mousePos = camera->getCameraMousePosition();
 	Vector2 startPos = transform->getPosition() + Vector2{0, -gameObject->getSprite()->getDrawOffset()};
 	Vector2 direction = (mousePos - startPos).normalised();
 	swipeEffect->startEffect(direction * (ATTACK_DIST/5) + startPos, direction, rigidBody->getVelocity());
@@ -339,10 +352,11 @@ void PlayerComponent::attack()
 
 void PlayerComponent::hit(int damage, float knockback, const Vector2& position)
 {
+	//if invincible or dead cancel hiot
 	if (invincible || health <= 0)
-	{
 		return;
-	}
+
+	//if health is at one, this will kill the character. therefore do not do hit flash effect as it will make the character white for the entire death transition
 	if (health != 1)
 	{
 		armSprite->setShader(additiveShader);
@@ -350,12 +364,14 @@ void PlayerComponent::hit(int damage, float knockback, const Vector2& position)
 	}
 
 	// if wearing mask you have a 50% chance of not getting damaged
-	if (inStealth && rand() * 2 / RAND_MAX)
+	if (inStealth && rand() % 2 == 0)
 	{
 		maskProtected = true;
 		invincibilityTimer = 0;
 		return;
 	}
+
+	//take damage and become invincible temporarily
 	health -= damage;
 	UI->hit(damage);
 	Vector2 knockbackVector = (position - transform->getPosition()).normalised() * knockback;

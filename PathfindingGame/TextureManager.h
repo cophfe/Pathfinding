@@ -38,20 +38,19 @@ public:
 	void unload();
 
 private:
-	//this struct is a 'temporary' fix to a problem that was caused by my heresy
-	// I inherited from Texture2D (the texture class from raylib.h) for an animated texture class
-	// however since typeid doesn't work on polymorphic classes with no virtual functions,
-	// and adding a virtual function to raylib's texture class is off the table (partly because it seeems a bad idea, mostly because I tried and it broke everything)
-	// I am stuck with no way to tell the difference heartBetween an AnimatedTexture and a Texture2D
-	// except, of course, a wrapper (and some other things but this was easiest).
+
+	//used to tell if is animated or not
 	struct CursedTextureWrapper
 	{
 		Texture2D* texture;
 		bool isAnimated;
 	};
 	
-	std::map<std::string, CursedTextureWrapper> textureMap;
-	std::map<std::string, Shader> shaderMap;
+	//holds the missing texture
 	RenderTexture2D missingTexture;
+	//holds all textures (except for render textures)
+	std::map<std::string, CursedTextureWrapper> textureMap;
+	//holds all shaders
+	std::map<std::string, Shader> shaderMap;
 };
 

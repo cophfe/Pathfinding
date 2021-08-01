@@ -6,7 +6,6 @@
 void Scene::load(SceneProperties* properties)
 {
 	camera = new SmoothCamera({ 0,0 }, 0, 1 , { 0 }, 10);
-	GameObject::resetIdCounter();
 
 	collisionManager = new CollisionManager();
 	backgroundColor = BLACK;
@@ -16,7 +15,7 @@ void Scene::draw()
 {
     ClearBackground(backgroundColor);
 
-	camera->StartCamera();
+	camera->startCamera();
 
 
 	for (int i = 1; i < (int)SORTING::COUNT - 1; ++i)
@@ -42,7 +41,7 @@ void Scene::draw()
 #endif // DRAW_DEBUG
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	
-	camera->EndCamera();
+	camera->endCamera();
 	for (auto gameObject : sortingLayers[(int)SORTING::UI])
 	{
 		gameObject->draw();
@@ -54,9 +53,6 @@ void Scene::draw()
 
 void Scene::update()
 {
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	// 	   REGULAR UPDATE
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	for (int i = 0; i < (int)SORTING::COUNT; i++)
 	{
 		for (auto gameObject : sortingLayers[i])
@@ -68,10 +64,11 @@ void Scene::update()
 
 void Scene::fixedUpdate()
 {
+	//called every physics time step
 	collisionTimer += Game::getDeltaTime();
 	while (collisionTimer >= PHYSICS_TIME_STEP)
 	{
-		camera->UpdateCamera();
+		camera->updateCamera();
 		collisionManager->update();
 		collisionTimer -= PHYSICS_TIME_STEP;
 
@@ -124,7 +121,7 @@ Scene::~Scene()
 
 void Scene::setCameraTarget(Transform* transform)
 {
-	camera->Target(transform);
+	camera->target(transform);
 }
 
 GameObject* Scene::addGameObject(GameObject* object, SORTING layer)

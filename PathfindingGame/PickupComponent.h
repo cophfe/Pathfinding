@@ -4,6 +4,7 @@
 #include "PlayerComponent.h"
 #include "RigidbodyComponent.h"
 
+//the health pickup component
 class PickupComponent : public Component
 {
 public:

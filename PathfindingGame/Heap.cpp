@@ -12,10 +12,11 @@ PathHeap::PathHeap(int capacity)
 
 void PathHeap::push(PathfindingNode* value)
 {
+	//push value onto back of vector
 	int currentIndex = data.size();
 	data.push_back(value);
 	int parentIndex = getParentIndex(currentIndex);
-
+	// then move it up the array until it's in the correct position
 	while (data[currentIndex]->fScore < data[parentIndex]->fScore)
 	{
 		auto temp = data[currentIndex];
@@ -34,6 +35,7 @@ PathfindingNode* PathHeap::pop()
 
 	PathfindingNode* result = data[0];
 
+	//switch smallest value with last value
 	data[0] = data[data.size() - 1];
 
 	int currentIndex = 0;
@@ -43,6 +45,7 @@ PathfindingNode* PathHeap::pop()
 	int smallestIndex = data[child1Index]->fScore < data[child2Index]->fScore ?
 		child1Index : child2Index;
 
+	//then move child down until it is in the correct position, making the heap correctly ordered
 	while (data[currentIndex]->fScore > data[smallestIndex]->fScore)
 	{
 		auto temp = data[smallestIndex];
@@ -56,6 +59,10 @@ PathfindingNode* PathHeap::pop()
 		smallestIndex = data[child1Index]->fScore < data[child2Index]->fScore ?
 			child1Index : child2Index;
 	}
+
+	//then delete the last value and return the result
+	//this could be an error idk, seems as if value should be popped before correcting 
+	//but don't have time to check
 	data.pop_back();
 	return result;
 }
@@ -82,14 +89,11 @@ void PathHeap::updateNode(PathfindingNode* value)
 
 	int parentIndex = getParentIndex(currentIndex);
 
+	//move value up the chain until it is at correct position
 	while (parentIndex >= 0 && data[currentIndex]->fScore < data[parentIndex]->fScore)
 	{
 		data[currentIndex] = data[parentIndex];
 		data[parentIndex] = value;
-
-		/*auto temp = data[currentIndex];
-		data[currentIndex] = data[parentIndex];
-		data[parentIndex] = temp;*/
 
 		currentIndex = parentIndex;
 		parentIndex = getParentIndex(currentIndex);
@@ -105,15 +109,17 @@ bool PathHeap::contains(PathfindingNode* value)
 bool PathHeap::confirmOrdered()
 {
 	PathHeap copy = *this; //copy heap
+	//get the smallest value
 	PathfindingNode* min = copy.pop();
+	//check if any other values are smaller
 	while (copy.size() > 0)
 	{
-
 		if ((copy.pop())->fScore < min->fScore)
 		{
 			return false;
 		}
 	}
+	//if not, heap is probably ordered maybe
 	return true;
 
 }
@@ -129,10 +135,8 @@ void PathHeap::clear()
 }
 
 int PathHeap::getParentIndex(int index)
-{
-	//if (index < data.size())
+{	
 	return (index - 1) / 2;
-	//return -1;
 }
 
 int PathHeap::getChild1Index(int index)

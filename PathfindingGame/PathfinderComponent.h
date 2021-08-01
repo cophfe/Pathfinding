@@ -5,12 +5,14 @@
 
 class Scene;
 
+//holds the pathfinder
 class PathfinderComponent :
     public Component
 {
 public:
+	//pathfinder settings
 	static constexpr const char* BACKGROUND_TILING = "background";
-	static constexpr float BACKGROUND_SCALE = 1.436781609195402f * 1.2;
+	static constexpr float BACKGROUND_SCALE = 1.436781609195402f * 1.2f;
 	static constexpr Color BACKGROUND_COLOR = Color{ 0x96,0x6C,0x23,0xFF };
 	static constexpr float HEX_OFFSET = 300;
 	static constexpr int DEFAULT_PATH_WIDTH = 11;
@@ -25,8 +27,9 @@ public:
 
 private:
 	Pathfinder* pathfinder;
-	bool generateWalls;
+	//bounds physics body
 	b2Body* bounds;
-
+	bool generateWalls;
+	
 };
 

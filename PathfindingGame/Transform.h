@@ -4,6 +4,7 @@
 
 class GameObject;
 
+//holds all of the position, rotation, scaling and object hirarchy data
 class Transform
 {
 public:
@@ -28,7 +29,9 @@ public:
 
 	Matrix3& getGlobalTransform();
 	Matrix3& getLocalTransform();
+	//needs to be called whenever local transform changes
 	void updateLocalTransform();
+	//needs to be called whenever global transform changes
 	void updateGlobalTransform();
 
 	void flipPositionX();
@@ -43,20 +46,20 @@ public:
 private:
 	void setParent(Transform* parent);
 
-	Vector2 position;
-	float rotation;
-	float scale;
-
-	Vector2 globalPosition;
-	float globalRotation;
-	float globalScale;
-	
 	Matrix3 globalTransform;
 	Matrix3 localTransform;
-
-	Transform* parent;
-	std::forward_list<Transform*> children;
 	
+	std::forward_list<Transform*> children;
+	Transform* parent;
 	GameObject* gameObject;
+	
+	//global variables are stored seperately, not calculated every time they are accessed
+	//idk if this was a wise decision, but it sure was a decision
+	Vector2 globalPosition;
+	Vector2 position;
+	float globalRotation;
+	float rotation;
+	float globalScale;
+	float scale;
 };
 

@@ -11,7 +11,7 @@ SmoothCamera::SmoothCamera(Vector2 initialPosition, float initialRotation, float
 	this->offset = Vector2(GetScreenWidth() / 2 + offset.x, GetScreenHeight() / 2 + offset.y);
 	camera = Camera2D{ initialPosition + Vector2(GetScreenWidth() / 2 + offset.x, GetScreenHeight() / 2 + offset.y), initialPosition, initialRotation, initialZoom * CAMERA_SCALE };
 	on = true;
-	target = nullptr;
+	targetTransform = nullptr;
 	this->smoothMultiplier = smoothMultiplier;
 	rotation = initialRotation;
 	camera.offset.x = this->offset.x;
@@ -19,14 +19,16 @@ SmoothCamera::SmoothCamera(Vector2 initialPosition, float initialRotation, float
 	this->on = enabled;
 }
 
-void SmoothCamera::UpdateCamera()
+void SmoothCamera::updateCamera()
 {
-	if (on == false || target == nullptr)
+	if (on == false || targetTransform == nullptr)
 		return;
 
-	auto& pos = target->getGlobalPosition();
+	auto& pos = targetTransform->getGlobalPosition();
 	if (!(camera.target.x == pos.x && camera.target.y == pos.y))
 	{
+		//move camera target toward targetTransform
+		//camera is updated on fixed time step so fixed delta time (using it just in case I change it at some point)
 		camera.target.x += (pos.x - camera.target.x) * PHYSICS_TIME_STEP * smoothMultiplier;
 		camera.target.y += (pos.y - camera.target.y) * PHYSICS_TIME_STEP * smoothMultiplier;
 		
@@ -35,12 +37,12 @@ void SmoothCamera::UpdateCamera()
 	}
 }
 
-void SmoothCamera::StartCamera()
+void SmoothCamera::startCamera()
 {
 	BeginMode2D(camera);
 }
 
-void SmoothCamera::EndCamera()
+void SmoothCamera::endCamera()
 {
 	EndMode2D();
 }
@@ -55,6 +57,7 @@ void SmoothCamera::setBounds(Rectangle rect)
 
 void SmoothCamera::restrictToBounds()
 {
+	//simple clamping
 	if (hasBoundsX)
 	{
 		if (camera.target.x > boundsBottomRight.x)
@@ -72,9 +75,9 @@ void SmoothCamera::restrictToBounds()
 	}
 }
 
-void SmoothCamera::Target(Transform* transform)
+void SmoothCamera::target(Transform* transform)
 {
-	target = transform;
+	targetTransform = transform;
 }
 
 void SmoothCamera::setPosition(Vector2 position)
@@ -83,7 +86,7 @@ void SmoothCamera::setPosition(Vector2 position)
 	camera.target.y = (position.y - camera.target.y);
 }
 
-Vector2 SmoothCamera::GetCameraMousePosition()
+Vector2 SmoothCamera::getCameraMousePosition()
 {
 	RLVector2 mousePos = GetMousePosition();
 	return { (mousePos.x - camera.offset.x) / camera.zoom + camera.target.x, (mousePos.y - camera.offset.y) / camera.zoom + camera.target.y };

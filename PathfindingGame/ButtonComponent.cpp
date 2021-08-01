@@ -3,6 +3,7 @@
 
 void ButtonComponent::init(std::string writing, Color textDrawColor, int padding, int fontSize)
 {
+	//set data
 	this->fontSize = fontSize;
 	xPadding = padding;
 	this->textDrawColor = textDrawColor;
@@ -17,6 +18,8 @@ void ButtonComponent::init(std::string writing, Color textDrawColor, int padding
 
 void ButtonComponent::update()
 {
+	//this function just decides if any callback functions should be called
+
 	Vector2 mousePosition = Vector2::fromRL(GetMousePosition());
 	
 	bounds = *gameObject->getSprite()->getDestinationRectangle();

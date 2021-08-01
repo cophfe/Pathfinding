@@ -2,7 +2,7 @@
 
 BehaviourResult SelectorBehaviour::execute(AgentComponent* agent)
 {
-
+	//starts from pending child
 	for (int i = pendingChildIndex; i < children.size(); i++)
 	{
 		switch (children[i]->execute(agent))
@@ -15,6 +15,7 @@ BehaviourResult SelectorBehaviour::execute(AgentComponent* agent)
 			break;
 		case BehaviourResult::RUNNING:
 			{
+				//if child is running, evaluate that child until it returns success
 				pendingChildIndex = i;
 				return BehaviourResult::RUNNING;
 			}

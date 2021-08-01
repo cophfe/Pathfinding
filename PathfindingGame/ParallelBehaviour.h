@@ -7,6 +7,8 @@ class ParallelBehaviour :
 {
 public:
 	virtual BehaviourResult execute(AgentComponent* agent);
+
+	//as the isDone array is now added and has to be the same size as the child array, custom add, addMultiple and remove functions were added
 	virtual CompositeBehaviour* add(Behaviour* childBehaviour);
 	virtual CompositeBehaviour* addMultiple(int count, ...);
 	virtual void remove(Behaviour* childBehaviour);

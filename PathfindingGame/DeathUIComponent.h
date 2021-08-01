@@ -5,6 +5,7 @@
 #include "ButtonComponent.h"
 #include "Game.h"
 
+//holds all the UI for when you die
 class DeathUIComponent :
     public Component
 {
@@ -30,8 +31,9 @@ private:
 		else
 			game.switchScene(rM->createFirstRoom());
 	}
+
+	static constexpr float enterTime = 0.5f;
 	float enterTimer = 0;
 	bool entered = false;
-	static constexpr float enterTime = 0.5f;
 };
 

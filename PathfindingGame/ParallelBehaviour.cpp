@@ -2,6 +2,10 @@
 
 BehaviourResult ParallelBehaviour::execute(AgentComponent* agent)
 {
+	//runs all children until they all return SUCCESS or FAIL
+	//if a single child returns RUNNING then the entire behaviour returns running, 
+	//	but only after it executes all other children that have not yet returned SUCCESS or FAIL
+
 	char amountOfPending = 0;
 	for (int i = 0; i < children.size(); i++)
 	{
@@ -22,8 +26,11 @@ BehaviourResult ParallelBehaviour::execute(AgentComponent* agent)
 			}
 		}
 	}
+
+	//if no pending behaviours then return fail if any returned fail, or success if they all returned success
 	if (amountOfPending == 0)
 	{
+		//clear isDone
 		std::fill(isDone.begin(), isDone.end(), 0);
 
 		if (returnFail)

@@ -181,7 +181,6 @@
     </ClCompile>
     <ClCompile Include="ParallelBehaviour.cpp" />
     <ClCompile Include="PathfinderComponent.cpp" />
-    <ClCompile Include="PathfindingNode.cpp" />
     <ClCompile Include="PhysicsDebugDraw.cpp" />
     <ClCompile Include="PickupComponent.cpp" />
     <ClCompile Include="PlayerComponent.cpp" />

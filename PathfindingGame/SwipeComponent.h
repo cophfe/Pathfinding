@@ -8,6 +8,7 @@ class SwipeComponent
 	: public Component
 {
 public:
+	//swipe effect settings
 	static constexpr float effectTime = 0.5f;
 	static constexpr float effectDistance = 200.0f;
 
@@ -17,9 +18,12 @@ public:
 
 private:
 	Sprite* sprite;
-	float effectTimer = 0;
-	bool doingEffect = false;
+
+	//swipe just does an ease function between two points
 	Vector2 startGoal;
 	Vector2 endGoal;
+
+	float effectTimer = 0;
+	bool doingEffect = false;
 };
 

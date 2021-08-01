@@ -4,14 +4,19 @@
 
 void PickupComponent::init(Room* room)
 {
+	//check if pickup has been picked up before on this floor
 	this->room = room;
 	if (room->getRoomManager()->checkPickupPickedUp())
 	{
 		gameObject->setIsDrawn(false);
 		return;
 	}
+
+	//start animation
 	((AnimatedSprite*)gameObject->getSprite())->setSettings(PlayerUIComponent::beatStart, PlayerUIComponent::beatEnd, PlayerUIComponent::beatStart);
-	gameObject->getSprite()->setTint({ PlayerUIComponent::extraHeartColorDifference , PlayerUIComponent::extraHeartColorDifference , 0xFF, 0xFF });
+	gameObject->getSprite()->setTint({ PlayerUIComponent::extraHeartColorDifference , PlayerUIComponent::extraHeartColorDifference * 2 , 0xFF, 0xFF });
+
+	//create rigibody
 	b2FixtureDef fDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::BOUNDS, RigidBodyComponent::PLAYER, nullptr, true);
 	b2CircleShape shape;
 	shape.m_radius = 0.4f;
@@ -25,7 +30,7 @@ void PickupComponent::onTriggerEnter(RigidBodyComponent* collisionBody, b2Fixtur
 	if (!pickedUp && !collisionFixture->IsSensor() && collisionFixture->GetFilterData().categoryBits == RigidBodyComponent::PLAYER)
 	{
 		pickedUp = true;
-		//anything to do with rigidbodies cannot be updated in here
+		//add heart to player
 		auto player = room->getPlayerComponent();
 		auto UI = player->getUI();
 		UI->addHeart(1);

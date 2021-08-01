@@ -56,9 +56,9 @@ void Sprite::updateSpriteRectangle()
 {
 	Vector2& pos = transform->getGlobalPosition();
 	float scale = transform->getGlobalScale();
-	destRect = Rectangle{ pos.x, pos.y + DRAW_OFFSET, texture->width * scale, texture->height * scale };
+	destRect = Rectangle{ pos.x, pos.y + offset, texture->width * scale, texture->height * scale };
 	pivot.x = destRect.width / 2;
-	pivot.y = destRect.height / 2 + DRAW_OFFSET;
+	pivot.y = destRect.height / 2 + offset;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -126,12 +126,14 @@ void AnimatedSprite::draw()
 {
 	frameTimer += Game::getDeltaTime();
 
+	//this changes frame whenever necessary
 	while (!paused && frameTimer > secondsPerFrame)
 	{
 		currentFrame++;
 		if (currentFrame > endFrame)
 		{
 			currentFrame = startFrame;
+			//call endCallback before restarting loop
 			if (endCallback != nullptr)
 			{
 				endCallback(callbackPointer);
@@ -140,7 +142,7 @@ void AnimatedSprite::draw()
 		updateSrcCoordinates();
 		frameTimer -= secondsPerFrame;
 	}
-
+	
 	if (shader != nullptr)
 	{
 		BeginShaderMode(*shader);
@@ -159,13 +161,17 @@ void AnimatedSprite::updateSpriteRectangle()
 	float scale = transform->getGlobalScale();
 	destRect = Rectangle{ pos.x, pos.y, ((AnimatedTexture*)texture)->spriteWidth* scale, ((AnimatedTexture*)texture)->spriteHeight* scale };
 	pivot.x = destRect.width / 2;
-	pivot.y = destRect.height / 2 + DRAW_OFFSET;
+	pivot.y = destRect.height / 2 + offset;
 }
 
 void AnimatedSprite::setFlipped(bool flippedValue)
 {
 	srcRect.width = flippedValue ? (float)-((AnimatedTexture*)texture)->spriteWidth : (float)((AnimatedTexture*)texture)->spriteWidth;
 }
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//		CUSTOM RENDER SPRITE
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 void CustomRenderSprite::draw()
 {

@@ -21,19 +21,22 @@ public:
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	~CollisionManager();
 	
+	//update world
 	void update();
 
+	//draw debug info
 	void debugDraw();
 
 	inline b2World* getWorld() { return &world; }
 
 private:
+	//holds all the physics information
 	b2World world;
-	int32 velocityIterations = 6;
-	int32 positionIterations = 2;
 #ifdef DRAW_DEBUG
 	PhysicsDebugDraw* debugDrawer;
 #endif // DRAW_DEBUG
 	ContactListener* contactListener;
+	int32 velocityIterations = 6;
+	int32 positionIterations = 2;
 };
 

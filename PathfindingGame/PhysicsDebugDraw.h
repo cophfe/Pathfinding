@@ -3,21 +3,14 @@
 
 #define THICKNESS 5
 
+// This class is used for drawing debug info from box2d in raylib
+//header copied straight from b2Draw
 class PhysicsDebugDraw : public b2Draw
 {
 public:
 	PhysicsDebugDraw();
 
 	~PhysicsDebugDraw();
-
-	/*enum
-	{
-		e_shapeBit = 0x0001,	///< draw shapes
-		e_jointBit = 0x0002,	///< draw joint connections
-		e_aabbBit = 0x0004,	///< draw axis aligned bounding boxes
-		e_pairBit = 0x0008,	///< draw broad-phase pairs
-		e_centerOfMassBit = 0x0010	///< draw center of mass frame
-	};*/
 
 	/// draw a closed polygon provided in CCW order.
 	virtual void b2DebugDrawPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color);
@@ -42,7 +35,6 @@ public:
 	virtual void b2DebugDrawPoint(const b2Vec2& p, float size, const b2Color& color);
 
 private:
-
 	Color convertColorToRaylib(const b2Color& color);
 };
 

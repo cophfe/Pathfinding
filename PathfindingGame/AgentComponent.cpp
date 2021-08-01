@@ -74,9 +74,10 @@ AgentComponent::~AgentComponent()
 
 void AgentComponent::init(AgentDataComponent* blackboard, CollisionManager* manager)
 {
+	//initialize information
 	((AnimatedSprite*)gameObject->getSprite())->setSettings(0, 5, 0);
 	gameObject->getSprite()->setDrawOffset(20);
-	//actor child:
+	//create face:
 	this->child = new GameObject(gameObject, "beeFace", true, { -9,-41 });
 	((AnimatedSprite*)this->child->getSprite())->pause();
 	this->child->getSprite()->setDrawOffset(20);
@@ -88,13 +89,14 @@ void AgentComponent::init(AgentDataComponent* blackboard, CollisionManager* mana
 	actorfDef.shape = &actorShape;
 	auto actorRb = gameObject->addComponent<RigidBodyComponent>();
 	actorRb->init(manager, actorbDef, actorfDef);
-	//add trigger
+	//add trigger (for detecting player when masked)
 	b2FixtureDef actorTriggerfDef = RigidBodyComponent::genFixtureDef(RigidBodyComponent::ENEMY, RigidBodyComponent::PLAYER, nullptr, true);
 	b2CircleShape actorTriggerShape = b2CircleShape();
 	actorTriggerShape.m_radius = AgentComponent::TRIGGER_RAD;
 	actorTriggerfDef.shape = &actorTriggerShape;
 	actorRb->addFixture(actorTriggerfDef);
 
+	//set member variables
 	this->blackboard = blackboard;
 	blackboard->addAgent();
 	pathfinder = blackboard->getPathfinder();
@@ -225,6 +227,7 @@ void AgentComponent::fixedUpdate()
 
 void AgentComponent::update()
 {
+	//if dying play death animation and clear velocity
 	if (health <= 0)
 	{
 		if (!dead)
@@ -234,17 +237,18 @@ void AgentComponent::update()
 			((AnimatedSprite*)gameObject->getSprite())->setCallback(deadCallback, this);
 			((AnimatedSprite*)gameObject->getSprite())->setSettings(DEATH_START, DEATH_END, DEATH_START);
 			((AnimatedSprite*)gameObject->getSprite())->play();
-			//child->deleteSelf();
 			child->setIsDrawn(false);
-			//child = nullptr;
 			dead = true;
 		}
 	}
 	else
 	{
 		timer += Game::getDeltaTime();
+		//sprite hovers up and down
 		gameObject->getSprite()->setDrawOffset(spriteHover + sin(timer * HOVER_SPEED) * HOVER_MAG);
 		child->getSprite()->setDrawOffset(spriteHover + sin(timer * HOVER_SPEED) * HOVER_MAG);
+		
+		//execute behaviour tree here
 		behaviourTree->execute(this);
 
 		//for hit flash effect
@@ -267,6 +271,7 @@ void AgentComponent::update()
 			}
 			else
 			{
+				//at end of hit flash effect reset variables
 				sprite->setTint({ 0xFF, 0xFF, 0xFF, 0xFF });
 				child->getSprite()->setTint({ 0xFF, 0xFF, 0xFF, 0xFF });
 				sprite->clearShader();
@@ -283,6 +288,7 @@ void AgentComponent::update()
 
 void AgentComponent::hit(int damage, float knockback, const Vector2& position)
 {
+	//when hit by player start hit flash effect, take damage, and take knockback
 	health -= damage;
 	if (health <= 0)
 	{
@@ -308,6 +314,7 @@ void AgentComponent::onTriggerEnter(RigidBodyComponent* collisionBody, b2Fixture
 	{
 		if (collisionBody != nullptr && collisionFixture->GetFilterData().categoryBits == RigidBodyComponent::PLAYER)
 		{
+			//bee will be alerted if player collides with it
 			collidedWithPlayer = true;
 		}
 	}
@@ -316,6 +323,7 @@ void AgentComponent::onTriggerEnter(RigidBodyComponent* collisionBody, b2Fixture
 #ifdef DRAW_DEBUG
 void AgentComponent::debugDraw()
 {
+	//draw path and player position
 	static Color b = { 0,0,0,200 };
 	if (!path.empty())
 	{
@@ -331,27 +339,33 @@ void AgentComponent::debugDraw()
 
 bool AgentComponent::checkShouldGeneratePath()
 {
+	//part of an action/question node
+	//moves up path or says to generate path, or does nothing and returns false
+
 	if (targettingPlayer)
 	{
-		//technically this is an action but whatever it's easier this way
+		//if target has moved ALWAYS return true
 		if (checkTargetMoved())
 		{
 			return true;
 		}
 		else if (pathIndex > 0)
 		{
+			//if not reached end, move to next node
 			pathIndex--;
 			destination = path[pathIndex];
 			return false;
 		}
 		else
 		{
+			//if reached end of path, stay still
 			destination = transform->getPosition();
 			return true;
 		}
 	}
 	else
 	{
+		//if path exists already and havent reached the end, follow it
 		if (pathIndex > 0)
 		{
 			pathIndex--;
@@ -360,6 +374,7 @@ bool AgentComponent::checkShouldGeneratePath()
 		}
 		else
 		{
+			//else generate a new path
 			return true;
 		}
 	}

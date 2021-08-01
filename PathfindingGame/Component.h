@@ -27,6 +27,7 @@ public:
 
 	//These functions only run if a RigidBodyComponent is attached
 	//They are pretty self explanitory
+	//DO NOT MODIFY PHYSICS STUFF INSIDE OF THESE
 	virtual void onCollisionEnter(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture) {}
 	virtual void onCollisionExit(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture) {}
 	virtual void onTriggerEnter(RigidBodyComponent* collisionBody, b2Fixture* collisionFixture) {}
@@ -50,6 +51,7 @@ public:
 	inline GameObject* getGameObject() { return gameObject; }
 
 protected:
+
 	GameObject* gameObject;
 	Transform* transform;
 	bool enabled;
